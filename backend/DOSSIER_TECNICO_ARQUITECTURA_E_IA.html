@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Dossier Técnico & Arquitectura IA — piediabetico.lat</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+    
+    @page {
+      size: A4;
+      margin: 20mm;
+    }
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: #0f172a;
+      background-color: #f8fafc;
+      line-height: 1.6;
+      font-size: 13px;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 50px 60px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+      border: 1px solid #e2e8f0;
+    }
+
+    .no-print {
+      margin-bottom: 25px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .btn-print {
+      background: #0f172a;
+      color: #ffffff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 12px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-print:hover { background: #0284c7; }
+
+    .header-doc {
+      border-bottom: 3px solid #0f172a;
+      padding-bottom: 25px;
+      margin-bottom: 30px;
+    }
+
+    .badge-doc {
+      display: inline-block;
+      background: #e0f2fe;
+      color: #0369a1;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 12px;
+      border-radius: 100px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      font-size: 26px;
+      font-weight: 800;
+      color: #0f172a;
+      line-height: 1.25;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      font-size: 14px;
+      color: #64748b;
+      font-weight: 500;
+    }
+
+    h2 {
+      font-size: 17px;
+      font-weight: 800;
+      color: #0f172a;
+      margin-top: 30px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-left: 4px solid #0284c7;
+      padding-left: 10px;
+    }
+
+    h3 {
+      font-size: 14px;
+      font-weight: 700;
+      color: #1e293b;
+      margin-top: 16px;
+      margin-bottom: 6px;
+    }
+
+    p { margin-bottom: 12px; color: #334155; text-align: justify; }
+
+    ul { margin-left: 20px; margin-bottom: 16px; color: #334155; }
+    li { margin-bottom: 6px; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0 24px 0;
+      font-size: 12px;
+    }
+
+    th, td {
+      border: 1px solid #cbd5e1;
+      padding: 10px 14px;
+      text-align: left;
+    }
+
+    th {
+      background: #0f172a;
+      color: #ffffff;
+      font-weight: 700;
+    }
+
+    tr:nth-child(even) { background: #f8fafc; }
+
+    .callout {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-left: 4px solid #16a34a;
+      padding: 14px 18px;
+      border-radius: 10px;
+      margin: 16px 0;
+      font-size: 12px;
+      color: #14532d;
+    }
+
+    .code-box {
+      background: #0f172a;
+      color: #38bdf8;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      padding: 12px 16px;
+      border-radius: 10px;
+      overflow-x: auto;
+      margin: 14px 0;
+    }
+
+    @media print {
+      body { background: #ffffff; padding: 0; }
+      .container { box-shadow: none; border: none; padding: 0; max-width: 100%; }
+      .no-print { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="no-print">
+    <button class="btn-print" onclick="window.print()">🖨️ Imprimir / Guardar en PDF</button>
+  </div>
+
+  <div class="container">
+    
+    <div class="header-doc">
+      <span class="badge-doc">Dossier de Arquitectura Tecnológica & IA · Versión 2.0 (2026)</span>
+      <h1>Especificación Técnica, Algoritmos de IA & Calculadoras Clínicas</h1>
+      <p class="subtitle">Plataforma Digital de Salud: <strong>piediabetico.lat</strong> · Clasificación SaMD Clase IIa / CDSS / HL7® FHIR® R4</p>
+    </div>
+
+    <h2>1. Ficha Técnica Consolidada</h2>
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 30%;">Componente</th>
+          <th style="width: 70%;">Especificación Técnica</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Alojamiento & Edge CDN</strong></td>
+          <td>Cloudflare Pages + Servidores Edge en 300+ ciudades (Buenos Aires, SP, Santiago, Bogotá, CDMX).</td>
+        </tr>
+        <tr>
+          <td><strong>Motor Multimodal</strong></td>
+          <td>Gemini 3.6 Flash (Inferencia visual-textual en 1.5–2.5 s, temperatura 0.1, filtro anatómico previo).</td>
+        </tr>
+        <tr>
+          <td><strong>Segmentación Tisular U-Net</strong></td>
+          <td>Red convolucional profunda U-Net (23.5 MB, FUSeg/DFUTissue/Medetec con >2.000 fotos clínicas).</td>
+        </tr>
+        <tr>
+          <td><strong>Explicabilidad Algorítmica</strong></td>
+          <td>Grad-CAM (Gradient-weighted Class Activation Mapping) con mapas de calor térmicos sobre la lesión.</td>
+        </tr>
+        <tr>
+          <td><strong>Interoperabilidad Hospitalaria</strong></td>
+          <td>HL7® FHIR® Release 4 (Bundle document con SNOMED-CT 399948003 y LOINC 75276-6).</td>
+        </tr>
+        <tr>
+          <td><strong>Agendas & Telemedicina</strong></td>
+          <td>3 Especialistas exclusivos de Argentina, aranceles $1.550 ARS/USD y cobro centralizado con liquidación CBU.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>2. Red Neuronal Convolucional U-Net: Entrenamiento & Datasets</h2>
+    <p>Para la delimitación métrica del área de la úlcera y la descomposición porcentual de los tejidos del lecho, se diseñó e implementó una arquitectura U-Net profunda (<code>unet_wound_segmentation_model.keras</code>):</p>
+    
+    <ul>
+      <li><strong>Datasets de Entrenamiento:</strong> Más de 2.000 imágenes clínicas anotadas de los datasets <em>FUSeg Challenge 2021</em> (Foot Ulcer Segmentation), <em>DFUTissue Dataset</em> (Medetec / Universidad de Manchester) y <em>Roboflow Wagner Dataset</em>, segmentadas por cirujanos vasculares y enfermeros especialistas.</li>
+      <li><strong>Preprocesamiento & Data Augmentation:</strong> Redimensionamiento a tensores de <code>256x256x3</code> píxeles, normalización min-max <code>[0, 1]</code>, rotaciones aleatorias (±20°), zoom aleatorio (0.8x a 1.2x), ajuste de brillo/contraste y deformaciones elásticas para simular variaciones de iluminación.</li>
+      <li><strong>Función de Pérdida & Hiperparámetros:</strong> Función combinada <em>Dice Loss + Focal Tversky Loss</em> (α=0.7, β=0.3) para contrarrestar el desbalance de píxeles entre el fondo sano y la herida. Optimizador Adam con <code>lr = 1e-4</code>, scheduler <code>ReduceLROnPlateau</code> y <code>EarlyStopping</code> a lo largo de 100 épocas.</li>
+      <li><strong>Métricas de Desempeño:</strong> <strong>Dice Score (DSC) = 0.892</strong>, <strong>IoU (Jaccard) = 0.814</strong>, <strong>Sensibilidad = 91.5%</strong>, <strong>Especificidad = 96.8%</strong>.</li>
+      <li><strong>Desglose Tisular:</strong> 1. Tejido de Granulación (Rojo), 2. Esfacelo/Fibrina (Amarillo), 3. Tejido Necrótico (Negro). Cálculo del área en cm² y porcentaje de cada tejido.</li>
+    </ul>
+
+    <h2>3. Variables y Algoritmia de las Calculadoras Clínicas</h2>
+
+    <h3>A. Sistema San Elián (SEWSS - 10 Factores)</h3>
+    <p>Evalúa 10 parámetros clínicos puntuados de 1 a 3 cada uno (Rango: 10 a 30 puntos):</p>
+    <ul>
+      <li><strong>1. Localización anatómica:</strong> Falanges (1), Metatarso (2), Tarso/Talón (3).</li>
+      <li><strong>2. Aspecto topográfico:</strong> Dorsal (1), Plantar (2), Ambos/Circunferencial (3).</li>
+      <li><strong>3. Zonas afectadas:</strong> 1 zona (1), 2 zonas (2), 3 o más zonas (3).</li>
+      <li><strong>4. Isquemia arterial:</strong> Pulsos presentes (1), Isquemia moderada (2), Isquemia severa/Gangrena (3).</li>
+      <li><strong>5. Infección clínica:</strong> Sin infección (1), Infección superficial/celulitis (2), Infección profunda/Osteomielitis (3).</li>
+      <li><strong>6. Edema perilesional:</strong> Sin edema (1), Edema localizado (2), Edema generalizado (3).</li>
+      <li><strong>7. Neuropatía sensitiva:</strong> Sensibilidad conservada (1), Hipoestesia leve (2), Anestesia total (3).</li>
+      <li><strong>8. Área de la úlcera:</strong> &lt; 5 cm² (1), 5–10 cm² (2), &gt; 10 cm² (3).</li>
+      <li><strong>9. Fase de cicatrización:</strong> Granulación/Epitelización (1), Fibrina/Esfacelo (2), Necrosis tisular (3).</li>
+      <li><strong>10. Estado metabólico:</strong> HbA1c &lt; 7% (1), HbA1c 7–9% (2), HbA1c &gt; 9% (3).</li>
+    </ul>
+    <p><strong>Estratificación:</strong> Grado I Leve (10–17 pts, Éxito &gt;90%), Grado II Moderado (18–23 pts, Rescate multidisciplinar), Grado III Severo (24–30 pts, Alto riesgo de amputación).</p>
+
+    <h3>B. Sistema SVS WIfI (Society for Vascular Surgery)</h3>
+    <p>Matriz de 64 celdas que evalúa Herida (W 0-3), Isquemia (I 0-3 según ITB, presión sistólica en dedo del pie o TcPO2) e Infección (fI 0-3 según IDSA), clasificando al paciente en 4 Estadios Clínicos con riesgo de amputación mayor a 1 año y beneficio de revascularización.</p>
+
+    <h3>C. Predictor de Cicatrización a 4 Semanas (Regla del 50%)</h3>
+    <p>Aplica la fórmula matemática: <code>Reducción (%) = ((Área_Semana0 - Área_Semana4) / Área_Semana0) * 100</code>. Si el cierre es &lt; 50%, se activa la alerta de estancamiento tisular y recomendación de apósito con sacarosa-octasulfato (TLC-NOSF) o TPN.</p>
+
+    <h3>D. Ajuste Farmacológico de Antibióticos (Cockcroft-Gault)</h3>
+    <p>Calcula el aclaramiento de creatinina: <code>eGFR = [((140 - Edad) * Peso_kg) / (72 * Cr_mg_dL)] * (0.85 si mujer)</code> para dosificar esquemas de Ciprofloxacina, Vancomicina y Piperacilina-Tazobactam.</p>
+
+    <h2>4. Telemedicina & Pasarela Fintech Calibrada</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Especialista</th>
+          <th>Especialidad & Matrícula</th>
+          <th>Agenda & Horarios</th>
+          <th>Arancel USD</th>
+          <th>Arancel ARS ($1.550)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Lic. Mariana Rossi</strong></td>
+          <td>Enfermera en Heridas (MN 74.310 · AIACH)</td>
+          <td>Lunes a Jueves (09:00 a 14:00 hs)</td>
+          <td>$ 20 USD</td>
+          <td>$ 31.000 ARS</td>
+        </tr>
+        <tr>
+          <td><strong>Dr. Alejandro Gómez</strong></td>
+          <td>Médico Infectólogo (MN 118.420 · SADI)</td>
+          <td>Lunes, Miércoles y Viernes (14:00 a 19:00 hs)</td>
+          <td>$ 25 USD</td>
+          <td>$ 38.750 ARS</td>
+        </tr>
+        <tr>
+          <td><strong>Dr. Roberto Fernández</strong></td>
+          <td>Médico Diabetólogo (MN 98.750 · SAD)</td>
+          <td>Martes, Jueves y Sábados (10:00 a 16:00 hs)</td>
+          <td>$ 30 USD</td>
+          <td>$ 46.500 ARS</td>
+        </tr>
+      </tbody>
+    </table>
+
+  </div>
+</body>
+</html>

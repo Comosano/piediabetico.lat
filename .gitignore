@@ -1,0 +1,29 @@
+# Entorno & Claves
+.env
+.env.local
+.env.*.local
+
+# Dependencias & Builds
+node_modules/
+dist/
+build/
+.cache/
+
+# Python & Entornos Virtuales
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+.pytest_cache/
+
+# Sistema Operativo & IDEs
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log
+
+# Scripts Temporales
+scratch_*.ps1

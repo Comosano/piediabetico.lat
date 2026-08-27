@@ -1,0 +1,198 @@
+version: '3.9'
+
+# ╔══════════════════════════════════════════════════════════════════════╗
+# ║  PIEDIABETICO.LAT — Docker Compose Final                           ║
+# ║  Versión 1.0.0 — Agosto 2026                                       ║
+# ╠══════════════════════════════════════════════════════════════════════╣
+# ║  Servicios incluidos:                                              ║
+# ║    1. postgres      — Base de datos principal                      ║
+# ║    2. redis         — Broker de Celery + caché                     ║
+# ║    3. minio         — Almacenamiento de imágenes médicas           ║
+# ║    4. api           — Backend FastAPI (todos los agentes)          ║
+# ║    5. celery_worker — Procesamiento de tareas en segundo plano     ║
+# ║    6. celery_beat   — Pipeline semanal automático (sáb 23hs)       ║
+# ╠══════════════════════════════════════════════════════════════════════╣
+# ║  Comandos útiles:                                                  ║
+# ║    Levantar todo:   docker compose up -d                           ║
+# ║    Ver estado:      docker compose ps                              ║
+# ║    Ver logs API:    docker compose logs api                        ║
+# ║    Ver logs Celery: docker compose logs celery_worker              ║
+# ║    Detener todo:    docker compose down                            ║
+# ║    Reiniciar API:   docker compose restart api                     ║
+# ╚══════════════════════════════════════════════════════════════════════╝
+
+services:
+
+  # ── 1. POSTGRESQL ───────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: piediadbetico_postgres
+    restart: always
+    env_file: .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-piediadbetico}
+      POSTGRES_USER: ${POSTGRES_USER:-adminpd}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-adminpd}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - piediadbetico_net
+
+  # ── 2. REDIS ────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: piediadbetico_redis
+    restart: always
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - ./data/redis:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - piediadbetico_net
+
+  # ── 3. MINIO ────────────────────────────────────────────────────────
+  minio:
+    image: minio/minio:latest
+    container_name: piediadbetico_minio
+    restart: always
+    env_file: .env
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-adminminio}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    command: server /data --console-address ':9001'
+    volumes:
+      - ./data/minio:/data
+    ports:
+      - "9000:9000"   # API S3
+      - "9001:9001"   # Consola web (admin)
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - piediadbetico_net
+
+  # ── 4. API FASTAPI ───────────────────────────────────────────────────
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: piediadbetico_api
+    restart: always
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-adminpd}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-piediadbetico}
+      REDIS_URL: redis://redis:6379/0
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-adminminio}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      CLASIFICADOR_ONNX_PATH: /app/modelos/dfu_efficientnet_b0.onnx
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - ./modelos:/app/modelos        # Modelos ONNX y .pth
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - piediadbetico_net
+
+  # ── 5. CELERY WORKER ────────────────────────────────────────────────
+  celery_worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: piediadbetico_celery_worker
+    restart: always
+    command: celery -A celery_app worker --loglevel=info --concurrency=2
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-adminpd}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-piediadbetico}
+      REDIS_URL: redis://redis:6379/0
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+    volumes:
+      - ./backend:/app
+      - ./data/workspace:/workspace    # Scratch para artículos PubMed y PDFs
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    networks:
+      - piediadbetico_net
+
+  # ── 6. CELERY BEAT (pipeline semanal automático) ────────────────────
+  celery_beat:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: piediadbetico_celery_beat
+    restart: always
+    command: celery -A celery_app beat --loglevel=info
+    env_file: .env
+    environment:
+      REDIS_URL: redis://redis:6379/0
+    volumes:
+      - ./backend:/app
+    depends_on:
+      redis:
+        condition: service_healthy
+      celery_worker:
+        condition: service_started
+    networks:
+      - piediadbetico_net
+
+# ── RED INTERNA ──────────────────────────────────────────────────────
+networks:
+  piediadbetico_net:
+    driver: bridge
+
+# ── VOLÚMENES NOMBRADOS (referencia) ───────────────────────────────
+# Los datos se guardan en ./data/ para fácil backup
+# Estructura en el VPS:
+#   /opt/piediadbetico/
+#   ├── docker-compose.yml
+#   ├── .env                    ← contraseñas (nunca subir a Git)
+#   ├── backend/                ← código Python
+#   │   ├── Dockerfile
+#   │   ├── main.py
+#   │   ├── agente4_clasificador_ulcera.py
+#   │   ├── agente7_triage_multimodal.py
+#   │   ├── celery_app.py
+#   │   ├── models.py
+#   │   ├── pubmed_agent.py
+#   │   ├── redactor_agent.py
+#   │   ├── pdf_agent.py
+#   │   └── requirements.txt
+#   ├── modelos/                ← archivos .onnx y .pth
+#   │   └── dfu_efficientnet_b0.onnx
+#   └── data/                  ← datos persistentes (backup aquí)
+#       ├── postgres/
+#       ├── redis/
+#       ├── minio/
+#       └── workspace/         ← scratch Celery (artículos, PDFs)

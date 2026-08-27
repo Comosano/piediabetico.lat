@@ -1,0 +1,65 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg" font-family="Arial, sans-serif">
+
+  <!-- Fondo -->
+  <rect width="1200" height="630" fill="#0A2463"/>
+
+  <!-- Gradiente decorativo -->
+  <ellipse cx="900" cy="150" rx="400" ry="400" fill="rgba(0,200,150,0.08)"/>
+  <ellipse cx="1100" cy="500" rx="300" ry="300" fill="rgba(26,58,143,0.4)"/>
+  <ellipse cx="100" cy="500" rx="250" ry="250" fill="rgba(0,200,150,0.05)"/>
+
+  <!-- Grid de puntos sutil -->
+  <pattern id="dots" width="40" height="40" patternUnits="userSpaceOnUse">
+    <circle cx="20" cy="20" r="1" fill="rgba(255,255,255,0.06)"/>
+  </pattern>
+  <rect width="1200" height="630" fill="url(#dots)"/>
+
+  <!-- Logo / ícono -->
+  <rect x="60" y="60" width="72" height="72" rx="18" fill="#0F3460"/>
+  <rect x="60" y="60" width="72" height="72" rx="18" fill="none" stroke="rgba(0,200,150,0.4)" stroke-width="1.5"/>
+  <!-- ECG en el ícono -->
+  <polyline points="72,96 80,96 85,80 90,112 95,76 100,96 108,96 116,88 120,96"
+    stroke="#00C896" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <circle cx="96" cy="116" r="4" fill="#00C896" opacity="0.8"/>
+
+  <!-- Dominio -->
+  <text x="150" y="88" fill="rgba(0,200,150,0.7)" font-size="18" font-weight="600" letter-spacing="0.5">piediabetico.lat</text>
+  <text x="150" y="114" fill="rgba(255,255,255,0.35)" font-size="14">MVP · Septiembre 2026 · Latinoamérica</text>
+
+  <!-- Headline principal -->
+  <text x="60" y="230" fill="white" font-size="68" font-weight="900" letter-spacing="-2">La herramienta clínica</text>
+  <text x="60" y="310" font-size="68" font-weight="900" letter-spacing="-2">
+    <tspan fill="#00C896">que faltaba</tspan>
+    <tspan fill="rgba(255,255,255,0.6)" font-weight="300"> para el pie</tspan>
+  </text>
+  <text x="60" y="390" fill="rgba(255,255,255,0.6)" font-size="68" font-weight="300" letter-spacing="-2">diabético en LATAM.</text>
+
+  <!-- Subtítulo -->
+  <text x="60" y="460" fill="rgba(255,255,255,0.45)" font-size="24">
+    Ficha fotográfica · IA clínica · Calculadoras IWGDF · Teleconsulta
+  </text>
+
+  <!-- 4 chips de features -->
+  <!-- Chip 1 -->
+  <rect x="60" y="500" width="190" height="38" rx="19" fill="rgba(0,200,150,0.15)" stroke="rgba(0,200,150,0.3)" stroke-width="1"/>
+  <text x="155" y="524" fill="#00C896" font-size="15" font-weight="600" text-anchor="middle">Podólogo</text>
+
+  <!-- Chip 2 -->
+  <rect x="264" y="500" width="190" height="38" rx="19" fill="rgba(0,200,150,0.1)" stroke="rgba(0,200,150,0.2)" stroke-width="1"/>
+  <text x="359" y="524" fill="rgba(255,255,255,0.6)" font-size="15" font-weight="500" text-anchor="middle">Infectólogo</text>
+
+  <!-- Chip 3 -->
+  <rect x="468" y="500" width="190" height="38" rx="19" fill="rgba(0,200,150,0.1)" stroke="rgba(0,200,150,0.2)" stroke-width="1"/>
+  <text x="563" y="524" fill="rgba(255,255,255,0.6)" font-size="15" font-weight="500" text-anchor="middle">Diabetólogo</text>
+
+  <!-- Chip 4 -->
+  <rect x="672" y="500" width="190" height="38" rx="19" fill="rgba(0,200,150,0.1)" stroke="rgba(0,200,150,0.2)" stroke-width="1"/>
+  <text x="767" y="524" fill="rgba(255,255,255,0.6)" font-size="15" font-weight="500" text-anchor="middle">Paciente</text>
+
+  <!-- ECG decorativo derecho -->
+  <polyline points="950,315 990,315 1010,250 1030,380 1050,220 1070,315 1100,315 1130,290 1150,315 1200,315"
+    stroke="rgba(0,200,150,0.25)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <circle cx="1070" cy="315" r="8" fill="rgba(0,200,150,0.3)"/>
+  <circle cx="1070" cy="315" r="4" fill="#00C896" opacity="0.6"/>
+
+</svg>
