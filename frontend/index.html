@@ -3513,7 +3513,7 @@
 
   <!-- MODAL DE DETALLE DE DIPLOMATURA / PROGRAMA UNIVERSITARIO -->
   <div id="modal-detalle-universidad" class="hidden fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95 duration-150 overflow-hidden">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 animate-in fade-in zoom-in-95 duration-150 overflow-hidden">
       
       <!-- Header Modal Universidad -->
       <div class="p-5 sm:p-6 bg-gradient-to-r from-blue-900 via-slate-900 to-emerald-950 text-white flex items-center justify-between">
@@ -3537,7 +3537,7 @@
       <div class="p-6 overflow-y-auto space-y-4 text-xs text-slate-700 leading-relaxed">
         
         <!-- Ficha Resumen -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-center">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 text-center">
           <div>
             <span class="text-[10px] uppercase font-bold text-slate-500 block" data-i18n="univ_det_duracion">Carga Horaria:</span>
             <span id="univ-modal-duracion" class="text-xs font-black text-slate-900">250 hs cátedra</span>
@@ -3558,22 +3558,22 @@
 
         <!-- Descripción & Objetivos -->
         <div class="space-y-1.5">
-          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-900 flex items-center gap-1.5" data-i18n="univ_det_obj_tit">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100 flex items-center gap-1.5" data-i18n="univ_det_obj_tit">
             <i data-lucide="target" class="w-4 h-4 text-blue-700"></i>
             <span>Objetivos & Enfoque Académico</span>
           </h4>
-          <p id="univ-modal-descripcion" class="text-xs text-slate-600 bg-white p-3.5 rounded-xl border border-slate-100 leading-relaxed">
+          <p id="univ-modal-descripcion" class="text-xs text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/90 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 leading-relaxed">
             Formación integral basada en las guías de consenso IWGDF 2023, Sistema San Elián y técnicas de desbridamiento cortante y descarga biomecánica.
           </p>
         </div>
 
         <!-- Ejes Temáticos / Módulos -->
         <div class="space-y-1.5">
-          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-900 flex items-center gap-1.5" data-i18n="univ_det_ejes_tit">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100 flex items-center gap-1.5" data-i18n="univ_det_ejes_tit">
             <i data-lucide="layers" class="w-4 h-4 text-emerald-700"></i>
             <span>Ejes Temáticos del Programa</span>
           </h4>
-          <ul id="univ-modal-ejes" class="space-y-1.5 text-xs text-slate-600">
+          <ul id="univ-modal-ejes" class="space-y-1.5 text-xs text-slate-600 dark:text-slate-300">
             <!-- Populated by JS -->
           </ul>
         </div>
@@ -3587,8 +3587,8 @@
       </div>
 
       <!-- Footer Modal Universidad -->
-      <div class="p-4 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-2">
-        <button onclick="cerrarModalDetalleUniversidad()" data-i18n="btn_cerrar" class="btn-sec w-full sm:w-auto !py-2.5 !px-5 text-xs font-bold text-slate-600 bg-white border border-slate-300">Cerrar</button>
+      <div class="p-4 bg-slate-50 dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-2">
+        <button onclick="cerrarModalDetalleUniversidad()" data-i18n="btn_cerrar" class="btn-sec w-full sm:w-auto !py-2.5 !px-5 text-xs font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700">Cerrar</button>
         <div class="flex w-full sm:w-auto gap-2">
           <a id="univ-modal-link" href="#" target="_blank" class="btn-primary flex-1 sm:flex-initial !py-2.5 !px-6 text-xs font-black bg-blue-900 hover:bg-blue-950 text-white shadow-md flex items-center justify-center gap-1.5">
             <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
@@ -3602,7 +3602,7 @@
 
   <!-- MODAL DE DETALLE DE SOCIEDAD MÉDICA / ORGANISMO -->
   <div id="modal-detalle-sociedad" class="hidden fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95 duration-150 overflow-hidden">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 animate-in fade-in zoom-in-95 duration-150 overflow-hidden">
       
       <!-- Header Modal Sociedad -->
       <div class="p-5 sm:p-6 bg-gradient-to-r from-indigo-950 via-slate-900 to-blue-950 text-white flex items-center justify-between">
@@ -3627,42 +3627,42 @@
         
         <!-- Misión & Descripción -->
         <div class="space-y-1.5">
-          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-900 flex items-center gap-1.5" data-i18n="soc_modal_mision_tit">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100 flex items-center gap-1.5" data-i18n="soc_modal_mision_tit">
             <i data-lucide="info" class="w-4 h-4 text-indigo-700"></i>
             <span>Propósito & Rol Científico</span>
           </h4>
-          <p id="soc-modal-descripcion" class="text-xs text-slate-600 bg-white p-3.5 rounded-xl border border-slate-100 leading-relaxed">
+          <p id="soc-modal-descripcion" class="text-xs text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/90 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 leading-relaxed">
             Organización científica médica dedicada a la investigación, formación continua y estandarización de consensos clínicos.
           </p>
         </div>
 
         <!-- Ejes / Comisiones Específicas -->
         <div class="space-y-1.5">
-          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-900 flex items-center gap-1.5" data-i18n="soc_modal_ejes_tit">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100 flex items-center gap-1.5" data-i18n="soc_modal_ejes_tit">
             <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-700"></i>
             <span>Comités & Áreas de Interés en Pie Diabético</span>
           </h4>
-          <ul id="soc-modal-ejes" class="space-y-1.5 text-xs text-slate-600">
+          <ul id="soc-modal-ejes" class="space-y-1.5 text-xs text-slate-600 dark:text-slate-300">
             <!-- Populated by JS -->
           </ul>
         </div>
 
         <!-- Canales de Contacto Directo Verificados -->
-        <div class="p-4 rounded-2xl bg-indigo-50/60 border border-indigo-200/80 space-y-2.5 text-slate-800">
-          <h4 class="text-xs font-black text-indigo-950 flex items-center gap-1.5" data-i18n="soc_modal_contacto_tit">
+        <div class="p-4 rounded-2xl bg-indigo-50/60 dark:bg-slate-800/80 border border-indigo-200/80 dark:border-slate-700 space-y-2.5 text-slate-800 dark:text-slate-200">
+          <h4 class="text-xs font-black text-indigo-950 dark:text-indigo-200 flex items-center gap-1.5" data-i18n="soc_modal_contacto_tit">
             <i data-lucide="phone-call" class="w-4 h-4 text-indigo-700"></i>
             <span>Canales de Contacto Oficiales (2026)</span>
           </h4>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-            <div id="soc-modal-email-box" class="flex items-center gap-2 p-2 rounded-xl bg-white border border-indigo-100">
+            <div id="soc-modal-email-box" class="flex items-center gap-2 p-2 rounded-xl bg-white dark:bg-slate-900 border border-indigo-100 dark:border-slate-700 text-slate-800 dark:text-slate-200">
               <i data-lucide="mail" class="w-3.5 h-3.5 text-indigo-600 shrink-0"></i>
               <span class="truncate" id="soc-modal-email">contacto@sociedad.org</span>
             </div>
-            <div id="soc-modal-tel-box" class="flex items-center gap-2 p-2 rounded-xl bg-white border border-indigo-100">
+            <div id="soc-modal-tel-box" class="flex items-center gap-2 p-2 rounded-xl bg-white dark:bg-slate-900 border border-indigo-100 dark:border-slate-700 text-slate-800 dark:text-slate-200">
               <i data-lucide="phone" class="w-3.5 h-3.5 text-emerald-600 shrink-0"></i>
               <span class="truncate" id="soc-modal-telefono">+54 11 4857-6681</span>
             </div>
-            <div id="soc-modal-sede-box" class="col-span-full flex items-center gap-2 p-2 rounded-xl bg-white border border-indigo-100">
+            <div id="soc-modal-sede-box" class="col-span-full flex items-center gap-2 p-2 rounded-xl bg-white dark:bg-slate-900 border border-indigo-100 dark:border-slate-700 text-slate-800 dark:text-slate-200">
               <i data-lucide="map-pin" class="w-3.5 h-3.5 text-red-500 shrink-0"></i>
               <span class="truncate" id="soc-modal-sede">CABA, Argentina</span>
             </div>
@@ -3672,8 +3672,8 @@
       </div>
 
       <!-- Footer Modal Sociedad -->
-      <div class="p-4 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-2">
-        <button onclick="cerrarModalDetalleSociedad()" data-i18n="btn_cerrar" class="btn-sec w-full sm:w-auto !py-2.5 !px-5 text-xs font-bold text-slate-600 bg-white border border-slate-300">Cerrar</button>
+      <div class="p-4 bg-slate-50 dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-2">
+        <button onclick="cerrarModalDetalleSociedad()" data-i18n="btn_cerrar" class="btn-sec w-full sm:w-auto !py-2.5 !px-5 text-xs font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700">Cerrar</button>
         <div class="flex w-full sm:w-auto gap-2">
           <a id="soc-modal-link" href="#" target="_blank" class="btn-primary flex-1 sm:flex-initial !py-2.5 !px-6 text-xs font-black bg-indigo-900 hover:bg-indigo-950 text-white shadow-md flex items-center justify-center gap-1.5">
             <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
@@ -3687,7 +3687,7 @@
 
   <!-- MODAL DE DETALLE DE LABORATORIO / PRODUCTO TERAPÉUTICO -->
   <div id="modal-detalle-laboratorio" class="hidden fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95 duration-150 overflow-hidden">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 animate-in fade-in zoom-in-95 duration-150 overflow-hidden">
       
       <!-- Header Modal Laboratorio -->
       <div class="p-5 sm:p-6 bg-gradient-to-r from-emerald-950 via-slate-900 to-teal-950 text-white flex items-center justify-between">
@@ -3728,28 +3728,28 @@
 
         <!-- Mecanismo de Acción -->
         <div class="space-y-1.5">
-          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-900 flex items-center gap-1.5" data-i18n="lab_modal_mecanismo_tit">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100 flex items-center gap-1.5" data-i18n="lab_modal_mecanismo_tit">
             <i data-lucide="cpu" class="w-4 h-4 text-emerald-700"></i>
             <span>Mecanismo de Acción & Fisiología Tisular</span>
           </h4>
-          <p id="lab-modal-mecanismo" class="text-xs text-slate-600 bg-white p-3.5 rounded-xl border border-slate-100 leading-relaxed">
+          <p id="lab-modal-mecanismo" class="text-xs text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/90 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 leading-relaxed">
             Reduce el exceso de metaloproteinasas de matriz (MMPs) y promueve la angiogénesis acelerando el cierre de la úlcera neuroisquémica.
           </p>
         </div>
 
         <!-- Indicaciones Clínicas Consenso (IWGDF / TIMERS) -->
         <div class="space-y-1.5">
-          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-900 flex items-center gap-1.5" data-i18n="lab_modal_indicaciones_tit">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100 flex items-center gap-1.5" data-i18n="lab_modal_indicaciones_tit">
             <i data-lucide="stethoscope" class="w-4 h-4 text-blue-700"></i>
             <span>Indicaciones Clínicas (IWGDF / TIMERS)</span>
           </h4>
-          <ul id="lab-modal-indicaciones" class="space-y-1.5 text-xs text-slate-600">
+          <ul id="lab-modal-indicaciones" class="space-y-1.5 text-xs text-slate-600 dark:text-slate-300">
             <!-- Populated by JS -->
           </ul>
         </div>
 
         <!-- Datos del Fabricante & Distribución -->
-        <div class="p-3.5 rounded-2xl bg-emerald-50/60 border border-emerald-200/80 text-[11px] space-y-1 text-slate-700">
+        <div class="p-3.5 rounded-2xl bg-emerald-50/60 dark:bg-slate-800/80 border border-emerald-200/80 dark:border-slate-700 text-[11px] space-y-1 text-slate-700 dark:text-slate-200">
           <strong class="text-emerald-950 block font-bold" data-i18n="lab_det_fabricante_tit">Laboratorio & Distribuidor Oficial:</strong>
           <p id="lab-modal-contacto-info">Líder global en cicatrización avanzada de heridas y apósitos tecnológicos.</p>
         </div>
@@ -3757,8 +3757,8 @@
       </div>
 
       <!-- Footer Modal Laboratorio -->
-      <div class="p-4 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-2">
-        <button onclick="cerrarModalDetalleLaboratorio()" data-i18n="btn_cerrar" class="btn-sec w-full sm:w-auto !py-2.5 !px-5 text-xs font-bold text-slate-600 bg-white border border-slate-300">Cerrar</button>
+      <div class="p-4 bg-slate-50 dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-2">
+        <button onclick="cerrarModalDetalleLaboratorio()" data-i18n="btn_cerrar" class="btn-sec w-full sm:w-auto !py-2.5 !px-5 text-xs font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700">Cerrar</button>
         <div class="flex w-full sm:w-auto gap-2">
           <a id="lab-modal-link" href="#" target="_blank" class="btn-primary flex-1 sm:flex-initial !py-2.5 !px-6 text-xs font-black bg-emerald-800 hover:bg-emerald-900 text-white shadow-md flex items-center justify-center gap-1.5">
             <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
@@ -3772,7 +3772,7 @@
 
   <!-- 🏥 MODAL DE INTEROPERABILIDAD HOSPITALARIA HL7® FHIR® R4 -->
   <div id="modal-detalle-fhir" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95 duration-150 overflow-hidden">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 animate-in fade-in zoom-in-95 duration-150 overflow-hidden">
       
       <!-- Cabecera Modal FHIR -->
       <div class="p-6 bg-gradient-to-r from-indigo-950 via-blue-950 to-slate-900 text-white flex items-center justify-between">
@@ -3810,8 +3810,8 @@
       </div>
 
       <!-- Footer Modal FHIR -->
-      <div class="p-4 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-2">
-        <button onclick="cerrarModalFHIR()" class="btn-sec w-full sm:w-auto !py-2.5 !px-5 text-xs font-bold text-slate-600 bg-white border border-slate-300">Cerrar</button>
+      <div class="p-4 bg-slate-50 dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-2">
+        <button onclick="cerrarModalFHIR()" class="btn-sec w-full sm:w-auto !py-2.5 !px-5 text-xs font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700">Cerrar</button>
         <div class="flex w-full sm:w-auto gap-2">
           <button onclick="copiarJSONFHIR()" class="btn-sec flex-1 sm:flex-initial !py-2.5 !px-4 text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-300 flex items-center justify-center gap-1.5">
             <i data-lucide="copy" class="w-3.5 h-3.5"></i>
@@ -3830,7 +3830,7 @@
   
   <!-- 📚 MODAL DE DETALLE DE GUÍA CLÍNICA, ALGORITMO & DESCARGA PDF -->
   <div id="modal-detalle-guia" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95 duration-150 overflow-hidden">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 animate-in fade-in zoom-in-95 duration-150 overflow-hidden">
       
       <!-- Header Modal Guía -->
       <div class="p-6 bg-gradient-to-r from-teal-950 via-slate-900 to-blue-950 text-white flex items-center justify-between">
@@ -3870,31 +3870,31 @@
 
         <!-- Resumen Ejecutivo -->
         <div class="space-y-1.5">
-          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
             <i data-lucide="file-check" class="w-4 h-4 text-teal-700"></i>
             <span>Resumen Ejecutivo & Puntos Clave</span>
           </h4>
-          <p id="guia-modal-resumen" class="text-xs text-slate-600 bg-white p-3.5 rounded-xl border border-slate-100 leading-relaxed"></p>
+          <p id="guia-modal-resumen" class="text-xs text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/90 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 leading-relaxed"></p>
         </div>
 
         <!-- Recomendaciones Clínicas Fuertes (GRADE) -->
         <div class="space-y-1.5">
-          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
             <i data-lucide="check-circle" class="w-4 h-4 text-emerald-700"></i>
             <span>Recomendaciones Clínicas Principales & Pautas Prácticas</span>
           </h4>
-          <ul id="guia-modal-recomendaciones" class="space-y-1.5 text-xs text-slate-600">
+          <ul id="guia-modal-recomendaciones" class="space-y-1.5 text-xs text-slate-600 dark:text-slate-300">
             <!-- Populated by JS -->
           </ul>
         </div>
 
         <!-- Algoritmo de Flujo de Decisiones -->
         <div class="space-y-1.5">
-          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
             <i data-lucide="git-branch" class="w-4 h-4 text-blue-700"></i>
             <span>Algoritmo de Flujo Terapéutico</span>
           </h4>
-          <div id="guia-modal-flujo" class="p-3.5 rounded-xl bg-blue-50/60 border border-blue-200 text-slate-700 space-y-1.5">
+          <div id="guia-modal-flujo" class="p-3.5 rounded-xl bg-blue-50/60 dark:bg-slate-800/80 border border-blue-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 space-y-1.5">
             <!-- Populated by JS -->
           </div>
         </div>
@@ -3908,8 +3908,8 @@
       </div>
 
       <!-- Footer Modal Guía -->
-      <div class="p-4 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-2">
-        <button onclick="cerrarModalGuia()" class="btn-sec w-full sm:w-auto !py-2.5 !px-5 text-xs font-bold text-slate-600 bg-white border border-slate-300">Cerrar</button>
+      <div class="p-4 bg-slate-50 dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-2">
+        <button onclick="cerrarModalGuia()" class="btn-sec w-full sm:w-auto !py-2.5 !px-5 text-xs font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700">Cerrar</button>
         <div class="flex w-full sm:w-auto gap-2">
           <a id="guia-modal-pdf-link" href="#" target="_blank" class="btn-primary flex-1 sm:flex-initial !py-2.5 !px-6 text-xs font-black bg-teal-900 hover:bg-teal-950 text-white shadow-md flex items-center justify-center gap-1.5">
             <i data-lucide="download" class="w-3.5 h-3.5"></i>

@@ -467,3 +467,44 @@ header nav button:hover {
 .banner-legal-dark p {
   color: #E2E8F0 !important;
 }
+
+
+/* ── CALIBRACIÓN GLOBAL DE MODALES DE DETALLE (ALTO CONTRASTE MODO CLARO/OSCURO) ── */
+.dark #modal-detalle-sociedad > div,
+.dark #modal-detalle-laboratorio > div,
+.dark #modal-detalle-universidad > div,
+.dark #modal-detalle-guia > div,
+.dark #modal-detalle-fhir > div {
+  background-color: #0F172A !important;
+  border-color: #334155 !important;
+  color: #F8FAFC !important;
+}
+
+.dark #soc-modal-descripcion,
+.dark #univ-modal-descripcion,
+.dark #lab-modal-mecanismo,
+.dark #guia-modal-resumen {
+  background-color: #1E293B !important;
+  color: #F1F5F9 !important;
+  border-color: #334155 !important;
+}
+
+.dark #soc-modal-ejes li,
+.dark #univ-modal-ejes li,
+.dark #lab-modal-indicaciones li,
+.dark #guia-modal-recomendaciones li {
+  color: #CBD5E1 !important;
+}
+
+.dark #soc-modal-email-box,
+.dark #soc-modal-tel-box,
+.dark #soc-modal-sede-box {
+  background-color: #1E293B !important;
+  border-color: #334155 !important;
+}
+
+.dark #soc-modal-email,
+.dark #soc-modal-telefono,
+.dark #soc-modal-sede {
+  color: #F8FAFC !important;
+}
