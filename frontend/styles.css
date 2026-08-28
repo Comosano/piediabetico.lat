@@ -508,3 +508,31 @@ header nav button:hover {
 .dark #soc-modal-sede {
   color: #F8FAFC !important;
 }
+
+
+/* ── ESTILOS ROBUSTOS PARA PESTAÑAS CLÍNICAS (MODO OSCURO / CLARO) ── */
+.btn-ptab {
+  transition: all 0.15s ease-in-out;
+}
+
+.dark .btn-ptab:not(.bg-blue-900):not(.dark\:bg-blue-600) {
+  background-color: #1E293B !important;
+  color: #F1F5F9 !important;
+  border-color: #334155 !important;
+}
+
+.dark .btn-ptab:not(.bg-blue-900):not(.dark\:bg-blue-600):hover {
+  background-color: #334155 !important;
+  border-color: #475569 !important;
+}
+
+.dark .btn-ptab.bg-blue-900,
+.dark .btn-ptab.dark\:bg-blue-600 {
+  background-color: #2563EB !important;
+  color: #FFFFFF !important;
+  border-color: #3B82F6 !important;
+}
+
+.dark #tab-bar-profesional {
+  border-color: #334155 !important;
+}

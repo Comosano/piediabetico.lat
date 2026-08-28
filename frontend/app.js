@@ -228,15 +228,15 @@ function switchProfTab(tabId) {
     if (t === tabId) {
       if (sec) sec.classList.remove('hidden');
       if (btn) {
-        btn.className = 'btn-ptab text-xs flex items-center gap-1.5 font-black bg-blue-900 text-white shadow-md border border-blue-950 ring-2 ring-blue-600/30 scale-[1.02] rounded-xl px-3 py-2 transition-all';
+        btn.className = 'btn-ptab text-xs flex items-center gap-1.5 font-black bg-blue-900 dark:bg-blue-600 text-white shadow-md border border-blue-950 dark:border-blue-500 ring-2 ring-blue-600/30 scale-[1.02] rounded-xl px-3 py-2 transition-all';
       }
     } else {
       if (sec) sec.classList.add('hidden');
       if (btn) {
         if (t === 'alertas-pro') {
-          btn.className = 'btn-ptab text-xs flex items-center gap-1.5 font-bold text-rose-800 bg-rose-50/60 border border-rose-200 rounded-xl px-3 py-2 transition-all';
+          btn.className = 'btn-ptab text-xs flex items-center gap-1.5 font-bold text-rose-800 dark:text-rose-300 bg-rose-50/60 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800 rounded-xl px-3 py-2 transition-all';
         } else {
-          btn.className = 'btn-ptab text-xs flex items-center gap-1.5 font-semibold bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 rounded-xl px-3 py-2 transition-all';
+          btn.className = 'btn-ptab text-xs flex items-center gap-1.5 font-semibold bg-white dark:bg-slate-800/90 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/80 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 transition-all shadow-2xs';
         }
       }
     }
