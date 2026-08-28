@@ -1229,13 +1229,13 @@
           </div>
         </div>
         <div class="flex flex-wrap items-center justify-center gap-2 shrink-0">
-          <button onclick="simularPerfilEquipoPaciente('ninguno')" class="py-2 px-3 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100 font-bold text-xs shadow-2xs transition-all">
+          <button id="btn-demo-sim-ninguno" onclick="simularPerfilEquipoPaciente('ninguno')" class="py-2 px-3.5 rounded-xl font-black text-xs transition-all bg-amber-600 text-white shadow-sm border border-amber-500">
             1. Sin Equipo
           </button>
-          <button onclick="simularPerfilEquipoPaciente('enfermera')" class="py-2 px-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/80 hover:bg-emerald-100 text-emerald-950 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-700 font-bold text-xs shadow-2xs transition-all">
+          <button id="btn-demo-sim-enfermera" onclick="simularPerfilEquipoPaciente('enfermera')" class="py-2 px-3.5 rounded-xl font-bold text-xs transition-all bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 hover:border-emerald-500">
             2. Con Enfermera
           </button>
-          <button onclick="simularPerfilEquipoPaciente('medico')" class="py-2 px-3 rounded-xl bg-blue-50 dark:bg-blue-950/80 hover:bg-blue-100 text-blue-950 dark:text-blue-200 border border-blue-300 dark:border-blue-700 font-bold text-xs shadow-2xs transition-all">
+          <button id="btn-demo-sim-medico" onclick="simularPerfilEquipoPaciente('medico')" class="py-2 px-3.5 rounded-xl font-bold text-xs transition-all bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 hover:border-blue-500">
             3. Con Médico
           </button>
         </div>
@@ -1511,13 +1511,13 @@
           </div>
 
             <!-- MI RED DE CUIDADO: PROFESIONALES REFERENTES -->
-            <div class="med-card p-5 space-y-3 bg-gradient-to-br from-white to-blue-50/40 border border-blue-100">
-              <div class="flex items-center justify-between border-b border-blue-100 pb-2">
+            <div class="med-card p-5 space-y-3 bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 shadow-sm rounded-3xl">
+              <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2.5">
                 <div class="flex items-center gap-2">
                   <span class="text-base">👨‍⚕️</span>
-                  <span data-i18n="pac_ref_title" class="text-xs font-bold text-slate-900 uppercase tracking-wide">Mi Equipo de Salud Referente</span>
+                  <span data-i18n="pac_ref_title" class="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wide">Mi Equipo de Salud Referente</span>
                 </div>
-                <button type="button" onclick="abrirModalVincularProfesional()" class="text-[11px] font-bold text-blue-700 hover:text-blue-800 bg-blue-100/70 hover:bg-blue-100 px-2.5 py-0.5 rounded-full transition-colors flex items-center gap-1">
+                <button type="button" onclick="abrirModalVincularProfesional()" class="text-[11px] font-bold text-blue-900 dark:text-sky-300 hover:text-blue-950 bg-blue-100 dark:bg-blue-950/80 hover:bg-blue-200 px-3 py-1 rounded-full border border-blue-300 dark:border-blue-700 transition-colors flex items-center gap-1 shadow-2xs">
                   <i data-lucide="user-plus" class="w-3.5 h-3.5"></i>
                   <span data-i18n="pac_btn_vincular">+ Vincular</span>
                 </button>
