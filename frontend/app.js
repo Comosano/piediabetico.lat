@@ -4036,6 +4036,7 @@ const datosEspecialistasTurnos = {
     arancelARS: 25 * COTIZACION_DOLAR_ARS, // $ 38.750 ARS
     enfoque: "Infecciones profundas, celulitis, sospecha de osteomielitis, antibioterapia dirigida y ajuste renal Cockcroft-Gault.",
     meetUrl: "https://meet.google.com/pdi-infecto-arg",
+    turnitoUrl: "https://turnito.app/c/VsBjJRfhYfivB7",
     icono: "🧫",
     color: "blue"
   },
@@ -4054,6 +4055,7 @@ const datosEspecialistasTurnos = {
     arancelARS: 20 * COTIZACION_DOLAR_ARS, // $ 31.000 ARS
     enfoque: "Curación avanzada, apósitos de plata/TLC-NOSF, desbridamiento autolítico/enzimático, control de exudado y descarga.",
     meetUrl: "https://meet.google.com/pdi-heridas-arg",
+    turnitoUrl: "https://turnito.app/c/AH6VVCjjStbCmb",
     icono: "🩹",
     color: "emerald"
   },
@@ -4072,6 +4074,7 @@ const datosEspecialistasTurnos = {
     arancelARS: 30 * COTIZACION_DOLAR_ARS, // $ 46.500 ARS
     enfoque: "Control metabólico intensivo, escalas San Elián/WIfI/Texas, calzado ortopédico y plan de salvamento de extremidad.",
     meetUrl: "https://meet.google.com/pdi-diabete-arg",
+    turnitoUrl: "https://turnito.app/c/CuW7ZN4tUfCWfC",
     icono: "🔬",
     color: "purple"
   }
@@ -7789,4 +7792,19 @@ function seleccionarPaisLegal(paisCode) {
   `;
 
   if (window.lucide) lucide.createIcons();
+}
+
+// ── INTEGRACIÓN OFICIAL CON TURNITO (3 AGENDAS ACTIVAS) ─────────────
+function abrirTurnitoEspecialistaActual() {
+  const esp = datosEspecialistasTurnos[especialistaSeleccionadoTurno] || datosEspecialistasTurnos.enfermera;
+  if (esp && esp.turnitoUrl) {
+    window.open(esp.turnitoUrl, '_blank');
+  }
+}
+
+function abrirTurnitoPorId(espId) {
+  const esp = datosEspecialistasTurnos[espId];
+  if (esp && esp.turnitoUrl) {
+    window.open(esp.turnitoUrl, '_blank');
+  }
 }
