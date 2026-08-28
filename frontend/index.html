@@ -1775,7 +1775,7 @@
               </div>
             </div>
             <div class="flex items-center gap-2 w-full sm:w-auto">
-              <button onclick="switchProfTab('triage-pro')" class="btn-primary !py-2 !px-4 text-xs font-bold bg-blue-900 hover:bg-blue-950 text-white flex-1 sm:flex-initial">Ver en Triage</button>
+              <button onclick="verFichaDePaciente('pac_1')" class="btn-primary !py-2 !px-4 text-xs font-black bg-blue-900 hover:bg-blue-950 text-white flex-1 sm:flex-initial flex items-center justify-center gap-1.5"><i data-lucide="trending-up" class="w-3.5 h-3.5"></i><span>Ver Ficha Evolutiva</span></button>
               <a href="https://wa.me/5491112345678?text=Hola%20Juan%20Carlos,%20recib%C3%AD%20tus%20fotos%20en%20la%20plataforma" target="_blank" class="btn-sec !py-2 !px-3 text-xs font-bold text-emerald-700 border-emerald-300 bg-emerald-50 hover:bg-emerald-100 flex items-center gap-1">
                 <span>WhatsApp</span>
               </a>
@@ -1796,7 +1796,7 @@
               </div>
             </div>
             <div class="flex items-center gap-2 w-full sm:w-auto">
-              <button onclick="switchProfTab('triage-pro')" class="btn-primary !py-2 !px-4 text-xs font-bold bg-blue-900 hover:bg-blue-950 text-white flex-1 sm:flex-initial">Ver en Triage</button>
+              <button onclick="verFichaDePaciente('pac_1')" class="btn-primary !py-2 !px-4 text-xs font-black bg-blue-900 hover:bg-blue-950 text-white flex-1 sm:flex-initial flex items-center justify-center gap-1.5"><i data-lucide="trending-up" class="w-3.5 h-3.5"></i><span>Ver Ficha Evolutiva</span></button>
               <a href="https://wa.me/5491187654321?text=Hola%20Elena,%20tu%20evoluci%C3%B3n%20se%20ve%20muy%20favorable" target="_blank" class="btn-sec !py-2 !px-3 text-xs font-bold text-emerald-700 border-emerald-300 bg-emerald-50 hover:bg-emerald-100 flex items-center gap-1">
                 <span>WhatsApp</span>
               </a>
@@ -2633,24 +2633,56 @@
         </div>
       </div>
 
-      <!-- 6. FICHA EVOLUTIVA PRO -->
-      <div id="prof-sec-evolucion" class="hidden med-card p-6 space-y-5 bg-white">
-        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
-          <div>
-            <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
-              <span>📈 Ficha Fotográfica & Evolución Temporal</span>
-            </h3>
-            <p class="text-xs text-slate-500">Monitoreo de cicatrización y reducción del área de la herida en el tiempo.</p>
+      <!-- 6. FICHA EVOLUTIVA ASOCIADA A PACIENTES -->
+      <div id="prof-sec-evolucion" class="hidden med-card p-6 space-y-6 bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 rounded-3xl shadow-lg">
+        
+        <!-- Barra Superior: Selector de Paciente Activo -->
+        <div class="p-4 rounded-2xl bg-gradient-to-r from-blue-900/10 via-slate-900/10 to-emerald-900/10 border-2 border-blue-200 dark:border-blue-800 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div class="flex items-center gap-3 w-full md:w-auto">
+            <div class="w-11 h-11 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-bold text-lg shadow-md shrink-0">
+              👤
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-[10px] uppercase font-black tracking-wider text-blue-900 dark:text-sky-300 bg-blue-100 dark:bg-blue-950 px-2 py-0.5 rounded-full border border-blue-200 dark:border-blue-700">Paciente en Seguimiento</span>
+                <span id="evol-pac-dni-badge" class="text-[10px] text-slate-500 dark:text-slate-400 font-semibold">DNI 14.892.401</span>
+              </div>
+              <div class="flex items-center gap-2 mt-0.5">
+                <select id="select-paciente-evolucion" onchange="cambiarPacienteEvolucion(this.value)" class="med-input !py-1 !text-sm !font-black text-slate-900 dark:text-white bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 shadow-2xs">
+                  <!-- Rellenado dinámicamente -->
+                </select>
+              </div>
+            </div>
           </div>
-          <div class="flex gap-2">
-            <button onclick="guardarFotoEnFichaEvolutiva()" class="btn-primary !py-2 !px-4 !text-xs shadow-sm">
-              <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-              <span>Guardar Consulta Actual</span>
+
+          <div class="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end">
+            <button onclick="abrirModalNuevoControlPaciente()" class="btn-primary !py-2 !px-4 !text-xs font-black bg-emerald-600 hover:bg-emerald-700 text-white shadow-md flex items-center gap-1.5">
+              <i data-lucide="camera" class="w-4 h-4"></i>
+              <span>+ Cargar Foto & Control a este Paciente</span>
             </button>
-            <button onclick="mostrarComparativaEvolucion()" class="px-3 py-2 rounded-full text-xs font-bold bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 flex items-center gap-1.5 transition-colors">
-              <i data-lucide="columns" class="w-3.5 h-3.5 text-blue-600"></i>
-              <span>Comparar Evolución</span>
+            <button onclick="mostrarComparativaEvolucion()" class="btn-sec !py-2 !px-4 !text-xs font-bold text-blue-900 dark:text-blue-200 bg-blue-50 dark:bg-slate-800 hover:bg-blue-100 border border-blue-200 dark:border-slate-700 flex items-center gap-1.5 shadow-2xs">
+              <i data-lucide="columns" class="w-3.5 h-3.5 text-blue-600 dark:text-sky-400"></i>
+              <span>Comparar Slider Antes/Después</span>
             </button>
+          </div>
+        </div>
+
+        <!-- Ficha Resumen Clínico del Paciente Seleccionado -->
+        <div id="evol-resumen-clinico-paciente" class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+          <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 space-y-1">
+            <span class="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 block">Diagnóstico Principal:</span>
+            <p id="evol-pac-diagnostico" class="font-black text-slate-900 dark:text-slate-100">Úlcera Neuropática en 1er Metatarsiano</p>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 space-y-1">
+            <span class="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 block">Antecedentes & Metabolismo:</span>
+            <p id="evol-pac-diabetes" class="font-bold text-slate-700 dark:text-slate-200">DM2 (14 años, HbA1c 8.2%)</p>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 space-y-1">
+            <span class="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 block">Evolución del Área:</span>
+            <p id="evol-pac-reduccion" class="font-black text-emerald-700 dark:text-emerald-300 flex items-center gap-1">
+              <span>📉 Reducción del 54%</span>
+              <span class="text-[10px] font-normal text-slate-500">(2.4 cm² ➔ 1.1 cm²)</span>
+            </p>
           </div>
         </div>
 
@@ -4343,5 +4375,71 @@
       });
     }
   </script>
+
+  <!-- MODAL: CARGAR NUEVA FOTO / CONTROL A PACIENTE -->
+  <div id="modal-nuevo-control-paciente" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full max-h-[92vh] flex flex-col shadow-2xl border border-slate-200 dark:border-slate-800 animate-in fade-in zoom-in-95 duration-150 overflow-hidden">
+      
+      <div class="p-5 bg-gradient-to-r from-blue-900 to-emerald-950 text-white flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center text-xl">📸</div>
+          <div>
+            <h3 class="text-base font-black">Nuevo Registro Fotográfico & Control</h3>
+            <p id="modal-control-pac-nombre" class="text-xs text-blue-200">Paciente: Juan Carlos Rodríguez</p>
+          </div>
+        </div>
+        <button onclick="cerrarModalNuevoControlPaciente()" class="text-white/80 hover:text-white p-1 text-base font-bold">✕</button>
+      </div>
+
+      <form onsubmit="guardarNuevoControlPacienteForm(event)" class="p-6 space-y-4 text-xs overflow-y-auto">
+        <div class="space-y-1">
+          <label class="font-bold text-slate-800 dark:text-slate-200">Fotografía de la Herida (Cámara / Archivo) *</label>
+          <div class="flex gap-2">
+            <input type="file" id="input-foto-control-pac" accept="image/*" class="hidden" onchange="handleImageControlPaciente(event)">
+            <button type="button" onclick="document.getElementById('input-foto-control-pac').click()" class="btn-sec flex-1 !py-2.5 text-xs font-bold bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 flex items-center justify-center gap-1.5">
+              <i data-lucide="image" class="w-4 h-4 text-emerald-600"></i>
+              <span>Seleccionar Foto</span>
+            </button>
+            <button type="button" onclick="iniciarCamaraControlPaciente()" class="btn-primary !py-2.5 !px-4 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-1.5">
+              <i data-lucide="camera" class="w-4 h-4"></i>
+              <span>Tomar con Cámara</span>
+            </button>
+          </div>
+          <div id="preview-control-container" class="hidden mt-2 p-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-center">
+            <img id="img-preview-control-pac" src="" class="h-32 mx-auto rounded-lg object-cover">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div class="space-y-1">
+            <label class="font-bold text-slate-800 dark:text-slate-200">Área Estimada (cm²) *</label>
+            <input type="text" id="input-control-area" required placeholder="Ej: 1.1 cm²" class="med-input bg-slate-50 dark:bg-slate-800">
+          </div>
+          <div class="space-y-1">
+            <label class="font-bold text-slate-800 dark:text-slate-200">Estado / Pronóstico</label>
+            <select id="select-control-tag" class="med-input bg-slate-50 dark:bg-slate-800">
+              <option value="Mejoría Favorable">🟢 Mejoría Favorable</option>
+              <option value="Estable / Control">🟡 Estable / En Tratamiento</option>
+              <option value="Alerta / Estancada">🔴 Alerta / Estancada</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="space-y-1">
+          <label class="font-bold text-slate-800 dark:text-slate-200">Notas de Evolución Clínica & Tratamiento</label>
+          <textarea id="textarea-control-notas" rows="3" placeholder="Ej: Granulación al 80%, reducción de exudado. Se renueva apósito de hidrocoloide." class="med-input bg-slate-50 dark:bg-slate-800"></textarea>
+        </div>
+
+        <div class="pt-2 flex justify-end gap-2 border-t border-slate-200 dark:border-slate-800">
+          <button type="button" onclick="cerrarModalNuevoControlPaciente()" class="btn-sec !py-2.5 !px-4 text-xs font-bold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700">Cancelar</button>
+          <button type="submit" class="btn-primary !py-2.5 !px-6 text-xs font-black bg-blue-900 hover:bg-blue-950 text-white shadow-md flex items-center gap-1.5">
+            <i data-lucide="check" class="w-4 h-4"></i>
+            <span>Guardar en Ficha del Paciente</span>
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
 </body>
 </html>

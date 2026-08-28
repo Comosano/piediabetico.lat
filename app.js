@@ -1123,70 +1123,169 @@ function cambiarVistaImagen(tipo) {
   }
 }
 
-// ── HISTORIAL CLÍNICO OFFLINE & COMPARATIVA EVOLUTIVA (PASO 3) ────────
 
-const HISTORIAL_KEY = 'pd_ficha_evolutiva_v2';
+// ═══════════════════════════════════════════════════════════════════════
+// ARQUITECTURA DE PACIENTES CLÍNICOS & FICHA EVOLUTIVA FOTOGRÁFICA
+// ═══════════════════════════════════════════════════════════════════════
 
-function inicializarHistorialEvolutivo() {
-  const guardados = localStorage.getItem(HISTORIAL_KEY);
-  if (!guardados) {
-    const demo = [
+const PACIENTES_KEY = 'pd_pacientes_clinicos_v3';
+
+const DEFAULT_PACIENTES_CLINICOS = [
+  {
+    id: "pac_1",
+    nombre: "Juan Carlos Rodríguez",
+    edad: "68 años",
+    dni: "14.892.401",
+    diagnostico: "Úlcera Neuropática en 1er Metatarsiano (Pie Izquierdo)",
+    diabetes: "DM2 (14 años, HbA1c 8.2%)",
+    telefono: "+54 9 11 1234 5678",
+    historial: [
       {
-        id: 1,
-        fecha: '10 Ago 2026',
-        semana: 'Semana 1 (Inicio)',
-        area_cm2: '2.4 cm²',
-        estado: 'Exudado seroso moderado, inicio de cura con alginato.',
-        tag: 'Moderado',
-        tagColor: 'text-amber-600 bg-amber-50',
-        foto: ''
+        id: 101,
+        fecha: "10 Ago 2026",
+        semana: "Semana 1 (Ingreso)",
+        area_cm2: "2.4 cm²",
+        estado: "Úlcera neuropática con exudado moderado. Se inicia cura húmeda con alginato y descarga biomecánica.",
+        tag: "Ingreso Inicial",
+        tagColor: "text-amber-700 bg-amber-100 dark:bg-amber-950/80 border border-amber-300 dark:border-amber-700",
+        foto: "data:image/svg+xml;charset=utf-8," + encodeURIComponent('<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="300" fill="#0F172A"/><circle cx="200" cy="150" r="85" fill="#334155"/><ellipse cx="200" cy="150" rx="55" ry="40" fill="#DC2626" fill-opacity="0.8"/><circle cx="195" cy="148" r="22" fill="#FBBF24"/><text x="200" y="270" fill="#F8FAFC" font-family="sans-serif" font-size="13" font-weight="bold" text-anchor="middle">Semana 1: Úlcera 2.4 cm² (Inicio)</text></svg>')
       },
       {
-        id: 2,
-        fecha: '17 Ago 2026',
-        semana: 'Semana 2 (Control)',
-        area_cm2: '1.8 cm²',
-        estado: 'Tejido de granulación 70%, bordes epitelizando.',
-        tag: 'Mejoría',
-        tagColor: 'text-emerald-600 bg-emerald-50',
-        foto: ''
+        id: 102,
+        fecha: "24 Ago 2026",
+        semana: "Semana 3 (Control)",
+        area_cm2: "1.1 cm²",
+        estado: "Reducción del 54% del área (cumple meta favorable IWGDF a 4 semanas). Granulación al 80%, bordes epitelizando.",
+        tag: "Mejoría Favorable (-54%)",
+        tagColor: "text-emerald-700 bg-emerald-100 dark:bg-emerald-950/80 border border-emerald-300 dark:border-emerald-700",
+        foto: "data:image/svg+xml;charset=utf-8," + encodeURIComponent('<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="300" fill="#0F172A"/><circle cx="200" cy="150" r="85" fill="#334155"/><ellipse cx="200" cy="150" rx="30" ry="22" fill="#DC2626" fill-opacity="0.8"/><circle cx="198" cy="149" r="10" fill="#10B981"/><text x="200" y="270" fill="#F8FAFC" font-family="sans-serif" font-size="13" font-weight="bold" text-anchor="middle">Semana 3: Úlcera 1.1 cm² (-54%)</text></svg>')
       }
-    ];
-    localStorage.setItem(HISTORIAL_KEY, JSON.stringify(demo));
+    ]
+  },
+  {
+    id: "pac_2",
+    nombre: "María Elena González",
+    edad: "72 años",
+    dni: "11.450.812",
+    diagnostico: "Úlcera Isquémica en Maléolo Externo (Pie Derecho)",
+    diabetes: "DM2 (20 años, HTA, nefropatía)",
+    telefono: "+54 9 11 8765 4321",
+    historial: [
+      {
+        id: 201,
+        fecha: "05 Ago 2026",
+        semana: "Semana 1 (Ingreso)",
+        area_cm2: "3.8 cm²",
+        estado: "Lesión con fondo pálido y pulsos distales débiles. Se solicita angiotomografía y evaluación vascular.",
+        tag: "Isquemia Severa",
+        tagColor: "text-rose-700 bg-rose-100 dark:bg-rose-950/80 border border-rose-300 dark:border-rose-700",
+        foto: "data:image/svg+xml;charset=utf-8," + encodeURIComponent('<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="300" fill="#0F172A"/><circle cx="200" cy="150" r="85" fill="#1E293B"/><ellipse cx="200" cy="150" rx="65" ry="48" fill="#E11D48" fill-opacity="0.85"/><circle cx="200" cy="150" r="28" fill="#94A3B8"/><text x="200" y="270" fill="#F8FAFC" font-family="sans-serif" font-size="13" font-weight="bold" text-anchor="middle">Semana 1: Úlcera Isquémica 3.8 cm²</text></svg>')
+      }
+    ]
+  }
+];
+
+let pacienteActivoEvolucionId = "pac_1";
+
+function obtenerPacientesClinicos() {
+  if (typeof localStorage === 'undefined') return DEFAULT_PACIENTES_CLINICOS;
+  const guardados = localStorage.getItem(PACIENTES_KEY);
+  if (guardados) {
+    try { return JSON.parse(guardados); } catch (e) { return DEFAULT_PACIENTES_CLINICOS; }
+  }
+  localStorage.setItem(PACIENTES_KEY, JSON.stringify(DEFAULT_PACIENTES_CLINICOS));
+  return DEFAULT_PACIENTES_CLINICOS;
+}
+
+function guardarPacientesClinicos(pacientes) {
+  if (typeof localStorage !== 'undefined') {
+    localStorage.setItem(PACIENTES_KEY, JSON.stringify(pacientes));
+  }
+}
+
+function inicializarHistorialEvolutivo() {
+  const pacientes = obtenerPacientesClinicos();
+  const select = document.getElementById('select-paciente-evolucion');
+  if (select) {
+    select.innerHTML = pacientes.map(p => `
+      <option value="${p.id}" ${p.id === pacienteActivoEvolucionId ? 'selected' : ''}>${p.nombre} (${p.edad})</option>
+    `).join('');
   }
   renderizarFichaEvolutiva();
 }
 
+function cambiarPacienteEvolucion(pacienteId) {
+  pacienteActivoEvolucionId = pacienteId;
+  renderizarFichaEvolutiva();
+}
+
+function verFichaDePaciente(pacienteId) {
+  pacienteActivoEvolucionId = pacienteId;
+  switchProfTab('evolucion-pro');
+  const select = document.getElementById('select-paciente-evolucion');
+  if (select) select.value = pacienteId;
+  renderizarFichaEvolutiva();
+}
+
 function renderizarFichaEvolutiva() {
+  const pacientes = obtenerPacientesClinicos();
+  const pac = pacientes.find(p => p.id === pacienteActivoEvolucionId) || pacientes[0];
+  if (!pac) return;
+
+  // Actualizar datos del header del paciente
+  if (document.getElementById('evol-pac-dni-badge')) {
+    document.getElementById('evol-pac-dni-badge').textContent = `DNI ${pac.dni}`;
+  }
+  if (document.getElementById('evol-pac-diagnostico')) {
+    document.getElementById('evol-pac-diagnostico').textContent = pac.diagnostico;
+  }
+  if (document.getElementById('evol-pac-diabetes')) {
+    document.getElementById('evol-pac-diabetes').textContent = pac.diabetes;
+  }
+
+  // Calcular porcentaje de reducción si hay al menos 2 fotos
+  if (document.getElementById('evol-pac-reduccion')) {
+    if (pac.historial.length >= 2) {
+      const area1 = parseFloat(pac.historial[0].area_cm2) || 2.4;
+      const areaUlt = parseFloat(pac.historial[pac.historial.length - 1].area_cm2) || 1.1;
+      const red = Math.round(((area1 - areaUlt) / area1) * 100);
+      document.getElementById('evol-pac-reduccion').innerHTML = `
+        <span>📉 Reducción del ${red}%</span>
+        <span class="text-[10px] font-normal text-slate-500">(${area1} cm² ➔ ${areaUlt} cm²)</span>
+      `;
+    } else {
+      document.getElementById('evol-pac-reduccion').innerHTML = `<span>Control Inicial Registrado (${pac.historial[0]?.area_cm2 || 'N/D'})</span>`;
+    }
+  }
+
+  // Renderizar tarjetas de la línea de tiempo
   const contenedor = document.getElementById('pro-historial-dinamico');
   if (!contenedor) return;
-
-  const historial = JSON.parse(localStorage.getItem(HISTORIAL_KEY) || '[]');
   contenedor.innerHTML = '';
 
-  historial.forEach((item, index) => {
+  pac.historial.forEach((item, index) => {
     const card = document.createElement('div');
-    card.className = 'p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2 relative group';
+    card.className = 'p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 space-y-2.5 relative group shadow-2xs text-slate-900 dark:text-slate-100';
     
     card.innerHTML = `
-      <div class="flex items-center justify-between text-xs font-semibold">
-        <span class="text-slate-600">${item.semana || `Control ${index+1}`} · ${item.fecha}</span>
-        <span class="px-2 py-0.5 rounded-full font-bold text-[10px] ${item.tagColor || 'text-blue-600 bg-blue-50'}">${item.tag || 'Registrado'}</span>
+      <div class="flex items-center justify-between text-xs font-semibold border-b border-slate-200 dark:border-slate-700 pb-2">
+        <span class="text-slate-700 dark:text-slate-200 font-bold">${item.semana || `Control ${index+1}`} · ${item.fecha}</span>
+        <span class="px-2.5 py-0.5 rounded-full font-black text-[10px] ${item.tagColor || 'text-blue-800 bg-blue-100 dark:bg-blue-950 dark:text-blue-200'}">${item.tag || 'Registrado'}</span>
       </div>
       
       ${item.foto ? `
-        <img src="${item.foto}" class="h-32 w-full object-cover rounded-lg border border-slate-200" />
+        <img src="${item.foto}" class="h-36 w-full object-cover rounded-xl border border-slate-200 dark:border-slate-700 shadow-xs" />
       ` : `
-        <div class="h-32 bg-slate-200 rounded-lg flex items-center justify-center text-slate-500 text-xs font-semibold">
+        <div class="h-36 bg-slate-200 dark:bg-slate-700 rounded-xl flex items-center justify-center text-slate-500 dark:text-slate-300 text-xs font-semibold">
           Registro Fotográfico (${item.area_cm2 || 'N/D'})
         </div>
       `}
 
-      <p class="text-xs text-slate-700 leading-tight">${item.estado || 'Control clínico registrado.'}</p>
+      <p class="text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-medium">${item.estado || 'Control clínico registrado.'}</p>
       
-      <div class="flex justify-between items-center pt-1 text-[11px] text-slate-500">
-        <span>Área: <strong>${item.area_cm2 || 'Evaluada'}</strong></span>
-        <button onclick="eliminarEntradaHistorial(${item.id})" class="text-slate-400 hover:text-rose-600 transition-colors">
+      <div class="flex justify-between items-center pt-1.5 border-t border-slate-200 dark:border-slate-700 text-[11px] text-slate-600 dark:text-slate-400">
+        <span>Área Lesión: <strong class="text-slate-900 dark:text-white">${item.area_cm2 || 'Evaluada'}</strong></span>
+        <button onclick="eliminarEntradaHistorialPaciente('${pac.id}', ${item.id})" class="text-slate-400 hover:text-rose-600 transition-colors p-1" title="Eliminar control">
           <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
         </button>
       </div>
@@ -1197,72 +1296,126 @@ function renderizarFichaEvolutiva() {
   if (window.lucide) lucide.createIcons();
 }
 
-function guardarFotoEnFichaEvolutiva() {
-  const fotoActual = state.profImageBase64 ? `data:image/jpeg;base64,${state.profImageBase64}` : '';
-  if (!fotoActual) {
-    alert('Subí primero una fotografía en la consulta para agregarla a la ficha.');
-    return;
-  }
+function eliminarEntradaHistorialPaciente(pacienteId, itemId) {
+  const pacientes = obtenerPacientesClinicos();
+  const pac = pacientes.find(p => p.id === pacienteId);
+  if (!pac) return;
 
-  const historial = JSON.parse(localStorage.getItem(HISTORIAL_KEY) || '[]');
-  const numSemana = historial.length + 1;
+  pac.historial = pac.historial.filter(h => h.id !== itemId);
+  guardarPacientesClinicos(pacientes);
+  renderizarFichaEvolutiva();
+}
+
+function abrirModalNuevoControlPaciente() {
+  const pacientes = obtenerPacientesClinicos();
+  const pac = pacientes.find(p => p.id === pacienteActivoEvolucionId) || pacientes[0];
+  if (pac && document.getElementById('modal-control-pac-nombre')) {
+    document.getElementById('modal-control-pac-nombre').textContent = `Paciente: ${pac.nombre} (${pac.edad})`;
+  }
+  document.getElementById('modal-nuevo-control-paciente')?.classList.remove('hidden');
+  if (window.lucide) lucide.createIcons();
+}
+
+function cerrarModalNuevoControlPaciente() {
+  document.getElementById('modal-nuevo-control-paciente')?.classList.add('hidden');
+}
+
+let tempControlFotoBase64 = '';
+
+function handleImageControlPaciente(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    tempControlFotoBase64 = e.target.result;
+    const prev = document.getElementById('img-preview-control-pac');
+    const cont = document.getElementById('preview-control-container');
+    if (prev && cont) {
+      prev.src = tempControlFotoBase64;
+      cont.classList.remove('hidden');
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+function iniciarCamaraControlPaciente() {
+  iniciarCamaraEnVivo('control_paciente', 1);
+}
+
+function guardarNuevoControlPacienteForm(event) {
+  event.preventDefault();
+  const area = document.getElementById('input-control-area')?.value.trim() || '1.0 cm²';
+  const tag = document.getElementById('select-control-tag')?.value || 'Control Actual';
+  const notas = document.getElementById('textarea-control-notas')?.value.trim() || 'Control clínico registrado con éxito.';
+
+  const pacientes = obtenerPacientesClinicos();
+  const pac = pacientes.find(p => p.id === pacienteActivoEvolucionId);
+  if (!pac) return;
+
+  const numSemana = pac.historial.length + 1;
   const fechaHoy = new Date().toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' });
 
-  const nuevaEntrada = {
+  let tagColor = 'text-emerald-700 bg-emerald-100 dark:bg-emerald-950/80 border border-emerald-300 dark:border-emerald-700';
+  if (tag.includes('Alerta')) {
+    tagColor = 'text-rose-700 bg-rose-100 dark:bg-rose-950/80 border border-rose-300 dark:border-rose-700';
+  } else if (tag.includes('Estable')) {
+    tagColor = 'text-amber-700 bg-amber-100 dark:bg-amber-950/80 border border-amber-300 dark:border-amber-700';
+  }
+
+  const nuevoControl = {
     id: Date.now(),
     fecha: fechaHoy,
     semana: `Semana ${numSemana} (Control)`,
-    area_cm2: '1.2 cm²',
-    estado: 'Foto guardada desde la estación clínica. Favorable.',
-    tag: 'Control Actual',
-    tagColor: 'text-emerald-700 bg-emerald-100',
-    foto: fotoActual
+    area_cm2: area.includes('cm') ? area : `${area} cm²`,
+    estado: notas,
+    tag: tag,
+    tagColor: tagColor,
+    foto: tempControlFotoBase64 || (state.profImageBase64 ? `data:image/jpeg;base64,${state.profImageBase64}` : '')
   };
 
-  historial.push(nuevaEntrada);
-  localStorage.setItem(HISTORIAL_KEY, JSON.stringify(historial));
+  pac.historial.push(nuevoControl);
+  guardarPacientesClinicos(pacientes);
+  cerrarModalNuevoControlPaciente();
   renderizarFichaEvolutiva();
-  alert('✓ Fotografía y consulta guardadas en la Ficha Evolutiva.');
+  alert(`✓ Control y fotografía guardados con éxito en la ficha de ${pac.nombre}.`);
 }
 
 function mostrarComparativaEvolucion() {
-  const historial = JSON.parse(localStorage.getItem(HISTORIAL_KEY) || '[]');
+  const pacientes = obtenerPacientesClinicos();
+  const pac = pacientes.find(p => p.id === pacienteActivoEvolucionId) || pacientes[0];
+  if (!pac) return;
+
   const panel = document.getElementById('panel-comparativo-evolucion');
   if (!panel) return;
 
   panel.classList.toggle('hidden');
 
-  const fotosConImg = historial.filter(h => h.foto);
+  const fotosConImg = pac.historial.filter(h => h.foto);
   const imgIni = document.getElementById('comp-img-inicial');
   const imgAct = document.getElementById('comp-img-actual');
   const txtIni = document.getElementById('comp-txt-inicial');
   const txtAct = document.getElementById('comp-txt-actual');
 
+  const sliderIni = document.getElementById('slider-img-antes');
+  const sliderAct = document.getElementById('slider-img-despues');
+
   if (fotosConImg.length >= 2) {
-    imgIni.src = fotosConImg[0].foto;
-    txtIni.textContent = `Foto Inicial · ${fotosConImg[0].fecha}`;
-    imgAct.src = fotosConImg[fotosConImg.length - 1].foto;
-    txtAct.textContent = `Foto Actual · ${fotosConImg[fotosConImg.length - 1].fecha}`;
-  } else if (state.profImageBase64) {
-    imgAct.src = `data:image/jpeg;base64,${state.profImageBase64}`;
-    txtAct.textContent = `Consulta Actual (Hoy)`;
+    if (imgIni) imgIni.src = fotosConImg[0].foto;
+    if (txtIni) txtIni.textContent = `Foto Inicial · ${fotosConImg[0].fecha} (${fotosConImg[0].area_cm2})`;
+    if (imgAct) imgAct.src = fotosConImg[fotosConImg.length - 1].foto;
+    if (txtAct) txtAct.textContent = `Foto Actual · ${fotosConImg[fotosConImg.length - 1].fecha} (${fotosConImg[fotosConImg.length - 1].area_cm2})`;
+
+    if (sliderIni) sliderIni.src = fotosConImg[0].foto;
+    if (sliderAct) sliderAct.src = fotosConImg[fotosConImg.length - 1].foto;
+  } else if (fotosConImg.length === 1) {
+    if (imgIni) imgIni.src = fotosConImg[0].foto;
+    if (sliderIni) sliderIni.src = fotosConImg[0].foto;
+    if (imgAct) imgAct.src = fotosConImg[0].foto;
+    if (sliderAct) sliderAct.src = fotosConImg[0].foto;
   }
   if (window.lucide) lucide.createIcons();
 }
 
-function eliminarEntradaHistorial(id) {
-  let historial = JSON.parse(localStorage.getItem(HISTORIAL_KEY) || '[]');
-  historial = historial.filter(h => h.id !== id);
-  localStorage.setItem(HISTORIAL_KEY, JSON.stringify(historial));
-  renderizarFichaEvolutiva();
-}
-
-// Inicializar al cargar
-document.addEventListener('DOMContentLoaded', () => {
-  inicializarHistorialEvolutivo();
-});
-
-// ── AGENTE 12: CALCULADORA DE SAN ELIÁN (SEWSS) ──────────────────────
 
 function calcularSanElian() {
   const loc = parseInt(document.getElementById('sewss-location')?.value || '2');
