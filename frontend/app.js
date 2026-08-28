@@ -213,7 +213,6 @@ function switchProfTab(tabId) {
     'iwgdf-pro',
     'offloading-pro',
     'atb-pro',
-    'turnos-pro',
     'pubmed-pro',
     'evolucion-pro',
     'alertas-pro'
