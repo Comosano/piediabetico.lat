@@ -8427,3 +8427,110 @@ function autoDetectarIdiomaPorPais(paisCodigo) {
     setLanguage('es');
   }
 }
+
+
+// ═══════════════════════════════════════════════════════════════════════
+// GESTIÓN DEL MODAL VINCULAR PACIENTE (BÚSQUEDA Y ALTA RÁPIDA WHATSAPP)
+// ═══════════════════════════════════════════════════════════════════════
+
+function abrirModalVincularPacientePro() {
+  document.getElementById('modal-vincular-paciente-pro')?.classList.remove('hidden');
+  filtrarPacientesParaVincular('');
+  if (window.lucide) lucide.createIcons();
+}
+
+function cerrarModalVincularPacientePro() {
+  document.getElementById('modal-vincular-paciente-pro')?.classList.add('hidden');
+}
+
+function filtrarPacientesParaVincular(query) {
+  const listaContenedor = document.getElementById('lista-resultados-buscar-paciente');
+  if (!listaContenedor) return;
+
+  const pacientes = obtenerPacientesClinicos();
+  const q = (query || '').toLowerCase().trim();
+
+  const filtrados = q === '' ? pacientes : pacientes.filter(p => 
+    p.nombre.toLowerCase().includes(q) || (p.dni && p.dni.includes(q))
+  );
+
+  if (filtrados.length === 0) {
+    listaContenedor.innerHTML = '<p class="text-slate-400 italic text-[11px] p-2 text-center">No se encontraron pacientes existentes con ese criterio.</p>';
+    return;
+  }
+
+  listaContenedor.innerHTML = filtrados.map(p => `
+    <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700/80 border border-slate-200 dark:border-slate-700 flex items-center justify-between transition-colors">
+      <div>
+        <h5 class="font-bold text-slate-900 dark:text-white text-xs">${p.nombre}</h5>
+        <p class="text-[10px] text-slate-500 dark:text-slate-400">DNI ${p.dni || 'S/D'} · ${p.edad || 'Adulto'} · ${p.telefono || 'Sin WhatsApp'}</p>
+      </div>
+      <button type="button" onclick="seleccionarPacienteExistenteParaVincular('${p.id}')" class="btn-primary !py-1 !px-3 text-[11px] font-bold bg-blue-900 hover:bg-blue-950 text-white shadow-2xs">
+        Vincular
+      </button>
+    </div>
+  `).join('');
+
+  if (window.lucide) lucide.createIcons();
+}
+
+function seleccionarPacienteExistenteParaVincular(pacienteId) {
+  pacienteActivoEvolucionId = pacienteId;
+  cerrarModalVincularPacientePro();
+  verFichaDePaciente(pacienteId);
+  alert('✓ Paciente vinculado con éxito a la ficha activa.');
+}
+
+function guardarYVincularNuevoPacienteForm(event) {
+  event.preventDefault();
+  const nombre = document.getElementById('input-alta-pac-nombre')?.value.trim();
+  const prefijo = document.getElementById('select-alta-pac-pais')?.value || '+54';
+  const rawTel = document.getElementById('input-alta-pac-whatsapp')?.value.trim();
+  const dni = document.getElementById('input-alta-pac-dni')?.value.trim() || 'Sin DNI';
+  const edad = document.getElementById('input-alta-pac-edad')?.value.trim() || 'Edad no informada';
+  const diag = document.getElementById('input-alta-pac-diagnostico')?.value.trim() || 'Evaluación inicial de pie diabético';
+
+  if (!nombre || !rawTel) {
+    alert('Por favor completá el Nombre y el Número de WhatsApp del paciente.');
+    return;
+  }
+
+  const telLimpio = rawTel.replace(/[^0-9]/g, '');
+  const telCompleto = `${prefijo} ${telLimpio}`;
+
+  const nuevoId = 'pac_' + Date.now();
+  const fechaHoy = new Date().toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' });
+
+  const nuevoPaciente = {
+    id: nuevoId,
+    nombre: nombre,
+    edad: edad,
+    dni: dni,
+    diagnostico: diag,
+    diabetes: 'Diabetes Mellitus en seguimiento',
+    telefono: telCompleto,
+    historial: [
+      {
+        id: Date.now(),
+        fecha: fechaHoy,
+        semana: 'Semana 1 (Ingreso)',
+        area_cm2: '2.0 cm²',
+        estado: `Ingreso y alta de paciente en plataforma. ${diag}`,
+        tag: 'Ingreso Inicial',
+        tagColor: 'text-emerald-700 bg-emerald-100 dark:bg-emerald-950/80 border border-emerald-300 dark:border-emerald-700',
+        foto: ''
+      }
+    ]
+  };
+
+  const pacientes = obtenerPacientesClinicos();
+  pacientes.unshift(nuevoPaciente);
+  guardarPacientesClinicos(pacientes);
+
+  pacienteActivoEvolucionId = nuevoId;
+  inicializarHistorialEvolutivo();
+  cerrarModalVincularPacientePro();
+
+  alert(`✓ Paciente "${nombre}" creado y vinculado con éxito. Teléfono WhatsApp: ${telCompleto}`);
+  verFichaDePaciente(nuevoId);
+}
