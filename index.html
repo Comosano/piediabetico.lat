@@ -1614,11 +1614,25 @@
               <div id="pac-texto-resultado" class="report-content text-sm text-slate-800 leading-relaxed max-h-[380px] overflow-y-auto pr-2"></div>
             </div>
 
-            <!-- Botón Solicitar Turno / Teleconsulta -->
-            <button type="button" onclick="abrirModalTurnosPaciente()" class="btn-primary w-full !py-3.5 text-sm font-bold shadow-md flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white">
+            <!-- Botón Solicitar Turno / Teleconsulta (Dinámico según Equipo Referente) -->
+            <button id="pac-btn-pedir-turno-cta" type="button" onclick="abrirModalTurnosPaciente()" class="btn-primary w-full !py-3.5 text-xs sm:text-sm font-bold shadow-md flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white transition-all">
               <i data-lucide="calendar-check" class="w-4 h-4"></i>
-              <span data-i18n="pac_btn_pedir_turno">Solicitar Turno / Teleconsulta con Especialista</span>
+              <span>Solicitar Turno / Consulta Sanitaria Online con Especialistas</span>
             </button>
+
+            <!-- Aviso cuando el Paciente YA TIENE MÉDICO VINCULADO -->
+            <div id="pac-aviso-medico-vinculado" class="hidden p-4 rounded-2xl bg-blue-50 dark:bg-slate-800 border-2 border-blue-200 dark:border-blue-700/80 text-xs flex items-center justify-between gap-3 shadow-xs">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center text-xl shrink-0">👨‍⚕️</div>
+                <div>
+                  <span class="font-black text-blue-950 dark:text-blue-200 block text-xs">Tu médico tratante está vinculado</span>
+                  <p class="text-[11px] text-slate-600 dark:text-slate-300 mt-0.5">
+                    Tus fotos y este reporte fueron notificados automáticamente a <strong id="pac-txt-med-nombre-vinculado" class="text-blue-900 dark:text-sky-300">tu médico tratante</strong>.
+                  </p>
+                </div>
+              </div>
+              <span class="px-2.5 py-1 rounded-full text-[10px] font-black bg-blue-600 text-white shrink-0">Notificado</span>
+            </div>
 
             <!-- Disclaimer Amigable -->
             <div class="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-start gap-2.5">

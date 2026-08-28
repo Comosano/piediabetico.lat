@@ -176,6 +176,8 @@ function switchPortal(portal, skipRegistration = false) {
   if (portal === 'paciente') {
     if (viewPac) viewPac.classList.remove('hidden');
     if (btnVolver) btnVolver.classList.remove('hidden');
+    if (typeof renderizarReferentesPaciente === 'function') renderizarReferentesPaciente();
+    if (typeof actualizarCtaTurnosPaciente === 'function') actualizarCtaTurnosPaciente();
   } else if (portal === 'profesional') {
     if (viewProf) viewProf.classList.remove('hidden');
     if (btnVolver) btnVolver.classList.remove('hidden');
@@ -1921,18 +1923,63 @@ function abrirModalTurnosPaciente() {
   const modal = document.getElementById('modal-turnos-paciente');
   if (!modal) return;
 
-  const fechaInput = document.getElementById('turno-fecha');
-  if (fechaInput && !fechaInput.value) {
-    const manana = new Date();
-    manana.setDate(manana.getDate() + 1);
-    fechaInput.value = manana.toISOString().split('T')[0];
-    fechaInput.min = new Date().toISOString().split('T')[0];
+  const referentes = obtenerReferentesPaciente();
+  const tieneMedico = referentes.some(r => r.rol === 'medico');
+  const tieneEnfermera = referentes.some(r => r.rol === 'enfermera' || r.rol === 'podologo');
+
+  if (tieneMedico) {
+    alert('Ya tenés un médico especialista vinculado a tu ficha clínica. Tus reportes y fotos le llegan directamente a su consola.');
+    return;
   }
 
+  modal.classList.remove('hidden');
   document.getElementById('turno-form-body')?.classList.remove('hidden');
   document.getElementById('turno-success-body')?.classList.add('hidden');
 
-  modal.classList.remove('hidden');
+  // Si tiene enfermera/podóloga vinculada, OCULTAR la tarjeta de la enfermera en el modal de turnos
+  const cardEnfermera = document.getElementById('card-esp-enfermera');
+  const avisoInterconsulta = document.getElementById('turno-aviso-interconsulta-medica');
+
+  if (tieneEnfermera) {
+    if (cardEnfermera) cardEnfermera.classList.add('hidden');
+    if (avisoInterconsulta) avisoInterconsulta.classList.remove('hidden');
+    // Seleccionar automáticamente al Infectólogo o Diabetólogo
+    seleccionarEspecialistaTurno('infectologo');
+  } else {
+    if (cardEnfermera) cardEnfermera.classList.remove('hidden');
+    if (avisoInterconsulta) avisoInterconsulta.classList.add('hidden');
+    
+    let espSugerido = 'enfermera';
+    if (typeof state !== 'undefined' && state.lastPatientResult) {
+      const resLower = state.lastPatientResult.toLowerCase();
+      if (resLower.includes('🔴') || resLower.includes('guardia') || state.patientSurvey?.fiebre || state.patientSurvey?.olor) {
+        espSugerido = 'infectologo';
+      } else if (resLower.includes('🟢') || resLower.includes('esperar')) {
+        espSugerido = 'diabetologo';
+      } else {
+        espSugerido = 'enfermera';
+      }
+    }
+    seleccionarEspecialistaTurno(espSugerido);
+  }
+
+  const inputFecha = document.getElementById('turno-fecha');
+  if (inputFecha) {
+    const manana = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    inputFecha.min = manana;
+    inputFecha.value = manana;
+  }
+
+  const profileStr = localStorage.getItem('piediabetico_paciente_profile');
+  if (profileStr) {
+    try {
+      const p = JSON.parse(profileStr);
+      if (document.getElementById('turno-nombre')) document.getElementById('turno-nombre').value = p.nombre || '';
+      if (document.getElementById('turno-email')) document.getElementById('turno-email').value = p.email || '';
+      if (document.getElementById('turno-telefono')) document.getElementById('turno-telefono').value = p.telefono || '';
+    } catch (e) {}
+  }
+
   if (window.lucide) lucide.createIcons();
 }
 
