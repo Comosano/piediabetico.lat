@@ -4563,9 +4563,9 @@ function abrirModalDetalleCongreso(id) {
   const ejesDiv = document.getElementById('mcongreso-ejes');
   if (ejesDiv) {
     ejesDiv.innerHTML = congreso.ejes.map(e => `
-      <div class="flex items-center gap-1.5 p-2 rounded-lg bg-white border border-slate-200">
-        <span class="w-1.5 h-1.5 rounded-full bg-blue-600 shrink-0"></span>
-        <span>${e}</span>
+      <div class="flex items-center gap-2 p-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 font-medium shadow-2xs">
+        <span class="w-2 h-2 rounded-full bg-blue-600 dark:bg-sky-400 shrink-0"></span>
+        <span class="text-xs leading-snug">${e}</span>
       </div>
     `).join('');
   }
@@ -7438,7 +7438,7 @@ function abrirModalGuia(id) {
   const recEl = document.getElementById('guia-modal-recomendaciones');
   if (recEl && guia.recomendaciones) {
     recEl.innerHTML = guia.recomendaciones.map(r => `
-      <li class="flex items-start gap-2 bg-emerald-50/50 p-2 rounded-lg border border-emerald-100">
+      <li class="flex items-start gap-2 bg-emerald-50/70 dark:bg-slate-800 p-2.5 rounded-xl border border-emerald-200 dark:border-slate-700 text-slate-800 dark:text-slate-200">
         <span class="text-emerald-700 font-black text-xs leading-none">✓</span>
         <span class="text-xs text-slate-700">${r}</span>
       </li>
