@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0A2463" />
+      <stop offset="50%" stop-color="#0F172A" />
+      <stop offset="100%" stop-color="#00A878" />
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8" />
+      <stop offset="100%" stop-color="#34D399" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="110" fill="url(#bgGrad)"/>
+  <circle cx="256" cy="256" r="180" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="8"/>
+  <path d="M256 120 C180 120 160 180 160 230 C160 300 210 380 256 400 C302 380 352 300 352 230 C352 180 332 120 256 120 Z" fill="none" stroke="url(#accentGrad)" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="256" cy="230" r="42" fill="#38BDF8" fill-opacity="0.25" stroke="#38BDF8" stroke-width="12"/>
+  <path d="M236 230 L250 244 L276 216" fill="none" stroke="#FFFFFF" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="256" y="455" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="900" fill="#FFFFFF" text-anchor="middle" letter-spacing="2">PIEDIABETICO.LAT</text>
+</svg>

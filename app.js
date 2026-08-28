@@ -33,6 +33,7 @@ let state = {
 // MOTOR DE TEMA: MODO OSCURO, CLARO & ADAPTACIÓN AL SISTEMA (AUTO)
 // ═══════════════════════════════════════════════════════════════════════
 
+
 function setTheme(theme) {
   state.theme = theme;
   if (typeof localStorage !== 'undefined') {
@@ -44,6 +45,9 @@ function setTheme(theme) {
 function aplicarTema(theme) {
   if (typeof document === 'undefined') return;
   const isDark = theme === 'dark' || (theme === 'auto' && typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  
+  // Establecer atributo data-theme y clase dark de forma sincronizada
+  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
   if (isDark) {
     document.documentElement.classList.add('dark');
   } else {
@@ -2801,6 +2805,7 @@ const i18nTranslations = {
     modal_cont_msg: "Mensaje / Consulta *",
     modal_cont_btn_enviar: "Enviar Mensaje",
     btn_volver_inicio: "Volver al Inicio",
+    btn_instalar_app: "Instalar App",
     btn_ingresar_2fa: "Ingresar / 2FA",
     btn_ingresar_auth: "Iniciar Sesión",
     drawer_nav_guias: "Guías Médicas & Consensos",
@@ -3097,6 +3102,7 @@ const i18nTranslations = {
     guias_badge_acceso: "✓ Acesso Aberto & Literatura Médica Oficial",
     theme_auto: "Auto",
     btn_volver_inicio: "Voltar ao Início",
+    btn_instalar_app: "Instalar App",
     btn_ingresar_2fa: "Entrar / 2FA",
     btn_ingresar_auth: "Iniciar Sessão",
     drawer_nav_guias: "Diretrizes Médicas & Consensos",
@@ -3424,6 +3430,7 @@ const i18nTranslations = {
     guias_badge_acceso: "✓ Open Access & Official Medical Literature",
     theme_auto: "Auto",
     btn_volver_inicio: "Back to Home",
+    btn_instalar_app: "Install App",
     btn_ingresar_2fa: "Sign In / 2FA",
     btn_ingresar_auth: "Sign In",
     drawer_nav_guias: "Clinical Guidelines & Consensuses",
@@ -8259,4 +8266,151 @@ function detenerAudioActual() {
 
   const btnText = document.getElementById('txt-audio-pac');
   if (btnText) btnText.textContent = '🎧 Escuchar Dictamen';
+}
+
+
+// ── REGISTRO DE SERVICE WORKER & ESTADO OFFLINE ──────────────────────
+if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => {
+        console.log('✓ Service Worker registrado con éxito. Scope:', reg.scope);
+      })
+      .catch(err => {
+        console.warn('Advertencia en registro de Service Worker:', err);
+      });
+  });
+
+  window.addEventListener('online', () => {
+    console.log('✓ Conexión a internet restablecida');
+  });
+
+  window.addEventListener('offline', () => {
+    console.log('⚠️ Sin conexión a internet. Modo offline activo');
+  });
+}
+
+
+
+// ═══════════════════════════════════════════════════════════════════════
+// TAREA 4: GESTIÓN DEL EVENTO BEFOREINSTALLPROMPT & FALLBACK IOS SAFARI
+// ═══════════════════════════════════════════════════════════════════════
+
+let deferredInstallPrompt = null;
+
+function esIOSSafari() {
+  if (typeof navigator === 'undefined' || typeof window === 'undefined') return false;
+  const ua = navigator.userAgent || '';
+  const isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+  const isSafari = /Safari/.test(ua) && !/CriOS|FxiOS|OPiOS|mercury/i.test(ua);
+  const isStandalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+  return isIOS && isSafari && !isStandalone;
+}
+
+if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+  window.addEventListener('beforeinstallprompt', (e) => {
+    // Prevenir el mini-infobar automático del navegador
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    
+    // Mostrar el botón personalizado de instalación en la UI
+    const btnInstall = document.getElementById('btn-install-pwa');
+    if (btnInstall) {
+      btnInstall.classList.remove('hidden');
+    }
+  });
+
+  window.addEventListener('appinstalled', () => {
+    deferredInstallPrompt = null;
+    const btnInstall = document.getElementById('btn-install-pwa');
+    if (btnInstall) {
+      btnInstall.classList.add('hidden');
+    }
+    console.log('✓ PWA instalada exitosamente por el usuario.');
+  });
+}
+
+function ejecutarInstalacionPWA() {
+  if (deferredInstallPrompt) {
+    // Disparar el prompt nativo guardado
+    deferredInstallPrompt.prompt();
+    deferredInstallPrompt.userChoice.then((choiceResult) => {
+      if (choiceResult.outcome === 'accepted') {
+        console.log('✓ El usuario aceptó instalar la PWA');
+      } else {
+        console.log('✕ El usuario canceló la instalación');
+      }
+      deferredInstallPrompt = null;
+      const btnInstall = document.getElementById('btn-install-pwa');
+      if (btnInstall) btnInstall.classList.add('hidden');
+    });
+  } else if (esIOSSafari()) {
+    // Mostrar instrucciones paso a paso para iOS Safari
+    document.getElementById('modal-ios-install')?.classList.remove('hidden');
+  } else {
+    alert('Esta aplicación ya está instalada o tu navegador no soporta instalación automática. Podés agregarla desde el menú del navegador.');
+  }
+}
+
+function cerrarModalIosInstall() {
+  document.getElementById('modal-ios-install')?.classList.add('hidden');
+}
+
+if (typeof document !== 'undefined' && typeof document.addEventListener === 'function') {
+  document.addEventListener('DOMContentLoaded', () => {
+    if (esIOSSafari()) {
+      const btnInstall = document.getElementById('btn-install-pwa');
+      if (btnInstall) {
+        btnInstall.classList.remove('hidden');
+      }
+    }
+  });
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════
+// TAREA 5: MOTOR DE NOTIFICACIONES PUSH & REGISTRO DE SUSCRIPCIÓN
+// ═══════════════════════════════════════════════════════════════════════
+// Compatible con Android, Windows, macOS y iOS 16.4+ (PWA en Homescreen)
+// ═══════════════════════════════════════════════════════════════════════
+
+async function solicitarPermisoNotificacionesPush() {
+  if (typeof window === 'undefined' || !('Notification' in window)) {
+    alert('Tu navegador no soporta notificaciones push.');
+    return { ok: false, error: 'unsupported' };
+  }
+
+  try {
+    const permiso = await Notification.requestPermission();
+    if (permiso === 'granted') {
+      console.log('✓ Permiso de Notificaciones Concedido.');
+      
+      // Registrar suscripción en el Service Worker si está disponible
+      if ('serviceWorker' in navigator) {
+        const registration = await navigator.serviceWorker.ready;
+        
+        // Simular o activar notificación de prueba local inmediata
+        registration.showNotification('piediabetico.lat — Notificaciones Activas', {
+          body: 'Recibirás avisos de nuevos reportes, fotos y recordatorios de turnos clínicos.',
+          icon: './icon.svg',
+          badge: './icon.svg',
+          tag: 'welcome-notification'
+        });
+      }
+
+      alert('✓ Notificaciones activadas con éxito.');
+      return { ok: true, permission: permiso };
+    } else if (permiso === 'denied') {
+      alert('Las notificaciones fueron bloqueadas en tu navegador. Podés habilitarlas desde los ajustes del sitio.');
+      return { ok: false, error: 'denied' };
+    }
+  } catch (err) {
+    console.error('Error al solicitar permiso de notificaciones:', err);
+    return { ok: false, error: err };
+  }
+}
+
+function verificarEstadoNotificaciones() {
+  if (typeof window === 'undefined' || !('Notification' in window)) return 'unsupported';
+  return Notification.permission; // 'default' | 'granted' | 'denied'
 }

@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>piediabetico.lat — Asistente de Triage & Consola Clínica</title>
   <meta name="description" content="Plataforma médica para el cuidado del pie diabético en Latinoamérica. Orientación para pacientes y estación clínica para profesionales.">
   <link rel="manifest" href="./manifest.json">
@@ -124,6 +124,12 @@
           <span class="hidden sm:inline">EN</span>
         </button>
       </div>
+
+            <!-- BOTÓN CUSTOM DE INSTALACIÓN PWA -->
+      <button id="btn-install-pwa" onclick="ejecutarInstalacionPWA()" class="hidden px-3 py-1.5 rounded-full text-xs font-black bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-md hover:shadow-lg transition-all flex items-center gap-1.5 animate-pulse">
+        <i data-lucide="download" class="w-3.5 h-3.5"></i>
+        <span data-i18n="btn_instalar_app">Instalar App</span>
+      </button>
 
       <!-- Selector de Modo Oscuro / Claro / Auto -->
       <div class="flex items-center bg-slate-100 dark:bg-slate-800 p-0.5 rounded-full border border-slate-200 dark:border-slate-700 text-xs">
@@ -4439,6 +4445,39 @@
         </div>
       </form>
 
+    </div>
+  </div>
+
+  <!-- MODAL FALLBACK DE INSTALACIÓN PARA IOS SAFARI -->
+  <div id="modal-ios-install" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 space-y-4 animate-in fade-in zoom-in-95 duration-150">
+      
+      <div class="text-center space-y-2">
+        <div class="w-14 h-14 mx-auto rounded-2xl bg-blue-600/10 border border-blue-500/30 text-blue-600 dark:text-sky-400 flex items-center justify-center text-2xl">
+          📲
+        </div>
+        <h3 class="text-base font-black text-slate-900 dark:text-white">Instalar en iPhone o iPad</h3>
+        <p class="text-xs text-slate-500 dark:text-slate-400">Agregá piediabetico.lat a tu pantalla de inicio para usarla a pantalla completa y sin conexión.</p>
+      </div>
+
+      <div class="space-y-3 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs">
+        <div class="flex items-start gap-3">
+          <span class="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs shrink-0">1</span>
+          <p class="text-slate-700 dark:text-slate-300">Tocá el botón <strong>Compartir</strong> <span class="text-base">⎋</span> (el icono con la flecha hacia arriba en la barra de Safari).</p>
+        </div>
+        <div class="flex items-start gap-3">
+          <span class="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs shrink-0">2</span>
+          <p class="text-slate-700 dark:text-slate-300">Deslizá hacia abajo y seleccioná <strong>"Agregar a Inicio"</strong> <span class="text-base">➕</span>.</p>
+        </div>
+        <div class="flex items-start gap-3">
+          <span class="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs shrink-0">3</span>
+          <p class="text-slate-700 dark:text-slate-300">Tocá <strong>"Agregar"</strong> en la esquina superior derecha.</p>
+        </div>
+      </div>
+
+      <button onclick="cerrarModalIosInstall()" class="w-full py-2.5 px-4 rounded-xl font-bold text-xs bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-800 dark:text-slate-200 transition-colors">
+        Entendido
+      </button>
     </div>
   </div>
 </body>
