@@ -799,3 +799,108 @@ header nav button:hover {
   background-color: #334155 !important;
   color: #FFFFFF !important;
 }
+
+
+/* ═══════════════════════════════════════════════════════════════════════ */
+/* 🛡️ BLINDAJE UNIVERSAL DE CONTRASTES (MODO OSCURO & CLARO)              */
+/* ═══════════════════════════════════════════════════════════════════════ */
+
+/* Garantizar que ningún bg-white quede blanco en modo oscuro */
+.dark .bg-white:not(.keep-white) {
+  background-color: #0F172A !important;
+  color: #F8FAFC !important;
+  border-color: #334155 !important;
+}
+
+.dark .bg-slate-50:not(.keep-light),
+.dark .bg-slate-100:not(.keep-light),
+.dark .bg-gray-50:not(.keep-light) {
+  background-color: #1E293B !important;
+  color: #E2E8F0 !important;
+  border-color: #334155 !important;
+}
+
+/* Tablas, listas y contenedores */
+.dark table,
+.dark th,
+.dark td {
+  border-color: #334155 !important;
+  color: #F1F5F9 !important;
+}
+
+.dark th {
+  background-color: #1E293B !important;
+}
+
+/* Tarjetas y Paneles Clínicos */
+.dark .med-card {
+  background-color: #0F172A !important;
+  border-color: #334155 !important;
+  color: #F8FAFC !important;
+}
+
+/* Entradas de formulario, selectores y textarea */
+.dark input:not([type="checkbox"]):not([type="radio"]),
+.dark select,
+.dark textarea {
+  background-color: #1E293B !important;
+  border-color: #475569 !important;
+  color: #FFFFFF !important;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #94A3B8 !important;
+}
+
+/* Títulos y Párrafos */
+.dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
+  color: #FFFFFF !important;
+}
+
+.dark p, .dark li {
+  color: #CBD5E1 !important;
+}
+
+.dark strong {
+  color: #F8FAFC !important;
+}
+
+/* Botones Secundarios */
+.dark .btn-sec:not([class*="text-"]) {
+  background-color: #1E293B !important;
+  border-color: #475569 !important;
+  color: #F8FAFC !important;
+}
+
+.dark .btn-sec:hover {
+  background-color: #334155 !important;
+  color: #FFFFFF !important;
+}
+
+/* Cajas de Alerta y Semáforos */
+.dark .traffic-light-green {
+  background: linear-gradient(135deg, rgba(6, 78, 59, 0.45) 0%, rgba(2, 44, 34, 0.7) 100%) !important;
+  border-color: rgba(16, 185, 129, 0.5) !important;
+}
+
+.dark .traffic-light-yellow {
+  background: linear-gradient(135deg, rgba(120, 53, 15, 0.45) 0%, rgba(69, 26, 3, 0.7) 100%) !important;
+  border-color: rgba(245, 158, 11, 0.5) !important;
+}
+
+.dark .traffic-light-red {
+  background: linear-gradient(135deg, rgba(136, 19, 55, 0.45) 0%, rgba(76, 5, 25, 0.7) 100%) !important;
+  border-color: rgba(244, 63, 94, 0.5) !important;
+}
+
+/* Todos los Modales y Overlays */
+.dark [id^="modal-"] {
+  background-color: rgba(2, 6, 23, 0.85) !important;
+}
+
+.dark [id^="modal-"] > div:not(.bg-transparent) {
+  background-color: #0F172A !important;
+  border-color: #334155 !important;
+  color: #F8FAFC !important;
+}
