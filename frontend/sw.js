@@ -1,18 +1,13 @@
-﻿const CACHE_NAME = 'piediabetico-v2-cache';
+const CACHE_NAME = 'piediabetico-v17-cache';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
-  './styles.css',
-  './app.js',
+  './styles.css?v=17',
+  './app.js?v=17',
   './manifest.json'
 ];
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE);
-    })
-  );
   self.skipWaiting();
 });
 
@@ -28,13 +23,23 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Ignorar peticiones API POST para no cachear peticiones de IA
-  if (event.request.method !== 'GET' || event.request.url.includes('/agentes/') || event.request.url.includes('/analizar-foto')) {
+  // Ignorar POST y APIs externas de IA
+  if (event.request.method !== 'GET' || event.request.url.includes('/agentes/') || event.request.url.includes('/analizar-foto') || event.request.url.includes('api.evidencemd.ai')) {
     return;
   }
+  
+  // ESTRATEGIA NETWORK-FIRST: Siempre busca la versión más nueva en el servidor
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      return cachedResponse || fetch(event.request).catch(() => caches.match('./index.html'));
-    })
+    fetch(event.request)
+      .then((networkResponse) => {
+        if (networkResponse && networkResponse.status === 200) {
+          const responseToCache = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
+        }
+        return networkResponse;
+      })
+      .catch(() => caches.match(event.request))
   );
 });
