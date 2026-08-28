@@ -510,29 +510,115 @@ header nav button:hover {
 }
 
 
-/* ── ESTILOS ROBUSTOS PARA PESTAÑAS CLÍNICAS (MODO OSCURO / CLARO) ── */
+
+/* ═══════════════════════════════════════════════════════════════════════ */
+/* ESTILOS ROBUSTOS PARA PESTAÑAS CLÍNICAS (MODO CLARO & MODO OSCURO)     */
+/* ═══════════════════════════════════════════════════════════════════════ */
 .btn-ptab {
-  transition: all 0.15s ease-in-out;
+  background-color: #FFFFFF !important;
+  color: #334155 !important;
+  border: 1.5px solid #CBD5E1 !important;
+  border-radius: 0.75rem !important;
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  padding: 0.5rem 0.75rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.375rem !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+  transition: all 0.15s ease-in-out !important;
+  cursor: pointer !important;
 }
 
-.dark .btn-ptab:not(.bg-blue-900):not(.dark\:bg-blue-600) {
+.btn-ptab:hover {
+  background-color: #F1F5F9 !important;
+  color: #0F172A !important;
+  border-color: #94A3B8 !important;
+}
+
+.btn-ptab.active-tab,
+.btn-ptab[data-active="true"] {
+  background-color: #1E3A8A !important;
+  color: #FFFFFF !important;
+  border-color: #1D4ED8 !important;
+  font-weight: 800 !important;
+  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3) !important;
+  transform: scale(1.02) !important;
+}
+
+.btn-ptab.active-tab span,
+.btn-ptab[data-active="true"] span {
+  color: #FFFFFF !important;
+}
+
+/* Modo Oscuro para Pestañas Clínicas */
+.dark .btn-ptab {
   background-color: #1E293B !important;
-  color: #F1F5F9 !important;
-  border-color: #334155 !important;
+  color: #E2E8F0 !important;
+  border: 1.5px solid #334155 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4) !important;
 }
 
-.dark .btn-ptab:not(.bg-blue-900):not(.dark\:bg-blue-600):hover {
+.dark .btn-ptab:hover {
   background-color: #334155 !important;
+  color: #FFFFFF !important;
   border-color: #475569 !important;
 }
 
-.dark .btn-ptab.bg-blue-900,
-.dark .btn-ptab.dark\:bg-blue-600 {
+.dark .btn-ptab.active-tab,
+.dark .btn-ptab[data-active="true"] {
   background-color: #2563EB !important;
   color: #FFFFFF !important;
-  border-color: #3B82F6 !important;
+  border-color: #60A5FA !important;
+  font-weight: 800 !important;
+  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.45) !important;
+  transform: scale(1.02) !important;
 }
 
-.dark #tab-bar-profesional {
-  border-color: #334155 !important;
+.dark .btn-ptab.active-tab span,
+.dark .btn-ptab[data-active="true"] span {
+  color: #FFFFFF !important;
+}
+
+/* Pestaña de Alertas / Pacientes vinculados */
+.btn-ptab#btn-ptab-alertas:not(.active-tab) {
+  background-color: #FFF1F2 !important;
+  color: #9F1239 !important;
+  border-color: #FECDD3 !important;
+}
+
+.dark .btn-ptab#btn-ptab-alertas:not(.active-tab) {
+  background-color: rgba(136, 19, 55, 0.25) !important;
+  color: #FDA4AF !important;
+  border-color: #881337 !important;
+}
+
+/* Badges internos de las pestañas en modo oscuro */
+.dark .btn-ptab:not(.active-tab) #badge-tab-pubmed {
+  background-color: rgba(49, 46, 129, 0.5) !important;
+  color: #C7D2FE !important;
+  border-color: #4338CA !important;
+}
+
+.dark .btn-ptab:not(.active-tab) #badge-tab-sewss {
+  background-color: rgba(30, 58, 138, 0.5) !important;
+  color: #BFDBFE !important;
+  border-color: #1D4ED8 !important;
+}
+
+.dark .btn-ptab:not(.active-tab) #badge-tab-wifi {
+  background-color: rgba(136, 19, 55, 0.5) !important;
+  color: #FECDD3 !important;
+  border-color: #BE123C !important;
+}
+
+.dark .btn-ptab:not(.active-tab) #badge-tab-cica {
+  background-color: rgba(19, 78, 74, 0.5) !important;
+  color: #99F6E4 !important;
+  border-color: #0F766E !important;
+}
+
+.dark .btn-ptab:not(.active-tab) #badge-tab-multi {
+  background-color: #2563EB !important;
+  color: #FFFFFF !important;
 }
