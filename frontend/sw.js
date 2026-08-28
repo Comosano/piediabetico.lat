@@ -1,12 +1,12 @@
-const CACHE_NAME = 'piediabetico-v29-cache';
+const CACHE_NAME = 'piediabetico-v30-cache';
 const OFFLINE_URL = './offline.html';
 
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './offline.html',
-  './styles.css?v=29',
-  './app.js?v=29',
+  './styles.css?v=30',
+  './app.js?v=30',
   './manifest.json',
   './icon.svg'
 ];
