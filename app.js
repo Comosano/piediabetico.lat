@@ -8414,3 +8414,16 @@ function verificarEstadoNotificaciones() {
   if (typeof window === 'undefined' || !('Notification' in window)) return 'unsupported';
   return Notification.permission; // 'default' | 'granted' | 'denied'
 }
+
+
+function autoDetectarIdiomaPorPais(paisCodigo) {
+  if (!paisCodigo) return;
+  const codigo = paisCodigo.toUpperCase();
+  if (codigo === 'BR' || codigo === 'BRAZIL' || codigo === 'BRASIL') {
+    setLanguage('pt');
+  } else if (codigo === 'US' || codigo === 'USA' || codigo === 'UK' || codigo === 'GLOBAL') {
+    setLanguage('en');
+  } else {
+    setLanguage('es');
+  }
+}

@@ -110,7 +110,7 @@
     <!-- SELECTOR DE IDIOMA & BOTÓN DE INGRESO / PERFIL 2FA -->
     <div class="flex items-center gap-1.5 sm:gap-2">
       <!-- Selector de Idioma ES / PT / EN -->
-      <div class="flex items-center bg-slate-100 dark:bg-slate-800 p-0.5 rounded-full border border-slate-200 dark:border-slate-700 text-xs">
+      <div id="header-lang-selector" class="flex items-center bg-slate-100 dark:bg-slate-800 p-0.5 rounded-full border border-slate-200 dark:border-slate-700 text-xs">
         <button id="lang-btn-es" onclick="setLanguage('es')" class="px-2 py-1 rounded-full font-bold bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs transition-all flex items-center gap-1">
           <span>🇪🇸</span>
           <span class="hidden sm:inline">ES</span>
@@ -1688,10 +1688,10 @@
           </div>
 
           <!-- Selector de Especialidad & Pestaña Favorita -->
-          <div class="flex flex-wrap items-center gap-2">
-            <div class="flex items-center gap-2 bg-white dark:bg-slate-800 p-2 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+          <div class="flex flex-wrap items-center gap-2 w-full lg:w-auto">
+            <div class="flex items-center gap-2 bg-white dark:bg-slate-800 p-2 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm w-full sm:w-auto max-w-full">
               <label data-i18n="pro_lbl_esp" class="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wide">Especialidad:</label>
-              <select id="prof-especialidad" onchange="cambiarEspecialidadMedica(this.value)" class="med-input !py-1.5 !w-auto text-xs font-bold text-blue-950 dark:text-sky-300 bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-600">
+              <select id="prof-especialidad" onchange="cambiarEspecialidadMedica(this.value)" class="med-input !py-1.5 w-full sm:!w-auto max-w-full text-xs font-bold text-blue-950 dark:text-sky-300 bg-slate-50 dark:bg-slate-900 border-slate-300 dark:border-slate-600">
                 <option value="podologo_enfermero" data-i18n="opt_esp_podologo">🩺 Podología / Enfermería (TIMERS)</option>
                 <option value="cirujano_vascular" data-i18n="opt_esp_vascular">🩸 Cirugía Vascular (SVS WIfI)</option>
                 <option value="traumatologo" data-i18n="opt_esp_trauma">🦶 Traumatología / Ortopedia (San Elián)</option>
