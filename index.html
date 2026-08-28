@@ -1499,6 +1499,10 @@
 
       <!-- Sub-tabs del Profesional con Indicadores y Estado Activo Azul -->
       <div id="tab-bar-profesional" class="flex flex-wrap gap-2 border-b border-slate-200 pb-3">
+        <button onclick="switchProfTab('pubmed-pro')" id="btn-ptab-pubmed" class="btn-ptab text-xs font-semibold flex items-center gap-1.5 transition-all rounded-xl px-3 py-2 border">
+          <span>📚 Evidencia PubMed</span>
+          <span id="badge-tab-pubmed" class="px-1.5 py-0.2 rounded-full text-[10px] font-black bg-indigo-100 dark:bg-indigo-900/60 text-indigo-900 dark:text-indigo-200 border border-indigo-200 dark:border-indigo-700">1 Free/Mes</span>
+        </button>
         <button onclick="switchProfTab('triage-pro')" id="btn-ptab-triage" class="btn-ptab text-xs flex items-center gap-1.5 font-bold shadow-sm transition-all rounded-xl px-3 py-2 border">
           <span data-i18n="tab_triage">📸 Triage Multimodal</span>
           <span id="badge-pro-triage" class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
