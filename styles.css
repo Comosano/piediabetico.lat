@@ -622,3 +622,119 @@ header nav button:hover {
   background-color: #2563EB !important;
   color: #FFFFFF !important;
 }
+
+
+/* ═══════════════════════════════════════════════════════════════════════ */
+/* CORRECCIÓN INTEGRAL DE TARJETAS, RESULTADOS & INPUTS EN MODO OSCURO     */
+/* ═══════════════════════════════════════════════════════════════════════ */
+
+/* 1. Contenedores de resultados y gradientes clínicos en modo oscuro */
+.dark #prof-sec-wifi [class*="bg-gradient-to-r"],
+.dark #prof-sec-sanelian [class*="bg-gradient-to-r"],
+.dark #prof-sec-cicatrizacion [class*="bg-gradient-to-r"],
+.dark #prof-sec-evolucion [class*="bg-gradient-to-r"],
+.dark .prof-result-card {
+  background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%) !important;
+  border-color: #334155 !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* 2. Cajas internas de resultados (Pronósticos, Conductas, Beneficios) */
+.dark #prof-sec-wifi .bg-white,
+.dark #prof-sec-sanelian .bg-white,
+.dark #prof-sec-cicatrizacion .bg-white,
+.dark #prof-sec-atb .bg-white,
+.dark #prof-sec-atb .bg-slate-50,
+.dark #prof-sec-timers .bg-slate-50,
+.dark #prof-sec-iwgdf .bg-slate-50,
+.dark #prof-sec-offloading .bg-slate-50,
+.dark #prof-sec-turnos .bg-white,
+.dark #prof-sec-turnos .bg-slate-50,
+.dark #prof-sec-evolucion .bg-white {
+  background-color: #0F172A !important;
+  border-color: #334155 !important;
+  color: #E2E8F0 !important;
+}
+
+/* 3. Títulos y encabezados dentro de las tarjetas de resultados */
+.dark #wifi-title-res,
+.dark #sewss-title-res,
+.dark #cica-title-res,
+.dark #prof-sec-wifi h3,
+.dark #prof-sec-sanelian h3,
+.dark #prof-sec-cicatrizacion h3,
+.dark #prof-sec-multiescala h3,
+.dark #prof-sec-atb h3,
+.dark #prof-sec-turnos h3 {
+  color: #F8FAFC !important;
+}
+
+/* 4. Textos descriptivos dentro de cajas de pronóstico */
+.dark #wifi-txt-amputacion,
+.dark #wifi-txt-revasc,
+.dark #sewss-txt-prono,
+.dark #sewss-txt-conducta,
+.dark #cica-txt-meta,
+.dark #cica-txt-conducta,
+.dark #atb-pro-esquema,
+.dark #atb-pro-dosis {
+  color: #CBD5E1 !important;
+}
+
+/* 5. Etiquetas y títulos dentro de cajas de pronóstico */
+.dark #prof-sec-wifi strong,
+.dark #prof-sec-sanelian strong,
+.dark #prof-sec-cicatrizacion strong,
+.dark #prof-sec-atb strong {
+  color: #38BDF8 !important;
+}
+
+/* 6. Inputs y selects dentro de las estaciones clínicas */
+.dark #portal-profesional-view .med-input,
+.dark #portal-profesional-view select,
+.dark #portal-paciente-view .med-input,
+.dark #portal-paciente-view select {
+  background-color: #0F172A !important;
+  border-color: #334155 !important;
+  color: #F8FAFC !important;
+}
+
+.dark #portal-profesional-view select option,
+.dark #portal-paciente-view select option {
+  background-color: #0F172A !important;
+  color: #F8FAFC !important;
+}
+
+/* 7. Cajas contenedoras de parámetros (Wound, Ischemia, Infection, etc.) */
+.dark #prof-sec-wifi .p-4.rounded-xl.bg-slate-50,
+.dark #prof-sec-sanelian .p-4.rounded-xl.bg-slate-50,
+.dark #prof-sec-cicatrizacion .p-4.rounded-xl.bg-slate-50,
+.dark #prof-sec-multiescala .p-4.rounded-xl.bg-blue-50 {
+  background-color: #1E293B !important;
+  border-color: #334155 !important;
+}
+
+.dark #prof-sec-wifi label,
+.dark #prof-sec-sanelian label,
+.dark #prof-sec-cicatrizacion label,
+.dark #prof-sec-atb label {
+  color: #94A3B8 !important;
+}
+
+/* 8. Botones de "Copiar a Historia Clínica" en modo oscuro */
+.dark #prof-sec-wifi button[onclick*="copiar"],
+.dark #prof-sec-sanelian button[onclick*="copiar"],
+.dark #prof-sec-cicatrizacion button[onclick*="copiar"],
+.dark #prof-sec-multiescala button[onclick*="copiar"] {
+  background-color: #1E293B !important;
+  color: #38BDF8 !important;
+  border-color: #0284C7 !important;
+}
+
+.dark #prof-sec-wifi button[onclick*="copiar"]:hover,
+.dark #prof-sec-sanelian button[onclick*="copiar"]:hover,
+.dark #prof-sec-cicatrizacion button[onclick*="copiar"]:hover,
+.dark #prof-sec-multiescala button[onclick*="copiar"]:hover {
+  background-color: #0369A1 !important;
+  color: #FFFFFF !important;
+}
