@@ -3804,51 +3804,51 @@
       <div class="p-6 overflow-y-auto space-y-4 text-xs text-slate-700 leading-relaxed">
         
         <!-- Ficha Resumen -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 text-center">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-center shadow-xs">
           <div>
-            <span class="text-[10px] uppercase font-bold text-slate-500 block" data-i18n="univ_det_duracion">Carga Horaria:</span>
-            <span id="univ-modal-duracion" class="text-xs font-black text-slate-900">250 hs cátedra</span>
+            <span class="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 block" data-i18n="univ_det_duracion">Carga Horaria:</span>
+            <span id="univ-modal-duracion" class="text-xs font-black text-slate-900 dark:text-white">250 hs cátedra</span>
           </div>
           <div>
-            <span class="text-[10px] uppercase font-bold text-slate-500 block" data-i18n="univ_det_modalidad">Modalidad:</span>
-            <span id="univ-modal-modalidad" class="text-xs font-black text-slate-900">Virtual Sincrónica</span>
+            <span class="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 block" data-i18n="univ_det_modalidad">Modalidad:</span>
+            <span id="univ-modal-modalidad" class="text-xs font-black text-slate-900 dark:text-sky-300">Virtual Sincrónica</span>
           </div>
           <div>
-            <span class="text-[10px] uppercase font-bold text-slate-500 block" data-i18n="univ_det_cert">Certificación:</span>
-            <span id="univ-modal-cert" class="text-xs font-black text-emerald-700">Título Universitario</span>
+            <span class="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 block" data-i18n="univ_det_cert">Certificación:</span>
+            <span id="univ-modal-cert" class="text-xs font-black text-emerald-700 dark:text-emerald-400">Título Universitario</span>
           </div>
           <div>
-            <span class="text-[10px] uppercase font-bold text-slate-500 block" data-i18n="univ_det_ciclo">Ciclo Lectivo:</span>
-            <span id="univ-modal-ciclo" class="text-xs font-black text-blue-900">2026 / Abierta</span>
+            <span class="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 block" data-i18n="univ_det_ciclo">Ciclo Lectivo:</span>
+            <span id="univ-modal-ciclo" class="text-xs font-black text-blue-900 dark:text-blue-300">2026 / Abierta</span>
           </div>
         </div>
 
         <!-- Descripción & Objetivos -->
         <div class="space-y-1.5">
-          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100 flex items-center gap-1.5" data-i18n="univ_det_obj_tit">
-            <i data-lucide="target" class="w-4 h-4 text-blue-700"></i>
+          <h4 class="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-1.5" data-i18n="univ_det_obj_tit">
+            <i data-lucide="target" class="w-4 h-4 text-blue-600 dark:text-sky-400"></i>
             <span>Objetivos & Enfoque Académico</span>
           </h4>
-          <p id="univ-modal-descripcion" class="text-xs text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/90 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 leading-relaxed">
+          <p id="univ-modal-descripcion" class="text-xs text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/90 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 leading-relaxed shadow-2xs font-medium">
             Formación integral basada en las guías de consenso IWGDF 2023, Sistema San Elián y técnicas de desbridamiento cortante y descarga biomecánica.
           </p>
         </div>
 
         <!-- Ejes Temáticos / Módulos -->
         <div class="space-y-1.5">
-          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100 flex items-center gap-1.5" data-i18n="univ_det_ejes_tit">
-            <i data-lucide="layers" class="w-4 h-4 text-emerald-700"></i>
+          <h4 class="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-1.5" data-i18n="univ_det_ejes_tit">
+            <i data-lucide="layers" class="w-4 h-4 text-emerald-600 dark:text-emerald-400"></i>
             <span>Ejes Temáticos del Programa</span>
           </h4>
-          <ul id="univ-modal-ejes" class="space-y-1.5 text-xs text-slate-600 dark:text-slate-300">
-            <!-- Populated by JS -->
+          <ul id="univ-modal-ejes" class="space-y-2 text-xs text-slate-700 dark:text-slate-200">
+            <!-- Populated by JS with styled badges -->
           </ul>
         </div>
 
         <!-- Perfil del Egresado y Requisitos -->
-        <div class="p-3.5 rounded-2xl bg-blue-50/60 border border-blue-200/80 text-[11px] space-y-1 text-slate-700">
-          <strong class="text-blue-950 block font-bold" data-i18n="univ_det_dirigido_tit">Destinado a:</strong>
-          <p id="univ-modal-dirigido">Médicos Diabetólogos, Cirujanos, Podólogos Universitarios, Licenciados en Enfermería y Especialistas en Heridas Complejas.</p>
+        <div class="p-3.5 rounded-2xl bg-blue-50/60 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800 text-[11.5px] space-y-1 text-slate-800 dark:text-slate-200 shadow-2xs">
+          <strong class="text-blue-950 dark:text-sky-300 block font-black" data-i18n="univ_det_dirigido_tit">Destinado a:</strong>
+          <p id="univ-modal-dirigido" class="font-medium text-slate-700 dark:text-slate-300 leading-relaxed">Médicos Diabetólogos, Cirujanos, Podólogos Universitarios, Licenciados en Enfermería y Especialistas en Heridas Complejas.</p>
         </div>
 
       </div>
@@ -3978,18 +3978,18 @@
       <div class="p-6 overflow-y-auto space-y-4 text-xs text-slate-700 leading-relaxed">
         
         <!-- Ficha Técnica Rápida -->
-        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-center">
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-center shadow-xs">
           <div>
-            <span class="text-[10px] uppercase font-bold text-slate-500 block" data-i18n="lab_det_principio">Principio / Tecnología:</span>
-            <span id="lab-modal-principio" class="text-xs font-black text-slate-900">Inhibidor de MMPs (NOSF)</span>
+            <span class="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 block" data-i18n="lab_det_principio">Principio / Tecnología:</span>
+            <span id="lab-modal-principio" class="text-xs font-black text-slate-900 dark:text-white">Inhibidor de MMPs (NOSF)</span>
           </div>
           <div>
-            <span class="text-[10px] uppercase font-bold text-slate-500 block" data-i18n="lab_det_tipo">Tipo de Terapia:</span>
-            <span id="lab-modal-tipo" class="text-xs font-black text-emerald-700">Apósito Bioactivo</span>
+            <span class="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 block" data-i18n="lab_det_tipo">Tipo de Terapia:</span>
+            <span id="lab-modal-tipo" class="text-xs font-black text-emerald-700 dark:text-emerald-400">Apósito Bioactivo</span>
           </div>
           <div class="col-span-2 sm:col-span-1">
-            <span class="text-[10px] uppercase font-bold text-slate-500 block" data-i18n="lab_det_disp">Disponibilidad:</span>
-            <span id="lab-modal-disponibilidad" class="text-xs font-black text-blue-900">LATAM & Internacional</span>
+            <span class="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 block" data-i18n="lab_det_disp">Disponibilidad:</span>
+            <span id="lab-modal-disponibilidad" class="text-xs font-black text-blue-900 dark:text-sky-300">LATAM & Internacional</span>
           </div>
         </div>
 

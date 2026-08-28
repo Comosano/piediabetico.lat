@@ -5450,9 +5450,9 @@ function abrirModalDetalleUniversidad(id) {
   const ejesEl = document.getElementById('univ-modal-ejes');
   if (ejesEl && item.ejes) {
     ejesEl.innerHTML = item.ejes.map(e => `
-      <li class="flex items-start gap-2">
-        <span class="text-emerald-600 font-bold text-sm leading-none">•</span>
-        <span>${e}</span>
+      <li class="flex items-center gap-2.5 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 font-medium shadow-2xs">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 dark:bg-emerald-400 shrink-0"></span>
+        <span class="text-xs leading-snug">${e}</span>
       </li>
     `).join('');
   }

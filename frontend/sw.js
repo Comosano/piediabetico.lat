@@ -1,4 +1,4 @@
-const CACHE_NAME = 'piediabetico-v22-cache';
+const CACHE_NAME = 'piediabetico-v23-cache';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
