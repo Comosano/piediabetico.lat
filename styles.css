@@ -1062,6 +1062,7 @@ header nav button:hover {
 
 
 
+
 /* ═══════════════════════════════════════════════════════════════════════ */
 /* 📱 CORRECCIÓN CRÍTICA DE RESPONSIVE & MOBILE-FIRST UX (SIN OVERFLOW)    */
 /* ═══════════════════════════════════════════════════════════════════════ */
@@ -1079,7 +1080,7 @@ html, body {
   box-sizing: border-box;
 }
 
-/* Imágenes y elementos multimedia fluidos */
+/* Multimedia y Canvas fluidos al 100% del contenedor */
 img, video, canvas, svg {
   max-width: 100%;
   height: auto;
@@ -1089,13 +1090,14 @@ img, video, canvas, svg {
 .med-card,
 .main-container,
 [id^="portal-"],
-.banner-clinico-prof {
+.banner-clinico-prof,
+.banner-clinico-pac {
   width: 100% !important;
   max-width: 100% !important;
   box-sizing: border-box !important;
 }
 
-/* Envoltorios de tablas con scroll táctil nativo */
+/* Envoltorios de tablas clínicas con scroll táctil nativo */
 .table-responsive,
 .overflow-x-auto {
   width: 100%;
@@ -1106,14 +1108,31 @@ img, video, canvas, svg {
 
 /* ── MEDIA QUERIES PARA PANTALLAS MÓVILES Y TABLETS (< 768px) ── */
 @media (max-width: 767px) {
-  /* Reducción ergonómica de paddings en móviles */
+  /* Reducción ergonómica de paddings en tarjetas clínicas */
   .med-card {
     padding: 1rem !important;
-    border-radius: 16px !important;
+    border-radius: 18px !important;
     max-width: 100% !important;
   }
 
-  /* BARRA DE HERRAMIENTAS MÉDICAS: Cuadrícula organizada de 2 columnas (NO carrusel horizontal) */
+  /* Banner clínico compacto */
+  .banner-clinico-prof,
+  .banner-clinico-pac {
+    padding: 1rem !important;
+  }
+
+  .banner-clinico-prof h2,
+  .banner-clinico-pac h2 {
+    font-size: 1.25rem !important;
+    line-height: 1.25 !important;
+  }
+
+  .banner-clinico-prof p,
+  .banner-clinico-pac p {
+    font-size: 0.75rem !important;
+  }
+
+  /* CUADRÍCULA DE HERRAMIENTAS Y CALCULADORAS (2 COLUMNAS ERGONÓMICAS) */
   #tab-bar-profesional {
     display: grid !important;
     grid-template-columns: repeat(2, 1fr) !important;
@@ -1121,43 +1140,36 @@ img, video, canvas, svg {
     width: 100% !important;
     max-width: 100% !important;
     overflow-x: visible !important;
-    padding-bottom: 0.75rem !important;
+    padding-bottom: 0.5rem !important;
   }
 
   #tab-bar-profesional .btn-ptab {
     width: 100% !important;
     display: flex !important;
+    flex-direction: row !important;
     align-items: center !important;
     justify-content: space-between !important;
-    padding: 0.6rem 0.65rem !important;
-    font-size: 11px !important;
-    text-align: left !important;
-    white-space: normal !important;
-    word-break: break-word !important;
-    border-radius: 12px !important;
-    min-height: 44px !important;
+    padding: 0.65rem 0.75rem !important;
+    font-size: 11.5px !important;
+    font-weight: 700 !important;
+    border-radius: 14px !important;
+    min-height: 48px !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
   }
 
   #tab-bar-profesional .btn-ptab span {
-    line-height: 1.2 !important;
-  }
-
-  /* Selectores de especialidad y controles apilables */
-  .banner-clinico-prof select,
-  #prof-especialidad {
-    width: 100% !important;
-    max-width: 100% !important;
+    line-height: 1.25 !important;
   }
 
   /* Modales en pantalla completa o centrados con márgenes seguros */
   [id^="modal-"] > div:not(.bg-transparent) {
     width: 100% !important;
-    max-width: calc(100vw - 1.5rem) !important;
-    margin: 0.75rem auto !important;
-    max-height: 90vh !important;
+    max-width: calc(100vw - 1rem) !important;
+    margin: 0.5rem auto !important;
+    max-height: 92vh !important;
   }
 
-  /* Touch targets mínimos recomendados por WCAG (44px) */
+  /* Touch targets mínimos de 44px */
   button, 
   .btn-primary, 
   .btn-sec, 
@@ -1173,12 +1185,11 @@ img, video, canvas, svg {
   }
 }
 
-/* ── MEDIA QUERIES PARA PANTALLAS PEQUEÑAS (< 480px) ── */
+/* ── MEDIA QUERIES PARA PANTALLAS ULTRA COMPACTAS (< 480px) ── */
 @media (max-width: 479px) {
-  /* Títulos de escala fluida */
-  h1 { font-size: 1.35rem !important; line-height: 1.25 !important; }
-  h2 { font-size: 1.2rem !important; line-height: 1.3 !important; }
-  h3 { font-size: 1.05rem !important; line-height: 1.35 !important; }
+  h1 { font-size: 1.3rem !important; line-height: 1.25 !important; }
+  h2 { font-size: 1.15rem !important; line-height: 1.3 !important; }
+  h3 { font-size: 1.0rem !important; line-height: 1.35 !important; }
 
   #tab-bar-profesional {
     grid-template-columns: 1fr !important;
