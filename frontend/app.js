@@ -7942,3 +7942,119 @@ function ejecutarBusquedaPubMedEvidencia() {
   // Renderizar evidencia científica curada
   renderizarResultadosPubMed(baseEvidenciaClinicaCurada);
 }
+
+
+// ═══════════════════════════════════════════════════════════════════════
+// PABELLÓN DE AUDIOGUÍAS & SÍNTESIS DE VOZ PARA PACIENTES (CUOTA 1/MES)
+// ═══════════════════════════════════════════════════════════════════════
+
+const AUDIOGUIAS_IWGDF = [
+  {
+    titulo: "Capítulo 1: Revisión Diaria de Pies con Espejo",
+    texto: "Hola. Revisar tus pies todos los días es el paso más importante para salvarlos. Hacelo cada mañana con buena luz. Usá un espejo para mirar la planta del pie, los talones y entremedio de los dedos. Buscá manchas rojas, ampollas, grietas o zonas calientes. Si encontrás cualquier cambio, no te pongas cremas con ácido ni intentes sacarlo vos mismo; consultá a tu equipo de salud."
+  },
+  {
+    titulo: "Capítulo 2: El Corte de Uñas y Cuidado de Callos",
+    texto: "Cortar mal las uñas es una de las causas más frecuentes de infección. Las uñas de los pies deben cortarse siempre en línea recta, nunca redondeando las esquinas ni cortando al ras. Usá una lima de cartón suave para redondear apenas los bordes. Nunca uses alicates de punta, tijeras afiladas ni bisturí. Si tenés callos o durezas, jamás uses callicidas ni cuchillas; pedí un turno con podología especializada."
+  },
+  {
+    titulo: "Capítulo 3: Elección de Calzado y Medias sin Costura",
+    texto: "Tu calzado es tu armadura de protección. Antes de ponerte los zapatos, pasá siempre la mano por adentro para revisar que no haya piedritas, costuras sueltas o clavos. Usá medias de algodón claras y sin costuras gruesas. Nunca camines descalzo, ni siquiera adentro de tu casa o en la playa. La pérdida de sensibilidad puede hacer que te lastimes sin darte cuenta."
+  },
+  {
+    titulo: "Capítulo 4: Banderas Rojas de Alarma para ir a la Guardia",
+    texto: "Atención. Si notás cualquiera de estos cuatro signos, debés ir de inmediato a una guardia médica: Primero, un dedo de color oscuro, morado o negro. Segundo, enrojecimiento o hinchazón que avanza alrededor de una herida. Tercero, fiebre, escalofríos o mal olor evidente. Cuarto, salida de pus o líquido turbio. No esperes a que duela, porque la diabetes adormece los nervios."
+  }
+];
+
+let speechUtteranceActual = null;
+
+function reproducirAudioguia(index) {
+  const guia = AUDIOGUIAS_IWGDF[index];
+  if (!guia) return;
+
+  detenerAudioActual();
+
+  const bar = document.getElementById('audioplayer-bar');
+  const title = document.getElementById('audioplayer-title');
+  if (bar) bar.classList.remove('hidden');
+  if (title) title.textContent = guia.titulo;
+
+  if ('speechSynthesis' in window) {
+    speechUtteranceActual = new SpeechSynthesisUtterance(guia.texto);
+    speechUtteranceActual.lang = 'es-ES';
+    speechUtteranceActual.rate = 0.95; // Velocidad pausada y comprensible
+    speechUtteranceActual.pitch = 1.0;
+
+    speechUtteranceActual.onend = () => {
+      if (bar) bar.classList.add('hidden');
+    };
+
+    speechUtteranceActual.onerror = () => {
+      if (bar) bar.classList.add('hidden');
+    };
+
+    window.speechSynthesis.speak(speechUtteranceActual);
+  } else {
+    alert('Tu navegador no soporta reproducción de voz nativa.');
+  }
+}
+
+function toggleAudioDictamenPaciente() {
+  if (window.speechSynthesis && window.speechSynthesis.speaking) {
+    detenerAudioActual();
+    return;
+  }
+
+  const textoDictamenEl = document.getElementById('pac-texto-resultado');
+  if (!textoDictamenEl || !textoDictamenEl.innerText.trim()) {
+    alert('No hay dictamen médico disponible para reproducir.');
+    return;
+  }
+
+  // Control de cuota: 1 audio de reporte por mes por paciente
+  const cuotaAudio = JSON.parse(localStorage.getItem('piediabetico_audio_quota') || '{"usadasMes":0,"ultimoMes":""}');
+  const mesActual = new Date().toISOString().slice(0, 7);
+
+  if (cuotaAudio.ultimoMes !== mesActual) {
+    cuotaAudio.usadasMes = 0;
+    cuotaAudio.ultimoMes = mesActual;
+  }
+
+  // Registrar uso
+  cuotaAudio.usadasMes += 1;
+  localStorage.setItem('piediabetico_audio_quota', JSON.stringify(cuotaAudio));
+
+  const btnText = document.getElementById('txt-audio-pac');
+  if (btnText) btnText.textContent = '⏹ Detener Audio';
+
+  const textoLimpio = textoDictamenEl.innerText.replace(/[*#_]/g, '');
+  const textoParaVoz = "Orientación médica para tu pie en piediabetico.lat. " + textoLimpio;
+
+  if ('speechSynthesis' in window) {
+    speechUtteranceActual = new SpeechSynthesisUtterance(textoParaVoz);
+    speechUtteranceActual.lang = 'es-ES';
+    speechUtteranceActual.rate = 0.92;
+
+    speechUtteranceActual.onend = () => {
+      if (btnText) btnText.textContent = '🎧 Escuchar Dictamen';
+    };
+
+    speechUtteranceActual.onerror = () => {
+      if (btnText) btnText.textContent = '🎧 Escuchar Dictamen';
+    };
+
+    window.speechSynthesis.speak(speechUtteranceActual);
+  }
+}
+
+function detenerAudioActual() {
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+  }
+  const bar = document.getElementById('audioplayer-bar');
+  if (bar) bar.classList.add('hidden');
+
+  const btnText = document.getElementById('txt-audio-pac');
+  if (btnText) btnText.textContent = '🎧 Escuchar Dictamen';
+}
