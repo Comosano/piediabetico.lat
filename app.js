@@ -142,22 +142,24 @@ function ingresarModoDemo(perfil) {
   }
 }
 
-function irASeccionDesdeHeaderNav(secId) {
-  if (state.currentPortal !== 'landing') {
-    switchPortal('landing');
+function irASeccionDesdeHeaderNav(seccionId) {
+  // Si estamos en landing o paciente, pasar primero al portal profesional donde reside el pabellón
+  if (state.currentPortal !== 'profesional') {
+    switchPortal('profesional');
   }
+
+  // Cerrar drawer móvil si está abierto
+  const drawer = document.getElementById('drawer-menu');
+  if (drawer && !drawer.classList.contains('hidden')) {
+    toggleDrawerMenu();
+  }
+
   setTimeout(() => {
-    const el = document.getElementById(secId);
-    if (!el) return;
-    const header = document.querySelector('header');
-    const headerHeight = header ? header.offsetHeight : 70;
-    const rect = el.getBoundingClientRect();
-    const targetY = window.pageYOffset + rect.top - headerHeight - 25;
-    window.scrollTo({
-      top: Math.max(0, targetY),
-      behavior: 'smooth'
-    });
-  }, 80);
+    const el = document.getElementById(seccionId);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, 100);
 }
 
 // ── CAMBIO DE PORTAL PRINCIPAL (LANDING vs PACIENTE vs PROFESIONAL) ─
