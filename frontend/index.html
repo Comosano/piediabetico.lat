@@ -1216,6 +1216,31 @@
         <span data-i18n="pac_top_tag" class="text-xs font-semibold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">Portal de Orientación para Pacientes</span>
       </div>
 
+      <!-- Banner Interactivo de Simulación / Demo Paciente -->
+      <div id="pac-demo-banner" class="hidden p-4 rounded-3xl bg-gradient-to-r from-amber-500/15 via-emerald-500/15 to-blue-500/15 border-2 border-amber-400 dark:border-amber-600 flex flex-col md:flex-row items-center justify-between gap-4 text-xs shadow-md animate-in fade-in">
+        <div class="flex items-center gap-3 text-center md:text-left">
+          <div class="w-10 h-10 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center text-xl font-bold shrink-0 shadow-sm">⚡</div>
+          <div>
+            <div class="flex items-center gap-2 justify-center md:justify-start">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-400 text-slate-950 uppercase">Modo Simulación Activo</span>
+              <span class="text-[11px] text-slate-700 dark:text-slate-300 font-semibold">Caso Clínico Pre-cargado</span>
+            </div>
+            <p class="text-slate-700 dark:text-slate-200 mt-0.5 text-xs font-medium">Probá los 3 comportamientos de telemedicina según tu equipo de salud vinculado:</p>
+          </div>
+        </div>
+        <div class="flex flex-wrap items-center justify-center gap-2 shrink-0">
+          <button onclick="simularPerfilEquipoPaciente('ninguno')" class="py-2 px-3 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100 font-bold text-xs shadow-2xs transition-all">
+            1. Sin Equipo
+          </button>
+          <button onclick="simularPerfilEquipoPaciente('enfermera')" class="py-2 px-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/80 hover:bg-emerald-100 text-emerald-950 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-700 font-bold text-xs shadow-2xs transition-all">
+            2. Con Enfermera
+          </button>
+          <button onclick="simularPerfilEquipoPaciente('medico')" class="py-2 px-3 rounded-xl bg-blue-50 dark:bg-blue-950/80 hover:bg-blue-100 text-blue-950 dark:text-blue-200 border border-blue-300 dark:border-blue-700 font-bold text-xs shadow-2xs transition-all">
+            3. Con Médico
+          </button>
+        </div>
+      </div>
+
       <!-- Banner Amigable Paciente -->
       <div class="med-card banner-clinico-pac p-5 sm:p-6 shadow-md">
         <div class="flex items-start gap-4">
@@ -1499,27 +1524,7 @@
               </div>
 
               <div id="pac-lista-referentes" class="space-y-2">
-                <div class="p-2.5 rounded-xl bg-white border border-slate-200/80 flex items-center justify-between shadow-xs">
-                  <div class="flex items-center gap-2.5">
-                    <div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-xs">MG</div>
-                    <div>
-                      <h4 class="text-xs font-bold text-slate-800">Lic. Mariana Gómez</h4>
-                      <p data-i18n="pac_ref_sub1" class="text-[10px] text-slate-500">Enfermera / Podóloga Referente · MN 48.120</p>
-                    </div>
-                  </div>
-                  <span data-i18n="pac_badge_notif" class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">Notificada</span>
-                </div>
-
-                <div class="p-2.5 rounded-xl bg-white border border-slate-200/80 flex items-center justify-between shadow-xs">
-                  <div class="flex items-center gap-2.5">
-                    <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-800 flex items-center justify-center font-bold text-xs">CP</div>
-                    <div>
-                      <h4 class="text-xs font-bold text-slate-800">Dr. Carlos Pérez</h4>
-                      <p data-i18n="pac_ref_sub2" class="text-[10px] text-slate-500">Médico Especialista en Pie · MN 142.850</p>
-                    </div>
-                  </div>
-                  <span data-i18n="pac_badge_notif" class="text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full">Notificado</span>
-                </div>
+                <!-- Rellenado dinámicamente por renderizarReferentesPaciente() -->
               </div>
 
               <p data-i18n="pac_ref_hint_bottom" class="text-[10px] text-slate-500 italic flex items-center gap-1 pt-1">

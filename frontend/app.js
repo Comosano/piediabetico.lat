@@ -111,6 +111,11 @@ function ingresarModoDemo(perfil) {
       localStorage.setItem('piediabetico_paciente_profile', JSON.stringify(pacienteDemo));
     }
     switchPortal('paciente', true);
+    document.getElementById('pac-demo-banner')?.classList.remove('hidden');
+    // Pre-cargar caso de ejemplo para experiencia interactiva inmediata
+    setTimeout(() => {
+      cargarCasoEjemploPaciente('amarillo');
+    }, 100);
   } else {
     const profDemo = {
       nombre: "Dr. Alejandro Gómez (Demo Médico)",
