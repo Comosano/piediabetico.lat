@@ -28,7 +28,7 @@
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-  <link rel="stylesheet" href="./styles.css?v=17">
+  <link rel="stylesheet" href="./styles.css?v=29">
 </head>
 <body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col antialiased">
 
@@ -442,634 +442,6 @@
         </div>
       </div>
 
-      <!-- ═════════════════════════════════════════════════════════════════ -->
-      <!-- SECCIÓN 3: AGENDA DE CONGRESOS & EVENTOS CIENTÍFICOS 2026        -->
-      <!-- ═════════════════════════════════════════════════════════════════ -->
-      <div id="seccion-congresos" class="scroll-mt-24 space-y-6 pt-6 border-t border-slate-200">
-        
-        <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
-          <div>
-            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-700/80 text-blue-800 dark:text-blue-300 text-xs font-bold shadow-xs">
-              <span class="text-sm">📅</span>
-              <span data-i18n="sec_cong_badge">Agenda Científica & Educación Médica Continua · LATAM 2026</span>
-            </div>
-            <h2 data-i18n="sec_cong_titulo" class="text-2xl sm:text-3xl font-black text-slate-900 mt-2">Congresos, Simposios & Encuentros Internacionales</h2>
-            <p data-i18n="sec_cong_sub" class="text-xs sm:text-sm text-slate-600 mt-1">Conectate con los principales foros de especialistas en pie diabético, cirugía endovascular y salvamento de extremidades.</p>
-          </div>
-
-          <!-- Filtro de País de Congresos -->
-          <div class="flex items-center gap-2">
-            <span data-i18n="sec_cong_filtrar_lbl" class="text-xs font-bold text-slate-500 hidden sm:inline">Filtrar:</span>
-            <select id="filtro-pais-congresos" onchange="filtrarCongresosPorPais(this.value)" class="med-input !py-1.5 text-xs font-bold bg-white dark:bg-slate-800 text-slate-900 dark:text-white border-slate-300 dark:border-slate-700">
-              <option value="TODOS" data-i18n="opt_pais_todos">🌎 Todos los Países (LATAM)</option>
-              <option value="MX">🇲🇽 México</option>
-              <option value="DO">🇩🇴 República Dominicana</option>
-              <option value="CL">🇨🇱 Chile</option>
-              <option value="AR">🇦🇷 Argentina</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- GRID DE TARJETAS DE CONGRESOS -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="grid-congresos-cards">
-          
-          <!-- 1. HENDOLAT 2026 -->
-          <div class="card-congreso med-card p-6 bg-white border border-slate-200 hover:border-blue-500 hover:shadow-xl transition-all flex flex-col justify-between space-y-5 group" data-pais="MX">
-            <div class="space-y-3">
-              <div class="flex items-start justify-between gap-2">
-                <span class="px-2.5 py-1 rounded-full text-[11px] font-black bg-purple-100 text-purple-900 flex items-center gap-1">
-                  <span>🇲🇽</span>
-                  <span>Ciudad de México</span>
-                </span>
-                <span class="text-[11px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">2–4 Sep 2026</span>
-              </div>
-              <h3 class="text-lg font-black text-slate-900 group-hover:text-blue-900 transition-colors">HENDOLAT 2026</h3>
-              <p class="text-xs text-slate-600 leading-relaxed">
-                El evento cumbre de <strong>Angiología, Terapia Endovascular y Medicina del Pie Diabético</strong>. Más de 500 líderes de opinión debatiendo técnicas de revascularización y rescate.
-              </p>
-              <div class="p-3 rounded-xl bg-slate-50 border border-slate-100 text-[11px] space-y-1 text-slate-700">
-                <div class="flex items-center gap-1.5"><i data-lucide="map-pin" class="w-3.5 h-3.5 text-blue-600"></i><strong>Sede:</strong> Hilton Reforma Mexico City</div>
-                <div class="flex items-center gap-1.5"><i data-lucide="file-text" class="w-3.5 h-3.5 text-emerald-600"></i><strong>Abstracts:</strong> Recepción hasta 15 Julio 2026</div>
-              </div>
-            </div>
-            <div class="space-y-2 pt-2 border-t border-slate-100">
-              <div class="flex gap-2">
-                <button onclick="abrirModalDetalleCongreso('hendolat')" class="btn-sec flex-1 !py-2 !text-xs font-bold text-blue-900 bg-blue-50 hover:bg-blue-100 border border-blue-200 flex items-center justify-center gap-1">
-                  <i data-lucide="info" class="w-3.5 h-3.5"></i>
-                  <span data-i18n="btn_ver_info">Ver Info</span>
-                </button>
-                <button onclick="abrirModalEnviarTrabajo('HENDOLAT 2026')" class="btn-sec flex-1 !py-2 !text-xs font-bold text-slate-700 hover:text-emerald-800 bg-white border border-slate-300 flex items-center justify-center gap-1">
-                  <i data-lucide="upload-cloud" class="w-3.5 h-3.5 text-emerald-600"></i>
-                  <span data-i18n="btn_enviar_trabajo">Enviar Trabajo</span>
-                </button>
-              </div>
-              <button onclick="abrirInscripcionCongreso('https://hendolat.com', 'HENDOLAT 2026', '$350 USD')" class="btn-primary w-full !py-2.5 !text-xs font-black bg-blue-900 hover:bg-blue-950 text-white shadow-sm flex items-center justify-center gap-1.5">
-                <i data-lucide="ticket" class="w-4 h-4 text-emerald-400"></i>
-                <span data-i18n="btn_comprar_entradas">Comprar Entradas / Registro</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- 2. AMEXIPIED 2026 -->
-          <div class="card-congreso med-card p-6 bg-white border border-slate-200 hover:border-emerald-500 hover:shadow-xl transition-all flex flex-col justify-between space-y-5 group" data-pais="MX">
-            <div class="space-y-3">
-              <div class="flex items-start justify-between gap-2">
-                <span class="px-2.5 py-1 rounded-full text-[11px] font-black bg-emerald-100 text-emerald-900 flex items-center gap-1">
-                  <span>🇲🇽</span>
-                  <span>Zacatecas, México</span>
-                </span>
-                <span class="text-[11px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">2–5 Dic 2026</span>
-              </div>
-              <h3 class="text-lg font-black text-slate-900 group-hover:text-emerald-700 transition-colors">XXIV Congreso AMEXIPIED 2026</h3>
-              <p class="text-xs text-slate-600 leading-relaxed">
-                Congreso Internacional de la Asociación Mexicana de Pie Diabético. Enfoque multidisciplinario en podiatría clínica, desbridamiento quirúrgico, biomecánica y apósitos.
-              </p>
-              <div class="p-3 rounded-xl bg-slate-50 border border-slate-100 text-[11px] space-y-1 text-slate-700">
-                <div class="flex items-center gap-1.5"><i data-lucide="map-pin" class="w-3.5 h-3.5 text-emerald-600"></i><strong>Sede:</strong> Palacio de Convenciones Zacatecas</div>
-                <div class="flex items-center gap-1.5"><i data-lucide="file-text" class="w-3.5 h-3.5 text-emerald-600"></i><strong>Abstracts:</strong> Recepción hasta 30 Septiembre 2026</div>
-              </div>
-            </div>
-            <div class="space-y-2 pt-2 border-t border-slate-100">
-              <div class="flex gap-2">
-                <button onclick="abrirModalDetalleCongreso('amexipied')" class="btn-sec flex-1 !py-2 !text-xs font-bold text-emerald-900 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 flex items-center justify-center gap-1">
-                  <i data-lucide="info" class="w-3.5 h-3.5"></i>
-                  <span data-i18n="btn_ver_info">Ver Info</span>
-                </button>
-                <button onclick="abrirModalEnviarTrabajo('XXIV Congreso AMEXIPIED 2026')" class="btn-sec flex-1 !py-2 !text-xs font-bold text-slate-700 hover:text-emerald-800 bg-white border border-slate-300 flex items-center justify-center gap-1">
-                  <i data-lucide="upload-cloud" class="w-3.5 h-3.5 text-emerald-600"></i>
-                  <span data-i18n="btn_enviar_trabajo">Enviar Trabajo</span>
-                </button>
-              </div>
-              <button onclick="abrirInscripcionCongreso('https://amexipied.org', 'XXIV Congreso AMEXIPIED', '$250 USD')" class="btn-primary w-full !py-2.5 !text-xs font-black bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm flex items-center justify-center gap-1.5">
-                <i data-lucide="ticket" class="w-4 h-4"></i>
-                <span data-i18n="btn_comprar_entradas">Comprar Entradas / Registro</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- 3. CLAD 2026 (PUNTA CANA) -->
-          <div class="card-congreso med-card p-6 bg-white border border-slate-200 hover:border-blue-500 hover:shadow-xl transition-all flex flex-col justify-between space-y-5 group" data-pais="DO">
-            <div class="space-y-3">
-              <div class="flex items-start justify-between gap-2">
-                <span class="px-2.5 py-1 rounded-full text-[11px] font-black bg-sky-100 text-sky-900 flex items-center gap-1">
-                  <span>🇩🇴</span>
-                  <span>Punta Cana, Rep. Dominicana</span>
-                </span>
-                <span class="text-[11px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">5–8 Nov 2026</span>
-              </div>
-              <h3 class="text-lg font-black text-slate-900 group-hover:text-blue-900 transition-colors">Congreso Latinoamericano de Diabetes (CLAD)</h3>
-              <p class="text-xs text-slate-600 leading-relaxed">
-                Complicaciones micro y macrovasculares, neuropatía diabética dolorosa y protocolos IWGDF 2023. Simposio intersocietario con expertos de 18 países.
-              </p>
-              <div class="p-3 rounded-xl bg-slate-50 border border-slate-100 text-[11px] space-y-1 text-slate-700">
-                <div class="flex items-center gap-1.5"><i data-lucide="map-pin" class="w-3.5 h-3.5 text-blue-600"></i><strong>Sede:</strong> Meliá Caribe Beach Resort</div>
-                <div class="flex items-center gap-1.5"><i data-lucide="file-text" class="w-3.5 h-3.5 text-emerald-600"></i><strong>Abstracts:</strong> Recepción hasta 20 Agosto 2026</div>
-              </div>
-            </div>
-            <div class="space-y-2 pt-2 border-t border-slate-100">
-              <div class="flex gap-2">
-                <button onclick="abrirModalDetalleCongreso('clad')" class="btn-sec flex-1 !py-2 !text-xs font-bold text-blue-900 bg-blue-50 hover:bg-blue-100 border border-blue-200 flex items-center justify-center gap-1">
-                  <i data-lucide="info" class="w-3.5 h-3.5"></i>
-                  <span data-i18n="btn_ver_info">Ver Info</span>
-                </button>
-                <button onclick="abrirModalEnviarTrabajo('CLAD 2026 Punta Cana')" class="btn-sec flex-1 !py-2 !text-xs font-bold text-slate-700 hover:text-emerald-800 bg-white border border-slate-300 flex items-center justify-center gap-1">
-                  <i data-lucide="upload-cloud" class="w-3.5 h-3.5 text-emerald-600"></i>
-                  <span data-i18n="btn_enviar_trabajo">Enviar Trabajo</span>
-                </button>
-              </div>
-              <button onclick="abrirInscripcionCongreso('https://diabeteslatam2026.com', 'CLAD 2026 Punta Cana', '$300 USD')" class="btn-primary w-full !py-2.5 !text-xs font-black bg-blue-900 hover:bg-blue-950 text-white shadow-sm flex items-center justify-center gap-1.5">
-                <i data-lucide="ticket" class="w-4 h-4 text-emerald-400"></i>
-                <span data-i18n="btn_comprar_entradas">Comprar Entradas / Registro</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- 4. SOCHIDIAB 2026 (CHILE) -->
-          <div class="card-congreso med-card p-6 bg-white border border-slate-200 hover:border-red-500 hover:shadow-xl transition-all flex flex-col justify-between space-y-5 group" data-pais="CL">
-            <div class="space-y-3">
-              <div class="flex items-start justify-between gap-2">
-                <span class="px-2.5 py-1 rounded-full text-[11px] font-black bg-red-100 text-red-900 flex items-center gap-1">
-                  <span>🇨🇱</span>
-                  <span>Temuco, Chile</span>
-                </span>
-                <span class="text-[11px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">7–9 Mayo 2026</span>
-              </div>
-              <h3 class="text-lg font-black text-slate-900 group-hover:text-red-900 transition-colors">5to Congreso SOCHIDIAB 2026</h3>
-              <p class="text-xs text-slate-600 leading-relaxed">
-                Sociedad Chilena de Diabetes. Módulo estelar "Unidos para prevenir complicaciones del pie": tecnología en monitorización, termografía y apósitos activos.
-              </p>
-              <div class="p-3 rounded-xl bg-slate-50 border border-slate-100 text-[11px] space-y-1 text-slate-700">
-                <div class="flex items-center gap-1.5"><i data-lucide="map-pin" class="w-3.5 h-3.5 text-red-600"></i><strong>Sede:</strong> Hotel Dreams Temuco</div>
-                <div class="flex items-center gap-1.5"><i data-lucide="file-text" class="w-3.5 h-3.5 text-emerald-600"></i><strong>Abstracts:</strong> Recepción abierta</div>
-              </div>
-            </div>
-            <div class="space-y-2 pt-2 border-t border-slate-100">
-              <div class="flex gap-2">
-                <button onclick="abrirModalDetalleCongreso('sochidiab')" class="btn-sec flex-1 !py-2 !text-xs font-bold text-red-900 bg-red-50 hover:bg-red-100 border border-red-200 flex items-center justify-center gap-1">
-                  <i data-lucide="info" class="w-3.5 h-3.5"></i>
-                  <span data-i18n="btn_ver_info">Ver Info</span>
-                </button>
-                <button onclick="abrirModalEnviarTrabajo('5to Congreso SOCHIDIAB')" class="btn-sec flex-1 !py-2 !text-xs font-bold text-slate-700 hover:text-emerald-800 bg-white border border-slate-300 flex items-center justify-center gap-1">
-                  <i data-lucide="upload-cloud" class="w-3.5 h-3.5 text-emerald-600"></i>
-                  <span data-i18n="btn_enviar_trabajo">Enviar Trabajo</span>
-                </button>
-              </div>
-              <button onclick="abrirInscripcionCongreso('https://sochidiab.cl', '5to Congreso SOCHIDIAB', '$200 USD')" class="btn-primary w-full !py-2.5 !text-xs font-black bg-red-700 hover:bg-red-800 text-white shadow-sm flex items-center justify-center gap-1.5">
-                <i data-lucide="ticket" class="w-4 h-4"></i>
-                <span data-i18n="btn_comprar_entradas">Comprar Entradas / Registro</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- 5. SAMECIPP / FLAMECIPP (ARGENTINA) -->
-          <div class="card-congreso med-card p-6 bg-white border border-slate-200 hover:border-blue-500 hover:shadow-xl transition-all flex flex-col justify-between space-y-5 group" data-pais="AR">
-            <div class="space-y-3">
-              <div class="flex items-start justify-between gap-2">
-                <span class="px-2.5 py-1 rounded-full text-[11px] font-black bg-blue-100 text-blue-900 flex items-center gap-1">
-                  <span>🇦🇷</span>
-                  <span>Buenos Aires, Argentina</span>
-                </span>
-                <span class="text-[11px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">Octubre 2026</span>
-              </div>
-              <h3 class="text-lg font-black text-slate-900 group-hover:text-blue-900 transition-colors">26° Congreso SAMeCiPP & 11° FLAMeCiPP</h3>
-              <p class="text-xs text-slate-600 leading-relaxed">
-                Sociedad Argentina de Medicina y Cirugía de Pie y Pierna. Enfoque quirúrgico traumatológico: osteotomías de descarga, artrodesis de Charcot y fijación interna/externa.
-              </p>
-              <div class="p-3 rounded-xl bg-slate-50 border border-slate-100 text-[11px] space-y-1 text-slate-700">
-                <div class="flex items-center gap-1.5"><i data-lucide="map-pin" class="w-3.5 h-3.5 text-blue-600"></i><strong>Sede:</strong> Centro de Convenciones UCA, Puerto Madero</div>
-                <div class="flex items-center gap-1.5"><i data-lucide="file-text" class="w-3.5 h-3.5 text-emerald-600"></i><strong>Abstracts:</strong> Presentación de Casos Clínicos</div>
-              </div>
-            </div>
-            <div class="space-y-2 pt-2 border-t border-slate-100">
-              <div class="flex gap-2">
-                <button onclick="abrirModalDetalleCongreso('samecipp')" class="btn-sec flex-1 !py-2 !text-xs font-bold text-blue-900 bg-blue-50 hover:bg-blue-100 border border-blue-200 flex items-center justify-center gap-1">
-                  <i data-lucide="info" class="w-3.5 h-3.5"></i>
-                  <span data-i18n="btn_ver_info">Ver Info</span>
-                </button>
-                <button onclick="abrirModalEnviarTrabajo('26° Congreso SAMeCiPP')" class="btn-sec flex-1 !py-2 !text-xs font-bold text-slate-700 hover:text-emerald-800 bg-white border border-slate-300 flex items-center justify-center gap-1">
-                  <i data-lucide="upload-cloud" class="w-3.5 h-3.5 text-emerald-600"></i>
-                  <span data-i18n="btn_enviar_trabajo">Enviar Trabajo</span>
-                </button>
-              </div>
-              <button onclick="abrirInscripcionCongreso('https://samecipp.org.ar', 'Congreso SAMeCiPP 2026', '$180 USD / $150.000 ARS')" class="btn-primary w-full !py-2.5 !text-xs font-black bg-blue-900 hover:bg-blue-950 text-white shadow-sm flex items-center justify-center gap-1.5">
-                <i data-lucide="ticket" class="w-4 h-4 text-emerald-400"></i>
-                <span data-i18n="btn_comprar_entradas">Comprar Entradas / Registro</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- 6. PUERTO ESCONDIDO (MÉXICO) -->
-          <div class="card-congreso med-card p-6 bg-white border border-slate-200 hover:border-amber-500 hover:shadow-xl transition-all flex flex-col justify-between space-y-5 group" data-pais="MX">
-            <div class="space-y-3">
-              <div class="flex items-start justify-between gap-2">
-                <span class="px-2.5 py-1 rounded-full text-[11px] font-black bg-amber-100 text-amber-900 flex items-center gap-1">
-                  <span>🇲🇽</span>
-                  <span>Puerto Escondido, Oaxaca</span>
-                </span>
-                <span class="text-[11px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">16–18 Abr 2026</span>
-              </div>
-              <h3 class="text-lg font-black text-slate-900 group-hover:text-amber-700 transition-colors">Congreso Internacional de Enfermedades del Pie</h3>
-              <p class="text-xs text-slate-600 leading-relaxed">
-                Abordaje integral en prevención primaria y secundaria de úlceras en atención médica ambulatoria y terapia avanzada de heridas complejas.
-              </p>
-              <div class="p-3 rounded-xl bg-slate-50 border border-slate-100 text-[11px] space-y-1 text-slate-700">
-                <div class="flex items-center gap-1.5"><i data-lucide="map-pin" class="w-3.5 h-3.5 text-amber-600"></i><strong>Sede:</strong> Hotel Posada Real Puerto Escondido</div>
-                <div class="flex items-center gap-1.5"><i data-lucide="file-text" class="w-3.5 h-3.5 text-emerald-600"></i><strong>Abstracts:</strong> Posters y Trabajos Libres</div>
-              </div>
-            </div>
-            <div class="space-y-2 pt-2 border-t border-slate-100">
-              <div class="flex gap-2">
-                <button onclick="abrirModalDetalleCongreso('puertoescondido')" class="btn-sec flex-1 !py-2 !text-xs font-bold text-amber-900 bg-amber-50 hover:bg-amber-100 border border-amber-200 flex items-center justify-center gap-1">
-                  <i data-lucide="info" class="w-3.5 h-3.5"></i>
-                  <span data-i18n="btn_ver_info">Ver Info</span>
-                </button>
-                <button onclick="abrirModalEnviarTrabajo('Congreso Puerto Escondido 2026')" class="btn-sec flex-1 !py-2 !text-xs font-bold text-slate-700 hover:text-emerald-800 bg-white border border-slate-300 flex items-center justify-center gap-1">
-                  <i data-lucide="upload-cloud" class="w-3.5 h-3.5 text-emerald-600"></i>
-                  <span data-i18n="btn_enviar_trabajo">Enviar Trabajo</span>
-                </button>
-              </div>
-              <button onclick="abrirInscripcionCongreso('https://amexipied.org', 'Congreso Puerto Escondido', '$220 USD')" class="btn-primary w-full !py-2.5 !text-xs font-black bg-amber-600 hover:bg-amber-700 text-white shadow-sm flex items-center justify-center gap-1.5">
-                <i data-lucide="ticket" class="w-4 h-4"></i>
-                <span data-i18n="btn_comprar_entradas">Comprar Entradas / Registro</span>
-              </button>
-            </div>
-          </div>
-
-        </div>
-
-      </div>
-
-      <!-- ═════════════════════════════════════════════════════════════════ -->
-      <!-- SECCIÓN 4: PORTAL UNIVERSITARIO & FORMACIÓN ACADÉMICA (LATAM)      -->
-      <!-- ═════════════════════════════════════════════════════════════════ -->
-      <div id="seccion-universidades" class="scroll-mt-24 space-y-6 pt-6 border-t border-slate-200">
-        <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
-          <div>
-            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-700/80 text-blue-800 dark:text-blue-300 text-xs font-bold shadow-xs">
-              <span class="text-sm">🎓</span>
-              <span data-i18n="sec_univ_badge">Red Universitaria de Formación Continua · LATAM</span>
-            </div>
-            <h2 data-i18n="sec_univ_titulo" class="text-2xl sm:text-3xl font-black text-slate-900 mt-2">Diplomaturas, Posgrados & Cursos Especializados</h2>
-            <p data-i18n="sec_univ_sub" class="text-xs sm:text-sm text-slate-600 mt-1">Capacitación académica de excelencia avalada por las principales facultades de medicina, hospitales universitarios y sociedades de pie diabético.</p>
-          </div>
-          <div class="flex items-center gap-2">
-            <span id="badge-total-universidades" class="px-3 py-1.5 rounded-full text-xs font-black bg-blue-900 text-white shadow-xs">
-              25 Programas Académicos
-            </span>
-          </div>
-        </div>
-
-        <!-- Barra de Filtros: País y Modalidad -->
-        <div class="med-card p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
-          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-            
-            <!-- Filtro por País -->
-            <div class="flex flex-wrap items-center gap-1.5 text-xs">
-              <span class="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1 mr-1">
-                <i data-lucide="globe" class="w-3.5 h-3.5 text-blue-600 dark:text-sky-400"></i>
-                <span data-i18n="univ_filtro_pais">País:</span>
-              </span>
-              <button onclick="filtrarUniversidadesPorPais('TODOS')" id="btn-univ-pais-TODOS" class="px-2.5 py-1 rounded-lg font-bold text-xs bg-blue-900 dark:bg-blue-600 text-white shadow-xs transition-all">🌎 Todos</button>
-              <button onclick="filtrarUniversidadesPorPais('AR')" id="btn-univ-pais-AR" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🇦🇷 Argentina (5)</button>
-              <button onclick="filtrarUniversidadesPorPais('MX')" id="btn-univ-pais-MX" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🇲🇽 México (5)</button>
-              <button onclick="filtrarUniversidadesPorPais('BR')" id="btn-univ-pais-BR" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🇧🇷 Brasil (2)</button>
-              <button onclick="filtrarUniversidadesPorPais('CO')" id="btn-univ-pais-CO" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🇨🇴 Colombia (2)</button>
-              <button onclick="filtrarUniversidadesPorPais('CL')" id="btn-univ-pais-CL" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🇨🇱 Chile (2)</button>
-              <button onclick="filtrarUniversidadesPorPais('PE')" id="btn-univ-pais-PE" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🇵🇪 Perú (1)</button>
-              <button onclick="filtrarUniversidadesPorPais('PY')" id="btn-univ-pais-PY" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🇵🇾 Paraguay (1)</button>
-              <button onclick="filtrarUniversidadesPorPais('GT')" id="btn-univ-pais-GT" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🇬🇹 Guatemala (1)</button>
-              <button onclick="filtrarUniversidadesPorPais('SV')" id="btn-univ-pais-SV" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🇸🇻 El Salvador (1)</button>
-              <button onclick="filtrarUniversidadesPorPais('VE')" id="btn-univ-pais-VE" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🇻🇪 Venezuela (1)</button>
-              <button onclick="filtrarUniversidadesPorPais('LATAM')" id="btn-univ-pais-LATAM" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🌐 Regional (4)</button>
-            </div>
-
-            <!-- Filtro por Modalidad -->
-            <div class="flex items-center gap-1.5 text-xs">
-              <span class="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1 mr-1">
-                <i data-lucide="book-open" class="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400"></i>
-                <span data-i18n="univ_filtro_mod">Modalidad:</span>
-              </span>
-              <select id="select-univ-modalidad" onchange="filtrarUniversidadesPorModalidad(this.value)" class="med-input !py-1 !text-xs bg-slate-50 dark:bg-slate-800 font-bold text-slate-900 dark:text-white border-slate-300 dark:border-slate-700">
-                <option value="TODAS">Todas las Modalidades</option>
-                <option value="Online">💻 100% Online / Virtual</option>
-                <option value="Híbrido">🔄 Híbrido (Virtual + Prácticas)</option>
-                <option value="Presencial">🏥 Presencial / Hospitalario</option>
-              </select>
-            </div>
-
-          </div>
-        </div>
-
-        <!-- Grid Responsivo de 25 Programas Académicos -->
-        <div id="grid-universidades-latam" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          <!-- Populated by renderizarUniversidades() in app.js -->
-        </div>
-      </div>
-
-      <!-- ═════════════════════════════════════════════════════════════════ -->
-      <!-- SECCIÓN 5: SOCIEDADES MÉDICAS, ASOCIACIONES & ORGANISMOS          -->
-      <!-- ═════════════════════════════════════════════════════════════════ -->
-      <div id="seccion-sociedades" class="scroll-mt-24 space-y-6 pt-6 border-t border-slate-200">
-        <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
-          <div>
-            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-700/80 text-indigo-800 dark:text-indigo-300 text-xs font-bold shadow-xs">
-              <span class="text-sm">🏛️</span>
-              <span data-i18n="sec_soc_badge">Directorio Multidisciplinar & Red Científica · LATAM & Global</span>
-            </div>
-            <h2 data-i18n="sec_soc_titulo" class="text-2xl sm:text-3xl font-black text-slate-900 mt-2">Sociedades Médicas, Asociaciones & Organismos</h2>
-            <p data-i18n="sec_soc_sub" class="text-xs sm:text-sm text-slate-600 mt-1">Directorio verificado de entidades en Infectología, Heridas, Cirugía Vascular, Traumatología, Diabetología y Pacientes con contactos directos.</p>
-          </div>
-          <div class="flex items-center gap-2">
-            <span id="badge-total-sociedades" class="px-3 py-1.5 rounded-full text-xs font-black bg-indigo-900 text-white shadow-xs">
-              32 Entidades Médicas
-            </span>
-          </div>
-        </div>
-
-        <!-- Barra de Filtros: País y Especialidad -->
-        <div class="med-card p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
-          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-            
-            <!-- Filtro por País / Alcance -->
-            <div class="flex flex-wrap items-center gap-1.5 text-xs">
-              <span class="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1 mr-1">
-                <i data-lucide="globe" class="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400"></i>
-                <span data-i18n="soc_filtro_pais">País / Región:</span>
-              </span>
-              <button onclick="filtrarSociedadesPorPais('TODOS')" id="btn-soc-pais-TODOS" class="px-2.5 py-1 rounded-lg font-bold text-xs bg-indigo-900 dark:bg-indigo-600 text-white shadow-xs transition-all">🌎 Todos</button>
-              <button onclick="filtrarSociedadesPorPais('GLOBAL')" id="btn-soc-pais-GLOBAL" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🌐 Global (6)</button>
-              <button onclick="filtrarSociedadesPorPais('LATAM')" id="btn-soc-pais-LATAM" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🌎 Regional (6)</button>
-              <button onclick="filtrarSociedadesPorPais('AR')" id="btn-soc-pais-AR" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🇦🇷 Argentina (6)</button>
-              <button onclick="filtrarSociedadesPorPais('MX')" id="btn-soc-pais-MX" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🇲🇽 México (5)</button>
-              <button onclick="filtrarSociedadesPorPais('BR')" id="btn-soc-pais-BR" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🇧🇷 Brasil (4)</button>
-              <button onclick="filtrarSociedadesPorPais('CO')" id="btn-soc-pais-CO" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🇨🇴 Colombia (4)</button>
-              <button onclick="filtrarSociedadesPorPais('CL')" id="btn-soc-pais-CL" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🇨🇱 Chile (4)</button>
-              <button onclick="filtrarSociedadesPorPais('PE')" id="btn-soc-pais-PE" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🇵🇪 Perú (4)</button>
-              <button onclick="filtrarSociedadesPorPais('UY')" id="btn-soc-pais-UY" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🇺🇾 Uruguay (3)</button>
-            </div>
-
-            <!-- Filtro por Especialidad -->
-            <div class="flex items-center gap-1.5 text-xs">
-              <span class="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1 mr-1">
-                <i data-lucide="stethoscope" class="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400"></i>
-                <span data-i18n="soc_filtro_esp">Disciplina:</span>
-              </span>
-              <select id="select-soc-especialidad" onchange="filtrarSociedadesPorEspecialidad(this.value)" class="med-input !py-1 !text-xs bg-slate-50 dark:bg-slate-800 font-bold text-slate-900 dark:text-white border-slate-300 dark:border-slate-700">
-                <option value="TODAS">Todas las Especialidades</option>
-                <option value="Infectologia">🧫 Infectología (SADI, SBI, ACIN)</option>
-                <option value="Heridas">🩹 Cicatrización de Heridas (AIACH, AMCICHAC, SOBEST, GNEAUPP)</option>
-                <option value="Vascular">🩸 Cirugía Vascular & Angiología (CACCV, SMACVE, SBACV)</option>
-                <option value="Pie_Ortopedia">🦶 Pie & Ortopedia (SAMeCiPP, FLAMeCiPP, D-Foot, AAOT)</option>
-                <option value="Diabetologia">🔬 Diabetología & Endocrinología (SAD, SBD, ALAD, ADA, FMD)</option>
-                <option value="Pacientes">👥 Asociaciones de Pacientes & Prevención (ADU, ACD, ANADIH)</option>
-              </select>
-            </div>
-
-          </div>
-        </div>
-
-        <!-- Grid Responsivo de Sociedades Médicas -->
-        <div id="grid-sociedades-medicas" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          <!-- Populated by renderizarSociedades() in app.js -->
-        </div>
-      </div>
-
-      <!-- ═════════════════════════════════════════════════════════════════ -->
-      <!-- SECCIÓN 6: PABELLÓN DE LABORATORIOS & TERAPÉUTICA POR PAÍS        -->
-      <!-- ═════════════════════════════════════════════════════════════════ -->
-      <div id="seccion-laboratorios" class="scroll-mt-24 space-y-6 pt-6 border-t border-slate-200">
-        <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
-          <div>
-            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-700/80 text-emerald-800 dark:text-emerald-300 text-xs font-bold shadow-xs">
-              <span class="text-sm">🧪</span>
-              <span data-i18n="sec_lab_badge">Pabellón Terapéutico & Farmacéutico · LATAM 2026</span>
-            </div>
-            <h2 data-i18n="sec_lab_titulo" class="text-2xl sm:text-3xl font-black text-slate-900 mt-2">Laboratorios, Terapias Avanzadas & Insumos</h2>
-            <p data-i18n="sec_lab_sub" class="text-xs sm:text-sm text-slate-600 mt-1">Innovaciones biológicas, apósitos bioactivos, antisépticos antibiofilm, fármacos y dispositivos para salvamento de la extremidad.</p>
-          </div>
-          <div class="flex items-center gap-2">
-            <span id="badge-total-laboratorios" class="px-3 py-1.5 rounded-full text-xs font-black bg-emerald-800 text-white shadow-xs">
-              28 Soluciones Terapéuticas
-            </span>
-          </div>
-        </div>
-
-        <!-- Barra de Filtros: País y Categoría Terapéutica -->
-        <div class="med-card p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
-          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-            
-            <!-- Filtro por País de Laboratorio -->
-            <div class="flex flex-wrap items-center gap-1.5 text-xs">
-              <span class="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1 mr-1">
-                <i data-lucide="globe" class="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400"></i>
-                <span data-i18n="lab_filtro_pais">País / Origen:</span>
-              </span>
-              <button onclick="filtrarLaboratoriosPorPais('TODOS')" id="btn-lab-pais-TODOS" class="px-2.5 py-1 rounded-lg font-bold text-xs bg-emerald-800 dark:bg-emerald-600 text-white shadow-xs transition-all">🌎 Todos</button>
-              <button onclick="filtrarLaboratoriosPorPais('GLOBAL')" id="btn-lab-pais-GLOBAL" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🌐 Multilatinas (12)</button>
-              <button onclick="filtrarLaboratoriosPorPais('AR')" id="btn-lab-pais-AR" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🇦🇷 Argentina (3)</button>
-              <button onclick="filtrarLaboratoriosPorPais('BR')" id="btn-lab-pais-BR" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🇧🇷 Brasil (4)</button>
-              <button onclick="filtrarLaboratoriosPorPais('CL')" id="btn-lab-pais-CL" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🇨🇱 Chile (1)</button>
-              <button onclick="filtrarLaboratoriosPorPais('CO')" id="btn-lab-pais-CO" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🇨🇴 Colombia (2)</button>
-              <button onclick="filtrarLaboratoriosPorPais('CU')" id="btn-lab-pais-CU" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🇨🇺 Cuba (1)</button>
-              <button onclick="filtrarLaboratoriosPorPais('MX')" id="btn-lab-pais-MX" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🇲🇽 México (4)</button>
-              <button onclick="filtrarLaboratoriosPorPais('PE')" id="btn-lab-pais-PE" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🇵🇪 Perú (1)</button>
-            </div>
-
-            <!-- Filtro por Categoría Terapéutica -->
-            <div class="flex items-center gap-1.5 text-xs">
-              <span class="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1 mr-1">
-                <i data-lucide="tag" class="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400"></i>
-                <span data-i18n="lab_filtro_cat">Categoría:</span>
-              </span>
-              <select id="select-lab-categoria" onchange="filtrarLaboratoriosPorCategoria(this.value)" class="med-input !py-1 !text-xs bg-slate-50 dark:bg-slate-800 font-bold text-slate-900 dark:text-white border-slate-300 dark:border-slate-700">
-                <option value="TODAS">Todas las Categorías</option>
-                <option value="Apositos">🩹 Apósitos & Coberturas Avanzadas</option>
-                <option value="Biologicas">🧬 Terapias Biológicas & Factores de Crecimiento</option>
-                <option value="Topicos">🧴 Fórmulas Tópicas & Control de Biofilm</option>
-                <option value="Farmacos">💊 Farmacología & Antidiabéticos</option>
-                <option value="Calzado">👞 Calzado de Descarga & Ortesis</option>
-                <option value="Dispositivos">🌬️ Oxígeno Tópico, TPN & Fotobiomodulación</option>
-              </select>
-            </div>
-
-          </div>
-        </div>
-
-        <!-- Grid Responsivo de Laboratorios y Fármacos -->
-        <div id="grid-laboratorios-latam" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <!-- Populated by renderizarLaboratorios() in app.js -->
-        </div>
-      </div>
-
-      <!-- ═════════════════════════════════════════════════════════════════ -->
-      
-      <!-- ═════════════════════════════════════════════════════════════════ -->
-      <!-- SECCIÓN 5B: PABELLÓN DE GUÍAS CLÍNICAS & CONSENSOS GLOBALES       -->
-      <!-- ═════════════════════════════════════════════════════════════════ -->
-      <div id="seccion-guias-clinicas" class="scroll-mt-24 space-y-6 pt-6 border-t border-slate-200">
-        <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
-          <div>
-            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-50 border border-teal-200 text-teal-900 text-xs font-bold shadow-xs">
-              <span class="text-sm">📚</span>
-              <span data-i18n="sec_guias_badge">Biblioteca Oficial de Guías de Práctica Clínica & Consensos</span>
-            </div>
-            <h2 data-i18n="sec_guias_titulo" class="text-2xl sm:text-3xl font-black text-slate-900 mt-2">Guías Médicas, Algoritmos de Flujo & Descarga de PDFs</h2>
-            <p data-i18n="sec_guias_sub" class="text-xs sm:text-sm text-slate-600 mt-1">Consensos internacionales y latinoamericanos oficiales (IWGDF 2023, IDSA, SVS WIfI, ADA, ALAD, SADI) con resúmenes ejecutivos GRADE, diagramas de decisión y descarga de documentos completos.</p>
-          </div>
-          <div class="flex items-center gap-2">
-            <span id="badge-total-guias" class="px-3 py-1.5 rounded-full text-xs font-black bg-teal-900 text-white shadow-xs">
-              12 Guías Oficiales
-            </span>
-          </div>
-        </div>
-
-        <!-- Filtros de Guías Clínicas -->
-        <div class="med-card p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
-          <div class="flex flex-wrap items-center justify-between gap-3">
-            <div class="flex flex-wrap items-center gap-1.5 text-xs" id="filtros-guias-categoria">
-              <span class="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1 mr-1">
-                <i data-lucide="filter" class="w-3.5 h-3.5 text-teal-700 dark:text-teal-400"></i>
-                <span data-i18n="guias_filtro_eje">Eje Temático:</span>
-              </span>
-              <button onclick="filtrarGuiasMedicas('TODAS')" id="btn-guia-cat-TODAS" class="px-3 py-1 rounded-lg font-bold text-xs bg-teal-900 dark:bg-teal-600 text-white shadow-xs transition-all">📚 Todas (12)</button>
-              <button onclick="filtrarGuiasMedicas('IWGDF')" id="btn-guia-cat-IWGDF" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🌐 IWGDF 2023 (5)</button>
-              <button onclick="filtrarGuiasMedicas('Infeccion')" id="btn-guia-cat-Infeccion" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🧫 Infección & ATB (2)</button>
-              <button onclick="filtrarGuiasMedicas('Vascular')" id="btn-guia-cat-Vascular" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🩸 Vascular & WIfI (2)</button>
-              <button onclick="filtrarGuiasMedicas('Heridas')" id="btn-guia-cat-Heridas" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🩹 Curación & TIMERS (2)</button>
-              <button onclick="filtrarGuiasMedicas('LATAM')" id="btn-guia-cat-LATAM" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🌎 Consensos LATAM (3)</button>
-            </div>
-            <div class="text-[11px] font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/70 px-3 py-1 rounded-xl border border-emerald-200 dark:border-emerald-700 flex items-center gap-1.5">
-              <span data-i18n="guias_badge_acceso">✓ Acceso Abierto & Literatura Médica Oficial</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Grid de Tarjetas de Guías Médicas -->
-        <div id="grid-guias-medicas" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          <!-- Renderizado dinámicamente desde app.js -->
-        </div>
-      </div>
-
-            <!-- ═════════════════════════════════════════════════════════════════ -->
-      <!-- SECCIÓN 5C: MARCO DE EVIDENCIA CIENTÍFICA & FUENTES VERIFICADAS    -->
-      <!-- ═════════════════════════════════════════════════════════════════ -->
-      <div id="seccion-transparencia-fuentes" class="scroll-mt-24 space-y-6 pt-6 border-t border-slate-200">
-        <div class="med-card p-6 sm:p-8 bg-gradient-to-br from-slate-900 via-blue-950 to-slate-950 text-white rounded-3xl shadow-xl border border-blue-900/60 space-y-6">
-          
-          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-5 border-b border-blue-800/40 pb-5">
-            <div class="space-y-2 max-w-2xl">
-              <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 text-xs font-bold shadow-xs">
-                <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
-                <span>Medicina Basada en la Evidencia · Cero Alucinaciones</span>
-              </div>
-              <h2 class="text-2xl sm:text-3xl font-black tracking-tight text-white">
-                Fuentes Médicas Verificadas & Marco Científico
-              </h2>
-              <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                Para garantizar la máxima seguridad del paciente y evitar información médica errónea o desactualizada, todos los algoritmos, calculadoras clínicas, sugerencias de apósitos y esquemas antibióticos de <strong>piediabetico.lat</strong> están estrictamente fundamentados en los consensos internacionales y guías de práctica clínica de mayor jerarquía mundial (Grado 1A / GRADE).
-              </p>
-            </div>
-            <div class="flex flex-col sm:flex-row lg:flex-col gap-2 shrink-0">
-              <div class="p-3 rounded-2xl bg-white/10 border border-white/10 text-center">
-                <span class="text-xl font-black text-emerald-400 block">100%</span>
-                <span class="text-[10px] text-slate-300 font-semibold uppercase">Fuentes Indexadas</span>
-              </div>
-              <div class="p-3 rounded-2xl bg-white/10 border border-white/10 text-center">
-                <span class="text-xl font-black text-sky-400 block">GRADE 1A</span>
-                <span class="text-[10px] text-slate-300 font-semibold uppercase">Nivel de Evidencia</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Los 7 Pilares de Evidencia Clínica Oficial -->
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
-            
-            <!-- Pilar 1 -->
-            <div class="p-4 rounded-2xl bg-white/5 border border-white/10 hover:border-emerald-400/50 transition-all space-y-2 group">
-              <div class="flex items-center justify-between">
-                <span class="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-300 flex items-center justify-center font-bold text-sm">1</span>
-                <span class="px-2 py-0.5 rounded-full text-[9px] font-black bg-emerald-400/20 text-emerald-300">Consenso Mundial</span>
-              </div>
-              <h4 class="font-bold text-white text-sm">IWGDF Guidelines 2023</h4>
-              <p class="text-slate-300 text-[11px] leading-snug">International Working Group on the Diabetic Foot. Estándar de oro global para prevención, infección, descarga, cicatrización y enfermedad arterial periférica.</p>
-              <div class="pt-1 text-[10px] text-emerald-400 font-mono">DOI: 10.1002/dmrr.3656</div>
-            </div>
-
-            <!-- Pilar 2 -->
-            <div class="p-4 rounded-2xl bg-white/5 border border-white/10 hover:border-blue-400/50 transition-all space-y-2 group">
-              <div class="flex items-center justify-between">
-                <span class="w-8 h-8 rounded-xl bg-blue-500/20 text-blue-300 flex items-center justify-center font-bold text-sm">2</span>
-                <span class="px-2 py-0.5 rounded-full text-[9px] font-black bg-blue-400/20 text-blue-300">Infectología</span>
-              </div>
-              <h4 class="font-bold text-white text-sm">IDSA / IWGDF / SADI 2023</h4>
-              <p class="text-slate-300 text-[11px] leading-snug">Infectious Diseases Society of America y Sociedad Argentina de Infectología. Guías de diagnóstico microbiológico por biopsia ósea y uso racional de antibióticos.</p>
-              <div class="pt-1 text-[10px] text-blue-400 font-mono">DOI: 10.1093/cid/ciad527</div>
-            </div>
-
-            <!-- Pilar 3 -->
-            <div class="p-4 rounded-2xl bg-white/5 border border-white/10 hover:border-rose-400/50 transition-all space-y-2 group">
-              <div class="flex items-center justify-between">
-                <span class="w-8 h-8 rounded-xl bg-rose-500/20 text-rose-300 flex items-center justify-center font-bold text-sm">3</span>
-                <span class="px-2 py-0.5 rounded-full text-[9px] font-black bg-rose-400/20 text-rose-300">Cirugía Vascular</span>
-              </div>
-              <h4 class="font-bold text-white text-sm">SVS WIfI Classification</h4>
-              <p class="text-slate-300 text-[11px] leading-snug">Society for Vascular Surgery. Escala cuantitativa de Herida (Wound), Isquemia (Ischemia) e Infección (foot Infection) para predicción de riesgo de amputación a 1 año.</p>
-              <div class="pt-1 text-[10px] text-rose-400 font-mono">DOI: 10.1016/j.jvs.2013.08.025</div>
-            </div>
-
-            <!-- Pilar 4 -->
-            <div class="p-4 rounded-2xl bg-white/5 border border-white/10 hover:border-purple-400/50 transition-all space-y-2 group">
-              <div class="flex items-center justify-between">
-                <span class="w-8 h-8 rounded-xl bg-purple-500/20 text-purple-300 flex items-center justify-center font-bold text-sm">4</span>
-                <span class="px-2 py-0.5 rounded-full text-[9px] font-black bg-purple-400/20 text-purple-300">Consenso LATAM</span>
-              </div>
-              <h4 class="font-bold text-white text-sm">Sistema San Elián (SEWSS)</h4>
-              <p class="text-slate-300 text-[11px] leading-snug">Sistema de graduación integral de 10 factores anatómicos y biológicos validado en centros hospitalarios de Latinoamérica para la toma de conducta quirúrgica.</p>
-              <div class="pt-1 text-[10px] text-purple-400 font-mono">Severidad: I (Leve) a III (Grave)</div>
-            </div>
-
-            <!-- Pilar 5 -->
-            <div class="p-4 rounded-2xl bg-white/5 border border-white/10 hover:border-amber-400/50 transition-all space-y-2 group">
-              <div class="flex items-center justify-between">
-                <span class="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-300 flex items-center justify-center font-bold text-sm">5</span>
-                <span class="px-2 py-0.5 rounded-full text-[9px] font-black bg-amber-400/20 text-amber-300">Diabetes & Metabolismo</span>
-              </div>
-              <h4 class="font-bold text-white text-sm">ADA Standards of Care 2024-2026</h4>
-              <p class="text-slate-300 text-[11px] leading-snug">American Diabetes Association. Directrices de cribado anual de neuropatía periférica con monofilamento de Semmes-Weinstein (10g) y ajuste renal Cockcroft-Gault.</p>
-              <div class="pt-1 text-[10px] text-amber-400 font-mono">Diabetes Care 2024;47(Suppl. 1)</div>
-            </div>
-
-            <!-- Pilar 6 -->
-            <div class="p-4 rounded-2xl bg-white/5 border border-white/10 hover:border-teal-400/50 transition-all space-y-2 group">
-              <div class="flex items-center justify-between">
-                <span class="w-8 h-8 rounded-xl bg-teal-500/20 text-teal-300 flex items-center justify-center font-bold text-sm">6</span>
-                <span class="px-2 py-0.5 rounded-full text-[9px] font-black bg-teal-400/20 text-teal-300">Cicatrización & TIMERS</span>
-              </div>
-              <h4 class="font-bold text-white text-sm">EWMA & Consensos de Heridas</h4>
-              <p class="text-slate-300 text-[11px] leading-snug">European Wound Management Association. Manejo de biofilm con polihexanida/plata, inhibición de metaloproteinasas (matriz TLC-NOSF) y terapia de vacío (TPN).</p>
-              <div class="pt-1 text-[10px] text-teal-400 font-mono">J Wound Care 2024</div>
-            </div>
-
-          </div>
-
-          <!-- Declaración Ética y Contra la Desinformación -->
-          <div class="p-4 rounded-2xl bg-blue-900/30 border border-blue-700/50 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-            <div class="flex items-center gap-3">
-              <div class="w-9 h-9 rounded-xl bg-blue-500/20 flex items-center justify-center text-lg shrink-0">🏛️</div>
-              <p class="text-slate-200 text-[11px] leading-relaxed">
-                <strong>Compromiso contra la desinformación:</strong> No publicamos documentos anónimos, guías no indexadas ni contenido con sesgos comerciales no declarados. Toda actualización clínica es revisada y validada periódicamente por el equipo médico del sitio.
-              </p>
-            </div>
-            <button onclick="irASeccionDesdeHeaderNav('seccion-guias-clinicas')" class="btn-sec !py-2 !px-4 text-xs font-bold text-white bg-blue-800 hover:bg-blue-700 border border-blue-600 shrink-0">
-              Ver las 12 Guías Oficiales ➔
-            </button>
-          </div>
-
-        </div>
-      </div>
-
-      <!-- SECCIÓN 6: BOLETÍN CIENTÍFICO & GUÍAS PUBMED                      -->
-      <!-- ═════════════════════════════════════════════════════════════════ -->
       <div id="seccion-newsletter" class="med-card banner-newsletter-dark p-6 sm:p-7 rounded-3xl shadow-xl space-y-4">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-5">
           <div class="space-y-1.5 max-w-xl">
@@ -2758,7 +2130,663 @@
 
     </div>
 
-  </main>
+  
+        <!-- ═════════════════════════════════════════════════════════════════ -->
+        <!-- PABELLÓN CIENTÍFICO, ACADÉMICO & SERVICIOS PARA EL PROFESIONAL     -->
+        <!-- ═════════════════════════════════════════════════════════════════ -->
+        <div id="pabellon-cientifico-profesional" class="space-y-8 pt-8 border-t-2 border-slate-200 dark:border-slate-800">
+          <div class="med-card p-5 bg-gradient-to-r from-blue-900 via-slate-900 to-indigo-950 text-white rounded-3xl shadow-md">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center text-2xl">🏛️</div>
+                <div>
+                  <span class="text-[10px] font-black uppercase tracking-wider text-sky-300 bg-sky-950/80 px-2 py-0.5 rounded-full border border-sky-700">Pabellón de Servicios & Formación Continua</span>
+                  <h3 class="text-lg font-black mt-0.5">Recursos Científicos, Guías y Posgrados</h3>
+                  <p class="text-xs text-slate-300">Evidencia clínica IWGDF 2023, sociedades científicas, oferta académica y terapias avanzadas en LATAM.</p>
+                </div>
+              </div>
+              <div class="flex flex-wrap gap-1.5 text-xs font-bold">
+                <a href="#seccion-guias-clinicas" class="px-2.5 py-1 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors">📚 Guías</a>
+                <a href="#seccion-universidades" class="px-2.5 py-1 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors">🎓 Diplomados</a>
+                <a href="#seccion-sociedades" class="px-2.5 py-1 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors">🏛️ Sociedades</a>
+                <a href="#seccion-laboratorios" class="px-2.5 py-1 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors">🧪 Terapias</a>
+                <a href="#seccion-congresos" class="px-2.5 py-1 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors">📅 Congresos</a>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═════════════════════════════════════════════════════════════════ -->
+      <!-- SECCIÓN 3: AGENDA DE CONGRESOS & EVENTOS CIENTÍFICOS 2026        -->
+      <!-- ═════════════════════════════════════════════════════════════════ -->
+      <div id="seccion-congresos" class="scroll-mt-24 space-y-6 pt-6 border-t border-slate-200">
+        
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div>
+            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-700/80 text-blue-800 dark:text-blue-300 text-xs font-bold shadow-xs">
+              <span class="text-sm">📅</span>
+              <span data-i18n="sec_cong_badge">Agenda Científica & Educación Médica Continua · LATAM 2026</span>
+            </div>
+            <h2 data-i18n="sec_cong_titulo" class="text-2xl sm:text-3xl font-black text-slate-900 mt-2">Congresos, Simposios & Encuentros Internacionales</h2>
+            <p data-i18n="sec_cong_sub" class="text-xs sm:text-sm text-slate-600 mt-1">Conectate con los principales foros de especialistas en pie diabético, cirugía endovascular y salvamento de extremidades.</p>
+          </div>
+
+          <!-- Filtro de País de Congresos -->
+          <div class="flex items-center gap-2">
+            <span data-i18n="sec_cong_filtrar_lbl" class="text-xs font-bold text-slate-500 hidden sm:inline">Filtrar:</span>
+            <select id="filtro-pais-congresos" onchange="filtrarCongresosPorPais(this.value)" class="med-input !py-1.5 text-xs font-bold bg-white dark:bg-slate-800 text-slate-900 dark:text-white border-slate-300 dark:border-slate-700">
+              <option value="TODOS" data-i18n="opt_pais_todos">🌎 Todos los Países (LATAM)</option>
+              <option value="MX">🇲🇽 México</option>
+              <option value="DO">🇩🇴 República Dominicana</option>
+              <option value="CL">🇨🇱 Chile</option>
+              <option value="AR">🇦🇷 Argentina</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- GRID DE TARJETAS DE CONGRESOS -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="grid-congresos-cards">
+          
+          <!-- 1. HENDOLAT 2026 -->
+          <div class="card-congreso med-card p-6 bg-white border border-slate-200 hover:border-blue-500 hover:shadow-xl transition-all flex flex-col justify-between space-y-5 group" data-pais="MX">
+            <div class="space-y-3">
+              <div class="flex items-start justify-between gap-2">
+                <span class="px-2.5 py-1 rounded-full text-[11px] font-black bg-purple-100 text-purple-900 flex items-center gap-1">
+                  <span>🇲🇽</span>
+                  <span>Ciudad de México</span>
+                </span>
+                <span class="text-[11px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">2–4 Sep 2026</span>
+              </div>
+              <h3 class="text-lg font-black text-slate-900 group-hover:text-blue-900 transition-colors">HENDOLAT 2026</h3>
+              <p class="text-xs text-slate-600 leading-relaxed">
+                El evento cumbre de <strong>Angiología, Terapia Endovascular y Medicina del Pie Diabético</strong>. Más de 500 líderes de opinión debatiendo técnicas de revascularización y rescate.
+              </p>
+              <div class="p-3 rounded-xl bg-slate-50 border border-slate-100 text-[11px] space-y-1 text-slate-700">
+                <div class="flex items-center gap-1.5"><i data-lucide="map-pin" class="w-3.5 h-3.5 text-blue-600"></i><strong>Sede:</strong> Hilton Reforma Mexico City</div>
+                <div class="flex items-center gap-1.5"><i data-lucide="file-text" class="w-3.5 h-3.5 text-emerald-600"></i><strong>Abstracts:</strong> Recepción hasta 15 Julio 2026</div>
+              </div>
+            </div>
+            <div class="space-y-2 pt-2 border-t border-slate-100">
+              <div class="flex gap-2">
+                <button onclick="abrirModalDetalleCongreso('hendolat')" class="btn-sec flex-1 !py-2 !text-xs font-bold text-blue-900 bg-blue-50 hover:bg-blue-100 border border-blue-200 flex items-center justify-center gap-1">
+                  <i data-lucide="info" class="w-3.5 h-3.5"></i>
+                  <span data-i18n="btn_ver_info">Ver Info</span>
+                </button>
+                <button onclick="abrirModalEnviarTrabajo('HENDOLAT 2026')" class="btn-sec flex-1 !py-2 !text-xs font-bold text-slate-700 hover:text-emerald-800 bg-white border border-slate-300 flex items-center justify-center gap-1">
+                  <i data-lucide="upload-cloud" class="w-3.5 h-3.5 text-emerald-600"></i>
+                  <span data-i18n="btn_enviar_trabajo">Enviar Trabajo</span>
+                </button>
+              </div>
+              <button onclick="abrirInscripcionCongreso('https://hendolat.com', 'HENDOLAT 2026', '$350 USD')" class="btn-primary w-full !py-2.5 !text-xs font-black bg-blue-900 hover:bg-blue-950 text-white shadow-sm flex items-center justify-center gap-1.5">
+                <i data-lucide="ticket" class="w-4 h-4 text-emerald-400"></i>
+                <span data-i18n="btn_comprar_entradas">Comprar Entradas / Registro</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 2. AMEXIPIED 2026 -->
+          <div class="card-congreso med-card p-6 bg-white border border-slate-200 hover:border-emerald-500 hover:shadow-xl transition-all flex flex-col justify-between space-y-5 group" data-pais="MX">
+            <div class="space-y-3">
+              <div class="flex items-start justify-between gap-2">
+                <span class="px-2.5 py-1 rounded-full text-[11px] font-black bg-emerald-100 text-emerald-900 flex items-center gap-1">
+                  <span>🇲🇽</span>
+                  <span>Zacatecas, México</span>
+                </span>
+                <span class="text-[11px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">2–5 Dic 2026</span>
+              </div>
+              <h3 class="text-lg font-black text-slate-900 group-hover:text-emerald-700 transition-colors">XXIV Congreso AMEXIPIED 2026</h3>
+              <p class="text-xs text-slate-600 leading-relaxed">
+                Congreso Internacional de la Asociación Mexicana de Pie Diabético. Enfoque multidisciplinario en podiatría clínica, desbridamiento quirúrgico, biomecánica y apósitos.
+              </p>
+              <div class="p-3 rounded-xl bg-slate-50 border border-slate-100 text-[11px] space-y-1 text-slate-700">
+                <div class="flex items-center gap-1.5"><i data-lucide="map-pin" class="w-3.5 h-3.5 text-emerald-600"></i><strong>Sede:</strong> Palacio de Convenciones Zacatecas</div>
+                <div class="flex items-center gap-1.5"><i data-lucide="file-text" class="w-3.5 h-3.5 text-emerald-600"></i><strong>Abstracts:</strong> Recepción hasta 30 Septiembre 2026</div>
+              </div>
+            </div>
+            <div class="space-y-2 pt-2 border-t border-slate-100">
+              <div class="flex gap-2">
+                <button onclick="abrirModalDetalleCongreso('amexipied')" class="btn-sec flex-1 !py-2 !text-xs font-bold text-emerald-900 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 flex items-center justify-center gap-1">
+                  <i data-lucide="info" class="w-3.5 h-3.5"></i>
+                  <span data-i18n="btn_ver_info">Ver Info</span>
+                </button>
+                <button onclick="abrirModalEnviarTrabajo('XXIV Congreso AMEXIPIED 2026')" class="btn-sec flex-1 !py-2 !text-xs font-bold text-slate-700 hover:text-emerald-800 bg-white border border-slate-300 flex items-center justify-center gap-1">
+                  <i data-lucide="upload-cloud" class="w-3.5 h-3.5 text-emerald-600"></i>
+                  <span data-i18n="btn_enviar_trabajo">Enviar Trabajo</span>
+                </button>
+              </div>
+              <button onclick="abrirInscripcionCongreso('https://amexipied.org', 'XXIV Congreso AMEXIPIED', '$250 USD')" class="btn-primary w-full !py-2.5 !text-xs font-black bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm flex items-center justify-center gap-1.5">
+                <i data-lucide="ticket" class="w-4 h-4"></i>
+                <span data-i18n="btn_comprar_entradas">Comprar Entradas / Registro</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 3. CLAD 2026 (PUNTA CANA) -->
+          <div class="card-congreso med-card p-6 bg-white border border-slate-200 hover:border-blue-500 hover:shadow-xl transition-all flex flex-col justify-between space-y-5 group" data-pais="DO">
+            <div class="space-y-3">
+              <div class="flex items-start justify-between gap-2">
+                <span class="px-2.5 py-1 rounded-full text-[11px] font-black bg-sky-100 text-sky-900 flex items-center gap-1">
+                  <span>🇩🇴</span>
+                  <span>Punta Cana, Rep. Dominicana</span>
+                </span>
+                <span class="text-[11px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">5–8 Nov 2026</span>
+              </div>
+              <h3 class="text-lg font-black text-slate-900 group-hover:text-blue-900 transition-colors">Congreso Latinoamericano de Diabetes (CLAD)</h3>
+              <p class="text-xs text-slate-600 leading-relaxed">
+                Complicaciones micro y macrovasculares, neuropatía diabética dolorosa y protocolos IWGDF 2023. Simposio intersocietario con expertos de 18 países.
+              </p>
+              <div class="p-3 rounded-xl bg-slate-50 border border-slate-100 text-[11px] space-y-1 text-slate-700">
+                <div class="flex items-center gap-1.5"><i data-lucide="map-pin" class="w-3.5 h-3.5 text-blue-600"></i><strong>Sede:</strong> Meliá Caribe Beach Resort</div>
+                <div class="flex items-center gap-1.5"><i data-lucide="file-text" class="w-3.5 h-3.5 text-emerald-600"></i><strong>Abstracts:</strong> Recepción hasta 20 Agosto 2026</div>
+              </div>
+            </div>
+            <div class="space-y-2 pt-2 border-t border-slate-100">
+              <div class="flex gap-2">
+                <button onclick="abrirModalDetalleCongreso('clad')" class="btn-sec flex-1 !py-2 !text-xs font-bold text-blue-900 bg-blue-50 hover:bg-blue-100 border border-blue-200 flex items-center justify-center gap-1">
+                  <i data-lucide="info" class="w-3.5 h-3.5"></i>
+                  <span data-i18n="btn_ver_info">Ver Info</span>
+                </button>
+                <button onclick="abrirModalEnviarTrabajo('CLAD 2026 Punta Cana')" class="btn-sec flex-1 !py-2 !text-xs font-bold text-slate-700 hover:text-emerald-800 bg-white border border-slate-300 flex items-center justify-center gap-1">
+                  <i data-lucide="upload-cloud" class="w-3.5 h-3.5 text-emerald-600"></i>
+                  <span data-i18n="btn_enviar_trabajo">Enviar Trabajo</span>
+                </button>
+              </div>
+              <button onclick="abrirInscripcionCongreso('https://diabeteslatam2026.com', 'CLAD 2026 Punta Cana', '$300 USD')" class="btn-primary w-full !py-2.5 !text-xs font-black bg-blue-900 hover:bg-blue-950 text-white shadow-sm flex items-center justify-center gap-1.5">
+                <i data-lucide="ticket" class="w-4 h-4 text-emerald-400"></i>
+                <span data-i18n="btn_comprar_entradas">Comprar Entradas / Registro</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 4. SOCHIDIAB 2026 (CHILE) -->
+          <div class="card-congreso med-card p-6 bg-white border border-slate-200 hover:border-red-500 hover:shadow-xl transition-all flex flex-col justify-between space-y-5 group" data-pais="CL">
+            <div class="space-y-3">
+              <div class="flex items-start justify-between gap-2">
+                <span class="px-2.5 py-1 rounded-full text-[11px] font-black bg-red-100 text-red-900 flex items-center gap-1">
+                  <span>🇨🇱</span>
+                  <span>Temuco, Chile</span>
+                </span>
+                <span class="text-[11px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">7–9 Mayo 2026</span>
+              </div>
+              <h3 class="text-lg font-black text-slate-900 group-hover:text-red-900 transition-colors">5to Congreso SOCHIDIAB 2026</h3>
+              <p class="text-xs text-slate-600 leading-relaxed">
+                Sociedad Chilena de Diabetes. Módulo estelar "Unidos para prevenir complicaciones del pie": tecnología en monitorización, termografía y apósitos activos.
+              </p>
+              <div class="p-3 rounded-xl bg-slate-50 border border-slate-100 text-[11px] space-y-1 text-slate-700">
+                <div class="flex items-center gap-1.5"><i data-lucide="map-pin" class="w-3.5 h-3.5 text-red-600"></i><strong>Sede:</strong> Hotel Dreams Temuco</div>
+                <div class="flex items-center gap-1.5"><i data-lucide="file-text" class="w-3.5 h-3.5 text-emerald-600"></i><strong>Abstracts:</strong> Recepción abierta</div>
+              </div>
+            </div>
+            <div class="space-y-2 pt-2 border-t border-slate-100">
+              <div class="flex gap-2">
+                <button onclick="abrirModalDetalleCongreso('sochidiab')" class="btn-sec flex-1 !py-2 !text-xs font-bold text-red-900 bg-red-50 hover:bg-red-100 border border-red-200 flex items-center justify-center gap-1">
+                  <i data-lucide="info" class="w-3.5 h-3.5"></i>
+                  <span data-i18n="btn_ver_info">Ver Info</span>
+                </button>
+                <button onclick="abrirModalEnviarTrabajo('5to Congreso SOCHIDIAB')" class="btn-sec flex-1 !py-2 !text-xs font-bold text-slate-700 hover:text-emerald-800 bg-white border border-slate-300 flex items-center justify-center gap-1">
+                  <i data-lucide="upload-cloud" class="w-3.5 h-3.5 text-emerald-600"></i>
+                  <span data-i18n="btn_enviar_trabajo">Enviar Trabajo</span>
+                </button>
+              </div>
+              <button onclick="abrirInscripcionCongreso('https://sochidiab.cl', '5to Congreso SOCHIDIAB', '$200 USD')" class="btn-primary w-full !py-2.5 !text-xs font-black bg-red-700 hover:bg-red-800 text-white shadow-sm flex items-center justify-center gap-1.5">
+                <i data-lucide="ticket" class="w-4 h-4"></i>
+                <span data-i18n="btn_comprar_entradas">Comprar Entradas / Registro</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 5. SAMECIPP / FLAMECIPP (ARGENTINA) -->
+          <div class="card-congreso med-card p-6 bg-white border border-slate-200 hover:border-blue-500 hover:shadow-xl transition-all flex flex-col justify-between space-y-5 group" data-pais="AR">
+            <div class="space-y-3">
+              <div class="flex items-start justify-between gap-2">
+                <span class="px-2.5 py-1 rounded-full text-[11px] font-black bg-blue-100 text-blue-900 flex items-center gap-1">
+                  <span>🇦🇷</span>
+                  <span>Buenos Aires, Argentina</span>
+                </span>
+                <span class="text-[11px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">Octubre 2026</span>
+              </div>
+              <h3 class="text-lg font-black text-slate-900 group-hover:text-blue-900 transition-colors">26° Congreso SAMeCiPP & 11° FLAMeCiPP</h3>
+              <p class="text-xs text-slate-600 leading-relaxed">
+                Sociedad Argentina de Medicina y Cirugía de Pie y Pierna. Enfoque quirúrgico traumatológico: osteotomías de descarga, artrodesis de Charcot y fijación interna/externa.
+              </p>
+              <div class="p-3 rounded-xl bg-slate-50 border border-slate-100 text-[11px] space-y-1 text-slate-700">
+                <div class="flex items-center gap-1.5"><i data-lucide="map-pin" class="w-3.5 h-3.5 text-blue-600"></i><strong>Sede:</strong> Centro de Convenciones UCA, Puerto Madero</div>
+                <div class="flex items-center gap-1.5"><i data-lucide="file-text" class="w-3.5 h-3.5 text-emerald-600"></i><strong>Abstracts:</strong> Presentación de Casos Clínicos</div>
+              </div>
+            </div>
+            <div class="space-y-2 pt-2 border-t border-slate-100">
+              <div class="flex gap-2">
+                <button onclick="abrirModalDetalleCongreso('samecipp')" class="btn-sec flex-1 !py-2 !text-xs font-bold text-blue-900 bg-blue-50 hover:bg-blue-100 border border-blue-200 flex items-center justify-center gap-1">
+                  <i data-lucide="info" class="w-3.5 h-3.5"></i>
+                  <span data-i18n="btn_ver_info">Ver Info</span>
+                </button>
+                <button onclick="abrirModalEnviarTrabajo('26° Congreso SAMeCiPP')" class="btn-sec flex-1 !py-2 !text-xs font-bold text-slate-700 hover:text-emerald-800 bg-white border border-slate-300 flex items-center justify-center gap-1">
+                  <i data-lucide="upload-cloud" class="w-3.5 h-3.5 text-emerald-600"></i>
+                  <span data-i18n="btn_enviar_trabajo">Enviar Trabajo</span>
+                </button>
+              </div>
+              <button onclick="abrirInscripcionCongreso('https://samecipp.org.ar', 'Congreso SAMeCiPP 2026', '$180 USD / $150.000 ARS')" class="btn-primary w-full !py-2.5 !text-xs font-black bg-blue-900 hover:bg-blue-950 text-white shadow-sm flex items-center justify-center gap-1.5">
+                <i data-lucide="ticket" class="w-4 h-4 text-emerald-400"></i>
+                <span data-i18n="btn_comprar_entradas">Comprar Entradas / Registro</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 6. PUERTO ESCONDIDO (MÉXICO) -->
+          <div class="card-congreso med-card p-6 bg-white border border-slate-200 hover:border-amber-500 hover:shadow-xl transition-all flex flex-col justify-between space-y-5 group" data-pais="MX">
+            <div class="space-y-3">
+              <div class="flex items-start justify-between gap-2">
+                <span class="px-2.5 py-1 rounded-full text-[11px] font-black bg-amber-100 text-amber-900 flex items-center gap-1">
+                  <span>🇲🇽</span>
+                  <span>Puerto Escondido, Oaxaca</span>
+                </span>
+                <span class="text-[11px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">16–18 Abr 2026</span>
+              </div>
+              <h3 class="text-lg font-black text-slate-900 group-hover:text-amber-700 transition-colors">Congreso Internacional de Enfermedades del Pie</h3>
+              <p class="text-xs text-slate-600 leading-relaxed">
+                Abordaje integral en prevención primaria y secundaria de úlceras en atención médica ambulatoria y terapia avanzada de heridas complejas.
+              </p>
+              <div class="p-3 rounded-xl bg-slate-50 border border-slate-100 text-[11px] space-y-1 text-slate-700">
+                <div class="flex items-center gap-1.5"><i data-lucide="map-pin" class="w-3.5 h-3.5 text-amber-600"></i><strong>Sede:</strong> Hotel Posada Real Puerto Escondido</div>
+                <div class="flex items-center gap-1.5"><i data-lucide="file-text" class="w-3.5 h-3.5 text-emerald-600"></i><strong>Abstracts:</strong> Posters y Trabajos Libres</div>
+              </div>
+            </div>
+            <div class="space-y-2 pt-2 border-t border-slate-100">
+              <div class="flex gap-2">
+                <button onclick="abrirModalDetalleCongreso('puertoescondido')" class="btn-sec flex-1 !py-2 !text-xs font-bold text-amber-900 bg-amber-50 hover:bg-amber-100 border border-amber-200 flex items-center justify-center gap-1">
+                  <i data-lucide="info" class="w-3.5 h-3.5"></i>
+                  <span data-i18n="btn_ver_info">Ver Info</span>
+                </button>
+                <button onclick="abrirModalEnviarTrabajo('Congreso Puerto Escondido 2026')" class="btn-sec flex-1 !py-2 !text-xs font-bold text-slate-700 hover:text-emerald-800 bg-white border border-slate-300 flex items-center justify-center gap-1">
+                  <i data-lucide="upload-cloud" class="w-3.5 h-3.5 text-emerald-600"></i>
+                  <span data-i18n="btn_enviar_trabajo">Enviar Trabajo</span>
+                </button>
+              </div>
+              <button onclick="abrirInscripcionCongreso('https://amexipied.org', 'Congreso Puerto Escondido', '$220 USD')" class="btn-primary w-full !py-2.5 !text-xs font-black bg-amber-600 hover:bg-amber-700 text-white shadow-sm flex items-center justify-center gap-1.5">
+                <i data-lucide="ticket" class="w-4 h-4"></i>
+                <span data-i18n="btn_comprar_entradas">Comprar Entradas / Registro</span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- ═════════════════════════════════════════════════════════════════ -->
+      <!-- SECCIÓN 4: PORTAL UNIVERSITARIO & FORMACIÓN ACADÉMICA (LATAM)      -->
+      <!-- ═════════════════════════════════════════════════════════════════ -->
+      <div id="seccion-universidades" class="scroll-mt-24 space-y-6 pt-6 border-t border-slate-200">
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div>
+            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-700/80 text-blue-800 dark:text-blue-300 text-xs font-bold shadow-xs">
+              <span class="text-sm">🎓</span>
+              <span data-i18n="sec_univ_badge">Red Universitaria de Formación Continua · LATAM</span>
+            </div>
+            <h2 data-i18n="sec_univ_titulo" class="text-2xl sm:text-3xl font-black text-slate-900 mt-2">Diplomaturas, Posgrados & Cursos Especializados</h2>
+            <p data-i18n="sec_univ_sub" class="text-xs sm:text-sm text-slate-600 mt-1">Capacitación académica de excelencia avalada por las principales facultades de medicina, hospitales universitarios y sociedades de pie diabético.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span id="badge-total-universidades" class="px-3 py-1.5 rounded-full text-xs font-black bg-blue-900 text-white shadow-xs">
+              25 Programas Académicos
+            </span>
+          </div>
+        </div>
+
+        <!-- Barra de Filtros: País y Modalidad -->
+        <div class="med-card p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+            
+            <!-- Filtro por País -->
+            <div class="flex flex-wrap items-center gap-1.5 text-xs">
+              <span class="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1 mr-1">
+                <i data-lucide="globe" class="w-3.5 h-3.5 text-blue-600 dark:text-sky-400"></i>
+                <span data-i18n="univ_filtro_pais">País:</span>
+              </span>
+              <button onclick="filtrarUniversidadesPorPais('TODOS')" id="btn-univ-pais-TODOS" class="px-2.5 py-1 rounded-lg font-bold text-xs bg-blue-900 dark:bg-blue-600 text-white shadow-xs transition-all">🌎 Todos</button>
+              <button onclick="filtrarUniversidadesPorPais('AR')" id="btn-univ-pais-AR" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🇦🇷 Argentina (5)</button>
+              <button onclick="filtrarUniversidadesPorPais('MX')" id="btn-univ-pais-MX" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🇲🇽 México (5)</button>
+              <button onclick="filtrarUniversidadesPorPais('BR')" id="btn-univ-pais-BR" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🇧🇷 Brasil (2)</button>
+              <button onclick="filtrarUniversidadesPorPais('CO')" id="btn-univ-pais-CO" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🇨🇴 Colombia (2)</button>
+              <button onclick="filtrarUniversidadesPorPais('CL')" id="btn-univ-pais-CL" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🇨🇱 Chile (2)</button>
+              <button onclick="filtrarUniversidadesPorPais('PE')" id="btn-univ-pais-PE" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🇵🇪 Perú (1)</button>
+              <button onclick="filtrarUniversidadesPorPais('PY')" id="btn-univ-pais-PY" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🇵🇾 Paraguay (1)</button>
+              <button onclick="filtrarUniversidadesPorPais('GT')" id="btn-univ-pais-GT" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🇬🇹 Guatemala (1)</button>
+              <button onclick="filtrarUniversidadesPorPais('SV')" id="btn-univ-pais-SV" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🇸🇻 El Salvador (1)</button>
+              <button onclick="filtrarUniversidadesPorPais('VE')" id="btn-univ-pais-VE" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🇻🇪 Venezuela (1)</button>
+              <button onclick="filtrarUniversidadesPorPais('LATAM')" id="btn-univ-pais-LATAM" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🌐 Regional (4)</button>
+            </div>
+
+            <!-- Filtro por Modalidad -->
+            <div class="flex items-center gap-1.5 text-xs">
+              <span class="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1 mr-1">
+                <i data-lucide="book-open" class="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400"></i>
+                <span data-i18n="univ_filtro_mod">Modalidad:</span>
+              </span>
+              <select id="select-univ-modalidad" onchange="filtrarUniversidadesPorModalidad(this.value)" class="med-input !py-1 !text-xs bg-slate-50 dark:bg-slate-800 font-bold text-slate-900 dark:text-white border-slate-300 dark:border-slate-700">
+                <option value="TODAS">Todas las Modalidades</option>
+                <option value="Online">💻 100% Online / Virtual</option>
+                <option value="Híbrido">🔄 Híbrido (Virtual + Prácticas)</option>
+                <option value="Presencial">🏥 Presencial / Hospitalario</option>
+              </select>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Grid Responsivo de 25 Programas Académicos -->
+        <div id="grid-universidades-latam" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <!-- Populated by renderizarUniversidades() in app.js?v=29 -->
+        </div>
+      </div>
+
+      <!-- ═════════════════════════════════════════════════════════════════ -->
+      <!-- SECCIÓN 5: SOCIEDADES MÉDICAS, ASOCIACIONES & ORGANISMOS          -->
+      <!-- ═════════════════════════════════════════════════════════════════ -->
+      <div id="seccion-sociedades" class="scroll-mt-24 space-y-6 pt-6 border-t border-slate-200">
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div>
+            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-700/80 text-indigo-800 dark:text-indigo-300 text-xs font-bold shadow-xs">
+              <span class="text-sm">🏛️</span>
+              <span data-i18n="sec_soc_badge">Directorio Multidisciplinar & Red Científica · LATAM & Global</span>
+            </div>
+            <h2 data-i18n="sec_soc_titulo" class="text-2xl sm:text-3xl font-black text-slate-900 mt-2">Sociedades Médicas, Asociaciones & Organismos</h2>
+            <p data-i18n="sec_soc_sub" class="text-xs sm:text-sm text-slate-600 mt-1">Directorio verificado de entidades en Infectología, Heridas, Cirugía Vascular, Traumatología, Diabetología y Pacientes con contactos directos.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span id="badge-total-sociedades" class="px-3 py-1.5 rounded-full text-xs font-black bg-indigo-900 text-white shadow-xs">
+              32 Entidades Médicas
+            </span>
+          </div>
+        </div>
+
+        <!-- Barra de Filtros: País y Especialidad -->
+        <div class="med-card p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+            
+            <!-- Filtro por País / Alcance -->
+            <div class="flex flex-wrap items-center gap-1.5 text-xs">
+              <span class="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1 mr-1">
+                <i data-lucide="globe" class="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400"></i>
+                <span data-i18n="soc_filtro_pais">País / Región:</span>
+              </span>
+              <button onclick="filtrarSociedadesPorPais('TODOS')" id="btn-soc-pais-TODOS" class="px-2.5 py-1 rounded-lg font-bold text-xs bg-indigo-900 dark:bg-indigo-600 text-white shadow-xs transition-all">🌎 Todos</button>
+              <button onclick="filtrarSociedadesPorPais('GLOBAL')" id="btn-soc-pais-GLOBAL" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🌐 Global (6)</button>
+              <button onclick="filtrarSociedadesPorPais('LATAM')" id="btn-soc-pais-LATAM" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🌎 Regional (6)</button>
+              <button onclick="filtrarSociedadesPorPais('AR')" id="btn-soc-pais-AR" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🇦🇷 Argentina (6)</button>
+              <button onclick="filtrarSociedadesPorPais('MX')" id="btn-soc-pais-MX" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🇲🇽 México (5)</button>
+              <button onclick="filtrarSociedadesPorPais('BR')" id="btn-soc-pais-BR" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🇧🇷 Brasil (4)</button>
+              <button onclick="filtrarSociedadesPorPais('CO')" id="btn-soc-pais-CO" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🇨🇴 Colombia (4)</button>
+              <button onclick="filtrarSociedadesPorPais('CL')" id="btn-soc-pais-CL" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🇨🇱 Chile (4)</button>
+              <button onclick="filtrarSociedadesPorPais('PE')" id="btn-soc-pais-PE" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🇵🇪 Perú (4)</button>
+              <button onclick="filtrarSociedadesPorPais('UY')" id="btn-soc-pais-UY" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🇺🇾 Uruguay (3)</button>
+            </div>
+
+            <!-- Filtro por Especialidad -->
+            <div class="flex items-center gap-1.5 text-xs">
+              <span class="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1 mr-1">
+                <i data-lucide="stethoscope" class="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400"></i>
+                <span data-i18n="soc_filtro_esp">Disciplina:</span>
+              </span>
+              <select id="select-soc-especialidad" onchange="filtrarSociedadesPorEspecialidad(this.value)" class="med-input !py-1 !text-xs bg-slate-50 dark:bg-slate-800 font-bold text-slate-900 dark:text-white border-slate-300 dark:border-slate-700">
+                <option value="TODAS">Todas las Especialidades</option>
+                <option value="Infectologia">🧫 Infectología (SADI, SBI, ACIN)</option>
+                <option value="Heridas">🩹 Cicatrización de Heridas (AIACH, AMCICHAC, SOBEST, GNEAUPP)</option>
+                <option value="Vascular">🩸 Cirugía Vascular & Angiología (CACCV, SMACVE, SBACV)</option>
+                <option value="Pie_Ortopedia">🦶 Pie & Ortopedia (SAMeCiPP, FLAMeCiPP, D-Foot, AAOT)</option>
+                <option value="Diabetologia">🔬 Diabetología & Endocrinología (SAD, SBD, ALAD, ADA, FMD)</option>
+                <option value="Pacientes">👥 Asociaciones de Pacientes & Prevención (ADU, ACD, ANADIH)</option>
+              </select>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Grid Responsivo de Sociedades Médicas -->
+        <div id="grid-sociedades-medicas" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <!-- Populated by renderizarSociedades() in app.js?v=29 -->
+        </div>
+      </div>
+
+      <!-- ═════════════════════════════════════════════════════════════════ -->
+      <!-- SECCIÓN 6: PABELLÓN DE LABORATORIOS & TERAPÉUTICA POR PAÍS        -->
+      <!-- ═════════════════════════════════════════════════════════════════ -->
+      <div id="seccion-laboratorios" class="scroll-mt-24 space-y-6 pt-6 border-t border-slate-200">
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div>
+            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-700/80 text-emerald-800 dark:text-emerald-300 text-xs font-bold shadow-xs">
+              <span class="text-sm">🧪</span>
+              <span data-i18n="sec_lab_badge">Pabellón Terapéutico & Farmacéutico · LATAM 2026</span>
+            </div>
+            <h2 data-i18n="sec_lab_titulo" class="text-2xl sm:text-3xl font-black text-slate-900 mt-2">Laboratorios, Terapias Avanzadas & Insumos</h2>
+            <p data-i18n="sec_lab_sub" class="text-xs sm:text-sm text-slate-600 mt-1">Innovaciones biológicas, apósitos bioactivos, antisépticos antibiofilm, fármacos y dispositivos para salvamento de la extremidad.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span id="badge-total-laboratorios" class="px-3 py-1.5 rounded-full text-xs font-black bg-emerald-800 text-white shadow-xs">
+              28 Soluciones Terapéuticas
+            </span>
+          </div>
+        </div>
+
+        <!-- Barra de Filtros: País y Categoría Terapéutica -->
+        <div class="med-card p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+            
+            <!-- Filtro por País de Laboratorio -->
+            <div class="flex flex-wrap items-center gap-1.5 text-xs">
+              <span class="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1 mr-1">
+                <i data-lucide="globe" class="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400"></i>
+                <span data-i18n="lab_filtro_pais">País / Origen:</span>
+              </span>
+              <button onclick="filtrarLaboratoriosPorPais('TODOS')" id="btn-lab-pais-TODOS" class="px-2.5 py-1 rounded-lg font-bold text-xs bg-emerald-800 dark:bg-emerald-600 text-white shadow-xs transition-all">🌎 Todos</button>
+              <button onclick="filtrarLaboratoriosPorPais('GLOBAL')" id="btn-lab-pais-GLOBAL" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🌐 Multilatinas (12)</button>
+              <button onclick="filtrarLaboratoriosPorPais('AR')" id="btn-lab-pais-AR" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🇦🇷 Argentina (3)</button>
+              <button onclick="filtrarLaboratoriosPorPais('BR')" id="btn-lab-pais-BR" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🇧🇷 Brasil (4)</button>
+              <button onclick="filtrarLaboratoriosPorPais('CL')" id="btn-lab-pais-CL" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🇨🇱 Chile (1)</button>
+              <button onclick="filtrarLaboratoriosPorPais('CO')" id="btn-lab-pais-CO" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🇨🇴 Colombia (2)</button>
+              <button onclick="filtrarLaboratoriosPorPais('CU')" id="btn-lab-pais-CU" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🇨🇺 Cuba (1)</button>
+              <button onclick="filtrarLaboratoriosPorPais('MX')" id="btn-lab-pais-MX" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🇲🇽 México (4)</button>
+              <button onclick="filtrarLaboratoriosPorPais('PE')" id="btn-lab-pais-PE" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🇵🇪 Perú (1)</button>
+            </div>
+
+            <!-- Filtro por Categoría Terapéutica -->
+            <div class="flex items-center gap-1.5 text-xs">
+              <span class="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1 mr-1">
+                <i data-lucide="tag" class="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400"></i>
+                <span data-i18n="lab_filtro_cat">Categoría:</span>
+              </span>
+              <select id="select-lab-categoria" onchange="filtrarLaboratoriosPorCategoria(this.value)" class="med-input !py-1 !text-xs bg-slate-50 dark:bg-slate-800 font-bold text-slate-900 dark:text-white border-slate-300 dark:border-slate-700">
+                <option value="TODAS">Todas las Categorías</option>
+                <option value="Apositos">🩹 Apósitos & Coberturas Avanzadas</option>
+                <option value="Biologicas">🧬 Terapias Biológicas & Factores de Crecimiento</option>
+                <option value="Topicos">🧴 Fórmulas Tópicas & Control de Biofilm</option>
+                <option value="Farmacos">💊 Farmacología & Antidiabéticos</option>
+                <option value="Calzado">👞 Calzado de Descarga & Ortesis</option>
+                <option value="Dispositivos">🌬️ Oxígeno Tópico, TPN & Fotobiomodulación</option>
+              </select>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Grid Responsivo de Laboratorios y Fármacos -->
+        <div id="grid-laboratorios-latam" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <!-- Populated by renderizarLaboratorios() in app.js?v=29 -->
+        </div>
+      </div>
+
+      <!-- ═════════════════════════════════════════════════════════════════ -->
+      
+      <!-- ═════════════════════════════════════════════════════════════════ -->
+      <!-- SECCIÓN 5B: PABELLÓN DE GUÍAS CLÍNICAS & CONSENSOS GLOBALES       -->
+      <!-- ═════════════════════════════════════════════════════════════════ -->
+      <div id="seccion-guias-clinicas" class="scroll-mt-24 space-y-6 pt-6 border-t border-slate-200">
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div>
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-50 border border-teal-200 text-teal-900 text-xs font-bold shadow-xs">
+              <span class="text-sm">📚</span>
+              <span data-i18n="sec_guias_badge">Biblioteca Oficial de Guías de Práctica Clínica & Consensos</span>
+            </div>
+            <h2 data-i18n="sec_guias_titulo" class="text-2xl sm:text-3xl font-black text-slate-900 mt-2">Guías Médicas, Algoritmos de Flujo & Descarga de PDFs</h2>
+            <p data-i18n="sec_guias_sub" class="text-xs sm:text-sm text-slate-600 mt-1">Consensos internacionales y latinoamericanos oficiales (IWGDF 2023, IDSA, SVS WIfI, ADA, ALAD, SADI) con resúmenes ejecutivos GRADE, diagramas de decisión y descarga de documentos completos.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span id="badge-total-guias" class="px-3 py-1.5 rounded-full text-xs font-black bg-teal-900 text-white shadow-xs">
+              12 Guías Oficiales
+            </span>
+          </div>
+        </div>
+
+        <!-- Filtros de Guías Clínicas -->
+        <div class="med-card p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div class="flex flex-wrap items-center gap-1.5 text-xs" id="filtros-guias-categoria">
+              <span class="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1 mr-1">
+                <i data-lucide="filter" class="w-3.5 h-3.5 text-teal-700 dark:text-teal-400"></i>
+                <span data-i18n="guias_filtro_eje">Eje Temático:</span>
+              </span>
+              <button onclick="filtrarGuiasMedicas('TODAS')" id="btn-guia-cat-TODAS" class="px-3 py-1 rounded-lg font-bold text-xs bg-teal-900 dark:bg-teal-600 text-white shadow-xs transition-all">📚 Todas (12)</button>
+              <button onclick="filtrarGuiasMedicas('IWGDF')" id="btn-guia-cat-IWGDF" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🌐 IWGDF 2023 (5)</button>
+              <button onclick="filtrarGuiasMedicas('Infeccion')" id="btn-guia-cat-Infeccion" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🧫 Infección & ATB (2)</button>
+              <button onclick="filtrarGuiasMedicas('Vascular')" id="btn-guia-cat-Vascular" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🩸 Vascular & WIfI (2)</button>
+              <button onclick="filtrarGuiasMedicas('Heridas')" id="btn-guia-cat-Heridas" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🩹 Curación & TIMERS (2)</button>
+              <button onclick="filtrarGuiasMedicas('LATAM')" id="btn-guia-cat-LATAM" class="px-2.5 py-1 rounded-lg font-medium text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-transparent dark:border-slate-700 transition-all">🌎 Consensos LATAM (3)</button>
+            </div>
+            <div class="text-[11px] font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/70 px-3 py-1 rounded-xl border border-emerald-200 dark:border-emerald-700 flex items-center gap-1.5">
+              <span data-i18n="guias_badge_acceso">✓ Acceso Abierto & Literatura Médica Oficial</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Grid de Tarjetas de Guías Médicas -->
+        <div id="grid-guias-medicas" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <!-- Renderizado dinámicamente desde app.js?v=29 -->
+        </div>
+      </div>
+
+            <!-- ═════════════════════════════════════════════════════════════════ -->
+      <!-- SECCIÓN 5C: MARCO DE EVIDENCIA CIENTÍFICA & FUENTES VERIFICADAS    -->
+      <!-- ═════════════════════════════════════════════════════════════════ -->
+      <div id="seccion-transparencia-fuentes" class="scroll-mt-24 space-y-6 pt-6 border-t border-slate-200">
+        <div class="med-card p-6 sm:p-8 bg-gradient-to-br from-slate-900 via-blue-950 to-slate-950 text-white rounded-3xl shadow-xl border border-blue-900/60 space-y-6">
+          
+          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-5 border-b border-blue-800/40 pb-5">
+            <div class="space-y-2 max-w-2xl">
+              <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 text-xs font-bold shadow-xs">
+                <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
+                <span>Medicina Basada en la Evidencia · Cero Alucinaciones</span>
+              </div>
+              <h2 class="text-2xl sm:text-3xl font-black tracking-tight text-white">
+                Fuentes Médicas Verificadas & Marco Científico
+              </h2>
+              <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                Para garantizar la máxima seguridad del paciente y evitar información médica errónea o desactualizada, todos los algoritmos, calculadoras clínicas, sugerencias de apósitos y esquemas antibióticos de <strong>piediabetico.lat</strong> están estrictamente fundamentados en los consensos internacionales y guías de práctica clínica de mayor jerarquía mundial (Grado 1A / GRADE).
+              </p>
+            </div>
+            <div class="flex flex-col sm:flex-row lg:flex-col gap-2 shrink-0">
+              <div class="p-3 rounded-2xl bg-white/10 border border-white/10 text-center">
+                <span class="text-xl font-black text-emerald-400 block">100%</span>
+                <span class="text-[10px] text-slate-300 font-semibold uppercase">Fuentes Indexadas</span>
+              </div>
+              <div class="p-3 rounded-2xl bg-white/10 border border-white/10 text-center">
+                <span class="text-xl font-black text-sky-400 block">GRADE 1A</span>
+                <span class="text-[10px] text-slate-300 font-semibold uppercase">Nivel de Evidencia</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Los 7 Pilares de Evidencia Clínica Oficial -->
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
+            
+            <!-- Pilar 1 -->
+            <div class="p-4 rounded-2xl bg-white/5 border border-white/10 hover:border-emerald-400/50 transition-all space-y-2 group">
+              <div class="flex items-center justify-between">
+                <span class="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-300 flex items-center justify-center font-bold text-sm">1</span>
+                <span class="px-2 py-0.5 rounded-full text-[9px] font-black bg-emerald-400/20 text-emerald-300">Consenso Mundial</span>
+              </div>
+              <h4 class="font-bold text-white text-sm">IWGDF Guidelines 2023</h4>
+              <p class="text-slate-300 text-[11px] leading-snug">International Working Group on the Diabetic Foot. Estándar de oro global para prevención, infección, descarga, cicatrización y enfermedad arterial periférica.</p>
+              <div class="pt-1 text-[10px] text-emerald-400 font-mono">DOI: 10.1002/dmrr.3656</div>
+            </div>
+
+            <!-- Pilar 2 -->
+            <div class="p-4 rounded-2xl bg-white/5 border border-white/10 hover:border-blue-400/50 transition-all space-y-2 group">
+              <div class="flex items-center justify-between">
+                <span class="w-8 h-8 rounded-xl bg-blue-500/20 text-blue-300 flex items-center justify-center font-bold text-sm">2</span>
+                <span class="px-2 py-0.5 rounded-full text-[9px] font-black bg-blue-400/20 text-blue-300">Infectología</span>
+              </div>
+              <h4 class="font-bold text-white text-sm">IDSA / IWGDF / SADI 2023</h4>
+              <p class="text-slate-300 text-[11px] leading-snug">Infectious Diseases Society of America y Sociedad Argentina de Infectología. Guías de diagnóstico microbiológico por biopsia ósea y uso racional de antibióticos.</p>
+              <div class="pt-1 text-[10px] text-blue-400 font-mono">DOI: 10.1093/cid/ciad527</div>
+            </div>
+
+            <!-- Pilar 3 -->
+            <div class="p-4 rounded-2xl bg-white/5 border border-white/10 hover:border-rose-400/50 transition-all space-y-2 group">
+              <div class="flex items-center justify-between">
+                <span class="w-8 h-8 rounded-xl bg-rose-500/20 text-rose-300 flex items-center justify-center font-bold text-sm">3</span>
+                <span class="px-2 py-0.5 rounded-full text-[9px] font-black bg-rose-400/20 text-rose-300">Cirugía Vascular</span>
+              </div>
+              <h4 class="font-bold text-white text-sm">SVS WIfI Classification</h4>
+              <p class="text-slate-300 text-[11px] leading-snug">Society for Vascular Surgery. Escala cuantitativa de Herida (Wound), Isquemia (Ischemia) e Infección (foot Infection) para predicción de riesgo de amputación a 1 año.</p>
+              <div class="pt-1 text-[10px] text-rose-400 font-mono">DOI: 10.1016/j.jvs.2013.08.025</div>
+            </div>
+
+            <!-- Pilar 4 -->
+            <div class="p-4 rounded-2xl bg-white/5 border border-white/10 hover:border-purple-400/50 transition-all space-y-2 group">
+              <div class="flex items-center justify-between">
+                <span class="w-8 h-8 rounded-xl bg-purple-500/20 text-purple-300 flex items-center justify-center font-bold text-sm">4</span>
+                <span class="px-2 py-0.5 rounded-full text-[9px] font-black bg-purple-400/20 text-purple-300">Consenso LATAM</span>
+              </div>
+              <h4 class="font-bold text-white text-sm">Sistema San Elián (SEWSS)</h4>
+              <p class="text-slate-300 text-[11px] leading-snug">Sistema de graduación integral de 10 factores anatómicos y biológicos validado en centros hospitalarios de Latinoamérica para la toma de conducta quirúrgica.</p>
+              <div class="pt-1 text-[10px] text-purple-400 font-mono">Severidad: I (Leve) a III (Grave)</div>
+            </div>
+
+            <!-- Pilar 5 -->
+            <div class="p-4 rounded-2xl bg-white/5 border border-white/10 hover:border-amber-400/50 transition-all space-y-2 group">
+              <div class="flex items-center justify-between">
+                <span class="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-300 flex items-center justify-center font-bold text-sm">5</span>
+                <span class="px-2 py-0.5 rounded-full text-[9px] font-black bg-amber-400/20 text-amber-300">Diabetes & Metabolismo</span>
+              </div>
+              <h4 class="font-bold text-white text-sm">ADA Standards of Care 2024-2026</h4>
+              <p class="text-slate-300 text-[11px] leading-snug">American Diabetes Association. Directrices de cribado anual de neuropatía periférica con monofilamento de Semmes-Weinstein (10g) y ajuste renal Cockcroft-Gault.</p>
+              <div class="pt-1 text-[10px] text-amber-400 font-mono">Diabetes Care 2024;47(Suppl. 1)</div>
+            </div>
+
+            <!-- Pilar 6 -->
+            <div class="p-4 rounded-2xl bg-white/5 border border-white/10 hover:border-teal-400/50 transition-all space-y-2 group">
+              <div class="flex items-center justify-between">
+                <span class="w-8 h-8 rounded-xl bg-teal-500/20 text-teal-300 flex items-center justify-center font-bold text-sm">6</span>
+                <span class="px-2 py-0.5 rounded-full text-[9px] font-black bg-teal-400/20 text-teal-300">Cicatrización & TIMERS</span>
+              </div>
+              <h4 class="font-bold text-white text-sm">EWMA & Consensos de Heridas</h4>
+              <p class="text-slate-300 text-[11px] leading-snug">European Wound Management Association. Manejo de biofilm con polihexanida/plata, inhibición de metaloproteinasas (matriz TLC-NOSF) y terapia de vacío (TPN).</p>
+              <div class="pt-1 text-[10px] text-teal-400 font-mono">J Wound Care 2024</div>
+            </div>
+
+          </div>
+
+          <!-- Declaración Ética y Contra la Desinformación -->
+          <div class="p-4 rounded-2xl bg-blue-900/30 border border-blue-700/50 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl bg-blue-500/20 flex items-center justify-center text-lg shrink-0">🏛️</div>
+              <p class="text-slate-200 text-[11px] leading-relaxed">
+                <strong>Compromiso contra la desinformación:</strong> No publicamos documentos anónimos, guías no indexadas ni contenido con sesgos comerciales no declarados. Toda actualización clínica es revisada y validada periódicamente por el equipo médico del sitio.
+              </p>
+            </div>
+            <button onclick="irASeccionDesdeHeaderNav('seccion-guias-clinicas')" class="btn-sec !py-2 !px-4 text-xs font-bold text-white bg-blue-800 hover:bg-blue-700 border border-blue-600 shrink-0">
+              Ver las 12 Guías Oficiales ➔
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- SECCIÓN 6: BOLETÍN CIENTÍFICO & GUÍAS PUBMED                      -->
+      <!-- ═════════════════════════════════════════════════════════════════ -->
+      
+        </div>
+        
+    </main>
 
   <!-- FOOTER CLÍNICO & LEGAL (ARGENTINA / LATAM) -->
   <footer class="mt-auto bg-white border-t border-slate-200 py-6 px-4 sm:px-8 text-xs text-slate-500">
@@ -4355,7 +4383,7 @@
 
       <!-- Contenido Legal Dinámico por País -->
       <div id="contenedor-detalle-legal" class="p-6 overflow-y-auto space-y-5 text-xs text-slate-700 dark:text-slate-300 leading-relaxed max-h-[60vh]">
-        <!-- Rellenado dinámicamente por seleccionarPaisLegal() en app.js -->
+        <!-- Rellenado dinámicamente por seleccionarPaisLegal() en app.js?v=29 -->
       </div>
 
       <!-- Footer Modal Legal con Enlaces a Dossiers Imprimibles -->
@@ -4376,7 +4404,7 @@
     </div>
   </div>
 
-  <script src="./app.js?v=17"></script>
+  <script src="./app.js?v=29"></script>
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./sw.js?v=17').then(function(reg) {

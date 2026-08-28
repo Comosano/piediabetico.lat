@@ -1,12 +1,12 @@
-const CACHE_NAME = 'piediabetico-v28-cache';
+const CACHE_NAME = 'piediabetico-v29-cache';
 const OFFLINE_URL = './offline.html';
 
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './offline.html',
-  './styles.css?v=23',
-  './app.js?v=23',
+  './styles.css?v=29',
+  './app.js?v=29',
   './manifest.json',
   './icon.svg'
 ];
@@ -24,7 +24,12 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
       return Promise.all(
-        keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
+        keys.map((key) => {
+          if (key !== CACHE_NAME) {
+            console.log('Purging old ServiceWorker cache:', key);
+            return caches.delete(key);
+          }
+        })
       );
     })
   );
@@ -32,12 +37,10 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Ignorar POST y APIs externas de IA
   if (event.request.method !== 'GET' || event.request.url.includes('/agentes/') || event.request.url.includes('/analizar-foto') || event.request.url.includes('api.evidencemd.ai')) {
     return;
   }
 
-  // Si es navegación HTML, intentar red y hacer fallback a offline.html
   if (event.request.mode === 'navigate') {
     event.respondWith(
       fetch(event.request)
@@ -56,8 +59,7 @@ self.addEventListener('fetch', (event) => {
     );
     return;
   }
-  
-  // ESTRATEGIA NETWORK-FIRST PARA ASSETS:
+
   event.respondWith(
     fetch(event.request)
       .then((networkResponse) => {
@@ -67,20 +69,11 @@ self.addEventListener('fetch', (event) => {
         }
         return networkResponse;
       })
-      .catch(() => caches.match(event.request))
+      .catch(() => {
+        return caches.match(event.request);
+      })
   );
 });
-
-
-// ═══════════════════════════════════════════════════════════════════════
-// TAREA 5: RECEPCIÓN Y GESTIÓN DE WEB PUSH NOTIFICATIONS
-// ═══════════════════════════════════════════════════════════════════════
-// NOTA TÉCNICA DE COMPATIBILIDAD CON APPLE / IOS:
-// 1. En iOS / iPadOS, las Web Push Notifications requieren iOS 16.4 o superior.
-// 2. La PWA DEBE estar obligatoriamente agregada a la Pantalla de Inicio (Home Screen)
-//    y ejecutándose en modo 'standalone'.
-// 3. El permiso solo puede ser solicitado mediante una acción explícita del usuario (gesture).
-// ═══════════════════════════════════════════════════════════════════════
 
 self.addEventListener('push', (event) => {
   let data = {
@@ -120,7 +113,6 @@ self.addEventListener('push', (event) => {
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-
   if (event.action === 'close') return;
 
   const targetUrl = (event.notification.data && event.notification.data.url) || './index.html';
