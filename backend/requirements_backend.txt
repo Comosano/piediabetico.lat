@@ -2,10 +2,12 @@
 # PIEDIABETICO.LAT — Backend Requirements v2.0.0 (2026)
 # ═══════════════════════════════════════════════════════
 
-# ── API Framework ──────────────────────────────────────
+# ── API Framework & Seguridad ──────────────────────────
 fastapi>=0.115.0
 uvicorn[standard]>=0.30.6
 pydantic>=2.9.2
+email-validator>=2.0.0
+argon2-cffi>=23.1.0
 python-multipart>=0.0.12
 
 # ── Motores de IA Multimodal ───────────────────────────

@@ -4,7 +4,8 @@ const path = require('path');
 const crypto = require('crypto');
 
 console.log('═══════════════════════════════════════════════════════════════════════');
-console.log('🛡️ P0 BACKUP RESTIC & R2 RESTORE DRILL — VALIDACIÓN DE RECUPERACIÓN');
+console.log('🛡️ P0 BACKUP RESTIC & R2 RESTORE DRILL — SIMULACIÓN LOCAL / CONTRACT DRILL (NO LIVE R2)');
+console.log('   Validación de contrato lógico de exportación, cifrado y restauración');
 console.log('═══════════════════════════════════════════════════════════════════════\n');
 
 let totalTests = 0;

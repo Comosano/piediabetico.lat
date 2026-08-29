@@ -16,12 +16,21 @@ import logging
 from datetime import datetime, timedelta, timezone
 from typing import Optional, Dict, Any, List
 from fastapi import APIRouter, HTTPException, Depends, Header, status
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, EmailStr
 from sqlalchemy.orm import Session
 from PIL import Image
 
 from models import PilotCase, PilotWound, PilotAnalysis, PilotFeedback, PilotEvolutionFeedback, PilotUploadToken, User
-from domain.auth_rbac import require_capability, require_authenticated, Capability, UserSession
+from domain.auth_rbac import (
+    require_capability,
+    require_authenticated,
+    Capability,
+    UserSession,
+    create_user_session
+)
+from domain.password_security import verify_password
+from domain.session_store import create_session, RedisSessionUnavailableError
+from database import get_db
 from agente4_clasificador_ulcera import (
     _inferir as inferir_clasificador,
     ClasificadorInput,
@@ -93,6 +102,27 @@ def sanitizar_y_reencodear_imagen_servidor(
 
 
 # ── SCHEMAS ───────────────────────────────────────────────────────────
+
+class PilotLoginInput(BaseModel):
+    email: str = Field(..., description="Correo electrónico institucional del profesional.")
+    password: str = Field(..., min_length=6, description="Contraseña del profesional.")
+
+
+class PilotUserOutput(BaseModel):
+    id: str
+    email: str
+    full_name: str
+    role: str
+    organization_id: Optional[str] = None
+    pilot_enabled: bool
+
+
+class PilotLoginOutput(BaseModel):
+    access_token: str
+    token_type: str = "Bearer"
+    expires_in: int = 86400 # 24 horas en segundos
+    user: PilotUserOutput
+
 
 class PilotAIReadinessOutput(BaseModel):
     classifier_artifact_path: str
@@ -268,6 +298,98 @@ class PilotCaseTimelineOutput(BaseModel):
     case_alias: str
     created_at: str
     wounds: List[PilotWoundTimelineGroup]
+
+
+# ── ENDPOINT DE LOGIN AUTENTICADO DEL PILOTO (POSTGRESQL + ARGON2ID) ──
+
+@router_pilot.post("/auth/login", response_model=PilotLoginOutput)
+def login_piloto_profesional(
+    payload: PilotLoginInput,
+    db: Optional[Session] = Depends(get_db)
+):
+    """
+    Inicio de sesión seguro para profesionales médicos del Piloto Cerrado:
+    - Valida existencia del usuario en la base de datos PostgreSQL.
+    - Valida que la cuenta esté activa (is_active=True).
+    - Valida que esté expresamente habilitado para el piloto (pilot_enabled=True).
+    - Verifica el hash criptográfico de la contraseña (Argon2id / PBKDF2-SHA256).
+    - Retorna un error 401 genérico e idéntico ante cualquier discrepancia (Zero User Enumeration).
+    - Emite un token de sesión opaco seguro (pd_sess_<32_bytes_urlsafe>) con TTL de 24h.
+    """
+    email_clean = payload.email.lower().strip()
+    user = None
+
+    if db is not None:
+        try:
+            user = db.query(User).filter(User.email == email_clean).first()
+        except Exception as e:
+            logger.error(f"Error consultando usuario en PostgreSQL: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Error de comunicación con el servicio de autenticación."
+            )
+
+    # Si no se encuentra el usuario en DB
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Credenciales inválidas o acceso no autorizado.",
+            headers={"WWW-Authenticate": "Bearer"}
+        )
+
+    # Validar cuenta activa y habilitada para piloto
+    if not user.is_active or not user.pilot_enabled:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Credenciales inválidas o acceso no autorizado.",
+            headers={"WWW-Authenticate": "Bearer"}
+        )
+
+    # Validar contraseña contra hash criptográfico
+    if not verify_password(payload.password, user.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Credenciales inválidas o acceso no autorizado.",
+            headers={"WWW-Authenticate": "Bearer"}
+        )
+
+    # Actualizar fecha de último login si hay DB
+    if db is not None:
+        try:
+            user.last_login_at = datetime.now(timezone.utc)
+            db.commit()
+        except Exception as e:
+            logger.warning(f"No se pudo registrar last_login_at: {e}")
+
+    # Emitir sesión opaca segura en Redis (con clave pilot_session:<sha256> y TTL 24h)
+    try:
+        token = create_session(user_id=str(user.id), ttl_seconds=86400)
+    except RedisSessionUnavailableError as e:
+        logger.error(f"Fallo crítico registrando sesión en Redis: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Servicio de autenticación no disponible (Redis Fail-Closed)."
+        )
+    except Exception as e:
+        logger.error(f"Error inesperado al emitir sesión: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Error al emitir sesión de usuario."
+        )
+
+    return PilotLoginOutput(
+        access_token=token,
+        token_type="Bearer",
+        expires_in=86400,
+        user=PilotUserOutput(
+            id=str(user.id),
+            email=user.email,
+            full_name=user.full_name,
+            role=user.role,
+            organization_id=str(user.organization_id) if user.organization_id else None,
+            pilot_enabled=user.pilot_enabled
+        )
+    )
 
 
 # ── ENDPOINT DE READINESS CHECK REAL (DIAGNÓSTICO PRE-PILOTO PROTEGIDO) ─

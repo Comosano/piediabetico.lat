@@ -22,9 +22,9 @@ depends_on = None
 
 
 def upgrade() -> None:
-    # Extensiones necesarias
+    # Extensiones necesarias (PostgreSQL pgvector extension se denomina 'vector')
     op.execute('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"')
-    op.execute('CREATE EXTENSION IF NOT EXISTS pgvector')
+    op.execute('CREATE EXTENSION IF NOT EXISTS vector')
 
     # ── organizations ──────────────────────────────────────────
     op.create_table('organizations',

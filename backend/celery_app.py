@@ -47,6 +47,10 @@ app = Celery(
     backend=REDIS_URL,
 )
 
+# Aliases canónicos para CLI y subcomandos Celery
+celery = app
+celery_app = app
+
 app.conf.update(
     # Serialización
     task_serializer="json",
