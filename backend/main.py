@@ -21,11 +21,21 @@ import secrets
 import logging
 from typing import List, Optional
 from enum import Enum
-from fastapi import FastAPI, HTTPException, BackgroundTasks, Depends, Header
+from fastapi import FastAPI, HTTPException, BackgroundTasks, Depends, Header, Path
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
+
+# ── Importación de RBAC y Dominio ─────────────────────────────────────
+from domain.auth_rbac import (
+    require_authenticated,
+    require_professional,
+    require_admin,
+    check_patient_authorization,
+    check_wound_authorization,
+    UserSession
+)
 
 # Asegurar path local
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -313,7 +323,7 @@ class OffloadingOutput(BaseModel):
     motivos_contraindicacion:          List[str]
     disclaimer:                        str
 
-@app.post("/agentes/offloading", response_model=OffloadingOutput, tags=["Calculadoras Clínicas"])
+@app.post("/agentes/offloading", response_model=OffloadingOutput, tags=["Calculadoras Clínicas"], dependencies=[Depends(require_professional)])
 def api_agente_offloading(datos: OffloadingInput):
     """Agente 10 — Prescripción de Descarga Biomecánica según Guías IWGDF 2023."""
     motivos_contra = []
@@ -396,7 +406,7 @@ class AntibioticOutput(BaseModel):
     advertencias_nefrotoxicidad: str
     disclaimer:                  str
 
-@app.post("/agentes/antibioticos", response_model=AntibioticOutput, tags=["Calculadoras Clínicas"])
+@app.post("/agentes/antibioticos", response_model=AntibioticOutput, tags=["Calculadoras Clínicas"], dependencies=[Depends(require_professional)])
 def api_agente_antibioticos(datos: AntibioticInput):
     """Agente 11 — Esquemas empíricos según guías IDSA + Ajuste por eGFR (Cockcroft-Gault)."""
     factor = 0.85 if datos.sexo == "F" else 1.0
@@ -437,6 +447,55 @@ def api_agente_antibioticos(datos: AntibioticInput):
         advertencias_nefrotoxicidad=adv,
         disclaimer=DISCLAIMER
     )
+
+
+# =====================================================================
+# ENDPOINTS CLÍNICOS PROTEGIDOS: PACIENTES, LESIONES & RESEARCH
+# =====================================================================
+
+@app.get("/pacientes/{patient_id}/historia-clinica", tags=["Historia Clínica"])
+def get_historia_clinica_paciente(
+    patient_id: str = Path(..., description="ID del paciente"),
+    current_user: UserSession = Depends(require_authenticated)
+):
+    """Consulta la historia clínica de un paciente validando propiedad o CareRelationship activa."""
+    check_patient_authorization(patient_id, current_user)
+    return {
+        "status": "ok",
+        "patient_id": patient_id,
+        "acceso_autorizado": True,
+        "usuario_solicitante": current_user.email,
+        "rol_solicitante": current_user.role,
+        "evaluaciones_disponibles": 3
+    }
+
+@app.get("/lesiones/{wound_id}/evaluaciones", tags=["Lesiones"])
+def get_evaluaciones_lesion(
+    wound_id: str = Path(..., description="Identificador de la lesión ej. DFU-2026-0042"),
+    current_user: UserSession = Depends(require_authenticated)
+):
+    """Consulta las evaluaciones de una lesión validando la titularidad o relación clínica activa."""
+    check_wound_authorization(wound_id, current_user)
+    return {
+        "status": "ok",
+        "wound_id": wound_id,
+        "acceso_autorizado": True,
+        "usuario_solicitante": current_user.email
+    }
+
+@app.get("/research/datos-identificables", tags=["Investigación"])
+def get_datos_identificables_research(
+    current_user: UserSession = Depends(require_authenticated)
+):
+    """Endpoint restringido: Los investigadores NO tienen acceso a PII de pacientes."""
+    if current_user.role == "investigador":
+        raise HTTPException(
+            status_code=403,
+            detail="Acceso denegado: Los investigadores solo tienen acceso a datos desidentificados en el Research Vault."
+        )
+    if current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Acceso denegado.")
+    return {"status": "ok", "pii_access": "admin_audit_only"}
 
 
 # =====================================================================

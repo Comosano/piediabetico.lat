@@ -17,8 +17,10 @@ import logging
 import numpy as np
 from PIL import Image
 from typing import Optional, Dict, Any
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, Field
+
+from domain.auth_rbac import require_professional
 
 logger = logging.getLogger(__name__)
 
@@ -113,7 +115,7 @@ class SegmentacionOutput(BaseModel):
     mensaje: str
 
 
-@router_segmentacion.post("/predecir", response_model=SegmentacionOutput)
+@router_segmentacion.post("/predecir", response_model=SegmentacionOutput, dependencies=[Depends(require_professional)])
 def predecir_segmentacion(payload: SegmentacionInput):
     """Ejecuta la inferencia U-Net para delimitar la herida y computar área en cm²."""
     try:
