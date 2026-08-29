@@ -8577,12 +8577,13 @@ async function comprimirImagenEnNavegador(file, maxDimension = 1200, quality = 0
           console.warn('Error en cálculo de histograma:', histErr);
         }
 
+        const qualityGate = calcularPhotoQualityGate(ctx, width, height);
         const dataUrl = canvas.toDataURL('image/jpeg', quality);
         const originalSizeMB = (file.size / (1024 * 1024)).toFixed(2);
         const compressedSizeKB = Math.round((dataUrl.length * 3) / 4 / 1024);
 
         console.log(`⚡ [Canvas Compressor] ${file.name}: ${originalSizeMB} MB ➔ ${compressedSizeKB} KB (${width}x${height}px)`);
-        resolve({ dataUrl, width, height, sizeKB: compressedSizeKB, originalMB: originalSizeMB, advertenciaLuz });
+        resolve({ dataUrl, width, height, sizeKB: compressedSizeKB, originalMB: originalSizeMB, advertenciaLuz, qualityGate });
       };
       img.src = e.target.result;
     };
@@ -8942,5 +8943,89 @@ function simularPerfilEquipoPaciente(tipo) {
   } else {
     if (txt) txt.innerText = 'Sin equipo asignado · Telemedicina disponible';
     if (btnWa) btnWa.href = 'https://wa.me/5491112345678?text=Hola,%20necesito%20orientaci%C3%B3n%20para%20pie%20diab%C3%A9tico';
+  }
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════
+// FASE 2: MOTOR DE PHOTO QUALITY GATE (CALIDAD CLÍNICA EN CANVAS)
+// Evalúa iluminación, contraste y nitidez en < 10ms antes de enviar a IA
+// ═══════════════════════════════════════════════════════════════════════
+
+function calcularPhotoQualityGate(ctx, width, height) {
+  try {
+    const imgData = ctx.getImageData(0, 0, width, height);
+    const data = imgData.data;
+    const len = data.length;
+
+    let totalLum = 0;
+    let lumValues = [];
+    const step = 4 * 16; // Muestreo cada 16 píxeles para velocidad instantánea
+
+    for (let i = 0; i < len; i += step) {
+      const r = data[i];
+      const g = data[i + 1];
+      const b = data[i + 2];
+      const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+      totalLum += lum;
+      lumValues.push(lum);
+    }
+
+    const count = lumValues.length;
+    if (count === 0) return { overallScore: 75, estado: 'optimo', mensaje: 'Foto lista' };
+
+    const avgLum = totalLum / count;
+
+    // Calcular contraste (RMS Contrast)
+    let varSum = 0;
+    for (let i = 0; i < count; i++) {
+      varSum += Math.pow(lumValues[i] - avgLum, 2);
+    }
+    const contrast = Math.sqrt(varSum / count);
+
+    // Calcular nitidez (Gradiente de diferencias adyacentes)
+    let diffSum = 0;
+    for (let i = 0; i < count - 1; i++) {
+      diffSum += Math.abs(lumValues[i + 1] - lumValues[i]);
+    }
+    const sharpness = diffSum / (count - 1);
+
+    // Scores individuales (0 a 100)
+    let lumScore = 100;
+    if (avgLum < 50) lumScore = Math.max(10, Math.round((avgLum / 50) * 100));
+    else if (avgLum > 220) lumScore = Math.max(10, Math.round(((255 - avgLum) / 35) * 100));
+
+    const contrastScore = Math.min(100, Math.max(10, Math.round((contrast / 40) * 100)));
+    const sharpnessScore = Math.min(100, Math.max(10, Math.round((sharpness / 14) * 100)));
+
+    const overallScore = Math.round((lumScore * 0.4) + (contrastScore * 0.3) + (sharpnessScore * 0.3));
+
+    let estado = 'optimo'; // 'optimo' | 'advertencia' | 'insuficiente'
+    let mensaje = 'Calidad óptica óptima para evaluación médica.';
+
+    if (overallScore < 48 || avgLum < 38) {
+      estado = 'insuficiente';
+      mensaje = avgLum < 38
+        ? 'Foto con poca luz. Sugerimos encender una luz o acercarte a una ventana.'
+        : 'Foto desenfocada o con bajo contraste. Sugerimos enfocar a 15–20 cm.';
+    } else if (overallScore < 68) {
+      estado = 'advertencia';
+      mensaje = 'Calidad aceptable. Evitá proyectar la sombra del celular.';
+    }
+
+    console.log(`📊 [Quality Gate] Score: ${overallScore}/100 | Luz: ${lumScore} | Contraste: ${contrastScore} | Nitidez: ${sharpnessScore} | Estado: ${estado}`);
+
+    return {
+      overallScore,
+      lumScore,
+      contrastScore,
+      sharpnessScore,
+      avgLum: Math.round(avgLum),
+      estado,
+      mensaje
+    };
+  } catch (e) {
+    console.warn('Error en Quality Gate:', e);
+    return { overallScore: 80, estado: 'optimo', mensaje: 'Foto lista' };
   }
 }

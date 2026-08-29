@@ -28,7 +28,7 @@
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" defer></script>
-  <link rel="stylesheet" href="./styles.css?v=37">
+  <link rel="stylesheet" href="./styles.css?v=38">
 </head>
 <body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col antialiased">
 
@@ -679,6 +679,14 @@
 
         <!-- Slots de Fotos (Post Carga) -->
         <div id="pac-slots-area" class="hidden space-y-3">
+
+            <!-- Photo Quality Gate (Fase 2) -->
+            <div id="pac-quality-gate-box" class="hidden p-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-700 text-xs text-emerald-950 dark:text-emerald-200 flex items-start gap-2.5 shadow-2xs">
+              <span class="text-base shrink-0">🔬</span>
+              <p id="pac-quality-gate-txt" class="leading-tight">
+                <strong>Calidad Óptica 88/100:</strong> Iluminación y nitidez excelentes para el análisis clínico.
+              </p>
+            </div>
           <div class="p-4 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
             <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
               <span class="text-xs font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
@@ -2304,7 +2312,7 @@
 
         <!-- Grid Responsivo de 25 Programas Académicos -->
         <div id="grid-universidades-latam" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          <!-- Populated by renderizarUniversidades() in app.js?v=37 -->
+          <!-- Populated by renderizarUniversidades() in app.js?v=38 -->
         </div>
       </div>
 
@@ -2372,7 +2380,7 @@
 
         <!-- Grid Responsivo de Sociedades Médicas -->
         <div id="grid-sociedades-medicas" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          <!-- Populated by renderizarSociedades() in app.js?v=37 -->
+          <!-- Populated by renderizarSociedades() in app.js?v=38 -->
         </div>
       </div>
 
@@ -2439,7 +2447,7 @@
 
         <!-- Grid Responsivo de Laboratorios y Fármacos -->
         <div id="grid-laboratorios-latam" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <!-- Populated by renderizarLaboratorios() in app.js?v=37 -->
+          <!-- Populated by renderizarLaboratorios() in app.js?v=38 -->
         </div>
       </div>
 
@@ -2488,7 +2496,7 @@
 
         <!-- Grid de Tarjetas de Guías Médicas -->
         <div id="grid-guias-medicas" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          <!-- Renderizado dinámicamente desde app.js?v=37 -->
+          <!-- Renderizado dinámicamente desde app.js?v=38 -->
         </div>
       </div>
 
@@ -4217,7 +4225,7 @@
 
       <!-- Contenido Legal Dinámico por País -->
       <div id="contenedor-detalle-legal" class="p-6 overflow-y-auto space-y-5 text-xs text-slate-700 dark:text-slate-300 leading-relaxed max-h-[60vh]">
-        <!-- Rellenado dinámicamente por seleccionarPaisLegal() en app.js?v=37 -->
+        <!-- Rellenado dinámicamente por seleccionarPaisLegal() en app.js?v=38 -->
       </div>
 
       <!-- Footer Modal Legal con Enlaces a Dossiers Imprimibles -->
@@ -4238,7 +4246,7 @@
     </div>
   </div>
 
-  <script src="./app.js?v=37"></script>
+  <script src="./app.js?v=38"></script>
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./sw.js?v=17').then(function(reg) {
