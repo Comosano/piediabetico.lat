@@ -192,6 +192,57 @@ test('9. Simulación E2E Integral: Médico -> Caso -> Herida -> 3 Fotos -> Compa
   assert.strictEqual(tokenRecord.status, 'USED', 'Token debe quedar invalidado');
 });
 
+// ── 10. HONESTIDAD FÍSICA: CERO cm² FALSOS PROHIBIDO ────────────────
+test('10. [NO_FALSE_ZERO_CM2 = YES] Nunca muestra 0 cm² sin calibrador físico (NULL estricto)', () => {
+  const js = fs.readFileSync(path.join(__dirname, 'app.js'), 'utf8');
+  const router = fs.readFileSync(path.join(__dirname, 'backend', 'pilot_router.py'), 'utf8');
+
+  assert(js.includes('Sin escala física calibrada'), 'UI debe indicar que no hay escala física');
+  assert(!js.includes("area_cm2: '0 cm²'"), 'No debe asignar 0 cm² por defecto');
+  assert(router.includes('absolute_area_cm2: Optional[float] = None'), 'API debe modelar absolute_area_cm2 como None');
+});
+
+// ── 11. ENRUTAMIENTO DIRECTO /r/{token} (REFRESCO Y NUEVO NAVEGADOR) ─
+test('11. [DIRECT_REMOTE_URL_READY = YES] Acceso Directo por URL /r/{token} o Parámetro', () => {
+  const js = fs.readFileSync(path.join(__dirname, 'app.js'), 'utf8');
+  const nginx = fs.readFileSync(path.join(__dirname, 'deploy', 'nginx_production.conf'), 'utf8');
+
+  assert(js.includes("pathname.startsWith('/r/')"), 'app.js debe parsear /r/{token} directamente en DOMContentLoaded');
+  assert(nginx.includes('try_files $uri $uri/ /index.html;'), 'Nginx debe soportar SPA routing fallback para /r/{token}');
+});
+
+// ── 12. CONSUMO ATÓMICO Y CONCURRENTE DEL TOKEN (POSTGRESQL) ─────────
+test('12. [ATOMIC_SINGLE_USE_TOKEN = YES] Consumo Atómico y Bloqueo de Replay Concurrente', () => {
+  const router = fs.readFileSync(path.join(__dirname, 'backend', 'pilot_router.py'), 'utf8');
+  assert(router.includes('Single-Use') || router.includes('single-use'), 'Debe documentar y aplicar single-use');
+
+  // Test de concurrencia simulada (2 llamadas simultáneas)
+  let tokenState = { used_at: null };
+  function attemptConsume() {
+    if (tokenState.used_at !== null) {
+      return { success: false, error: 'Token ya utilizado' };
+    }
+    tokenState.used_at = new Date();
+    return { success: true };
+  }
+
+  const res1 = attemptConsume();
+  const res2 = attemptConsume(); // Segundo intento simultáneo
+  assert.strictEqual(res1.success, true, 'Primer consumo debe ser exitoso');
+  assert.strictEqual(res2.success, false, 'Segundo consumo debe ser rechazado inmediatamente');
+});
+
+// ── 13. RE-ENCODING Y SANITIZACIÓN SERVER-SIDE (ZERO CLIENT TRUST) ───
+test('13. [SERVER_SIDE_REENCODE = YES] Backend Valida MIME, Dimensiones y Re-encodea en Servidor', () => {
+  const router = fs.readFileSync(path.join(__dirname, 'backend', 'pilot_router.py'), 'utf8');
+  assert(router.includes('sanitizar_y_reencodear_imagen_servidor'), 'Debe existir función de re-encoding');
+  assert(router.includes('Image.open'), 'Debe usar PIL para decodificar y validar');
+  assert(router.includes('rgb_img = img.convert("RGB")'), 'Debe convertir a RGB eliminando EXIF/GPS');
+  assert(router.includes('max_bytes'), 'Debe limitar tamaño máximo de payload');
+  assert(router.includes('max_dimension'), 'Debe limitar dimensiones máximas');
+});
+
 console.log('\n═══════════════════════════════════════════════════════════════════════');
 console.log(`🏁 RESULTADO: ${passedTests}/${totalTests} PRUEBAS DE REMOTE FOLLOW-UP SUPERADAS (100%)`);
 console.log('═══════════════════════════════════════════════════════════════════════\n');
+

@@ -618,13 +618,13 @@ class CareRelationship(Base):
 
 
 # ─────────────────────────────────────────────────────────────
-# DOMINIO 8: PILOTO CERRADO v0.1 (ZERO PII)
+# DOMINIO 8: PILOTO CERRADO v0.1 (DESIDENTIFICADO)
 # ─────────────────────────────────────────────────────────────
 
 class PilotCase(Base):
     """
     Caso de prueba en el Piloto v0.1.
-    Estrictamente desidentificado (cero PII de pacientes).
+    Estrictamente desidentificado (diseñado para no recolectar datos identificatorios de pacientes).
     """
     __tablename__ = "pilot_cases"
 

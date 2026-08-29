@@ -83,7 +83,29 @@ if (typeof window !== 'undefined' && window.matchMedia) {
 document.addEventListener('DOMContentLoaded', () => {
   aplicarTema(state.theme || 'auto');
   if (window.lucide) lucide.createIcons();
-  switchPortal('landing');
+
+  // Enrutamiento directo por URL para paciente remoto (/r/{token}, #/r/{token} o ?r={token})
+  const pathname = (typeof window !== 'undefined' && window.location && window.location.pathname) || '';
+  const search = (typeof window !== 'undefined' && window.location && window.location.search) || '';
+  const hash = (typeof window !== 'undefined' && window.location && window.location.hash) || '';
+
+  let remoteToken = null;
+  if (pathname.startsWith('/r/')) {
+    remoteToken = pathname.replace('/r/', '').trim();
+  } else if (hash.startsWith('#/r/')) {
+    remoteToken = hash.replace('#/r/', '').trim();
+  } else if (search.includes('r=')) {
+    const params = new URLSearchParams(search);
+    remoteToken = params.get('r');
+  }
+
+  if (remoteToken) {
+    state.remoteTokenActivo = remoteToken;
+    switchPortal('paciente-remoto', true);
+  } else {
+    switchPortal('landing');
+  }
+
   verificarOnboardingLegal();
   if (typeof renderizarUniversidades === 'function') renderizarUniversidades();
   if (typeof renderizarSociedades === 'function') renderizarSociedades();
@@ -9385,7 +9407,7 @@ function crearNuevoCasoPilotoPrompt() {
   const nextNum = state.pilotData.cases.length + 1;
   const autoAlias = `PILOT-${String(nextNum).padStart(4, '0')}`;
   
-  const aliasInput = prompt(`Crear Nuevo Caso Pseudonimizado.\nAlias sugerido: ${autoAlias}\n(CERO PII: no ingrese nombres ni DNI):`, autoAlias);
+  const aliasInput = prompt(`Crear Nuevo Caso Pseudonimizado.\nAlias sugerido: ${autoAlias}\n(Alias seguro: no ingrese nombres ni DNI):`, autoAlias);
   if (aliasInput === null) return;
 
   const cleanAlias = (aliasInput.trim() || autoAlias).toUpperCase();
@@ -9556,7 +9578,7 @@ function ejecutarAnalisisHeridaPiloto() {
   const p2 = document.getElementById('chk-piloto-p2').checked;
   const p3 = document.getElementById('chk-piloto-p3').checked;
   if (!p1 || !p2 || !p3) {
-    alert('Debe confirmar todas las declaraciones de privacidad (Cero PII).');
+    alert('Debe confirmar las declaraciones de privacidad antes de continuar.');
     return;
   }
 
@@ -9591,7 +9613,7 @@ function ejecutarAnalisisHeridaPiloto() {
     pixel_area: 3850,
     relative_area_percent: 4.2,
     scale_detected: false,
-    absolute_area_cm2: null, // Cero cm² sin calibrador
+    absolute_area_cm2: null, // Sin escala física calibrada (NULL estricto)
     segmentation_mask_base64: null,
     created_at: new Date().toISOString(),
     is_expired: false
@@ -9653,7 +9675,7 @@ function renderizarTimelinePiloto() {
               <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-900">Score QG: ${a.quality_gate_score}/100</span>
             </div>
             <p class="text-[11px] text-slate-600 dark:text-slate-300 font-semibold">IA: ${a.classification_label} (${Math.round((a.classification_confidence||0)*100)}%)</p>
-            <p class="text-[10px] text-slate-400">Área relativa: ${a.relative_area_percent || 0}% de la foto · (Cero cm² sin calibrador)</p>
+            <p class="text-[10px] text-slate-400">Área relativa: ${a.relative_area_percent || 0}% de la foto · Área absoluta: — (Sin escala física calibrada)</p>
           </div>
         </div>
         <button type="button" onclick="abrirDetalleEventoPiloto('${a.analysis_uuid}')" class="btn-sec !py-1.5 !px-2.5 text-xs font-bold bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-300">
@@ -9690,6 +9712,14 @@ function abrirDetalleEventoPiloto(analysisUuid) {
       <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200">
         <span class="text-[10px] text-slate-500 font-bold block">Quality Gate:</span>
         <strong class="text-emerald-700">${analysis.quality_gate_score}/100 (${analysis.quality_gate_status})</strong>
+      </div>
+      <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200">
+        <span class="text-[10px] text-slate-500 font-bold block">Área Relativa:</span>
+        <strong class="text-slate-800 dark:text-slate-200">${analysis.relative_area_percent || 0}% de la foto</strong>
+      </div>
+      <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200">
+        <span class="text-[10px] text-slate-500 font-bold block">Área Absoluta:</span>
+        <strong class="text-slate-600 dark:text-slate-400 font-medium">${analysis.absolute_area_cm2 !== null ? analysis.absolute_area_cm2 + ' cm²' : '— (Sin escala física calibrada)'}</strong>
       </div>
     </div>
     <p class="text-[11px] text-slate-500 text-center">Registrado bajo retención temporal del piloto de 21 días.</p>

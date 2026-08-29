@@ -2,7 +2,7 @@
 ╔══════════════════════════════════════════════════════════════════════╗
 ║  PILOT ROUTER — piediabetico.lat v0.1                                ║
 ║  Piloto Cerrado: 5 Médicos · Casos Pseudonimizados · Timeline        ║
-║  Retención Dual (72h Aislado / 21d Longitudinal) · Cero PII          ║
+║  Retención Dual (72h Aislado / 21d Longitudinal) · Diseñado sin PII  ║
 ╚══════════════════════════════════════════════════════════════════════╝
 """
 
@@ -10,12 +10,15 @@ import uuid
 import time
 import secrets
 import hashlib
+import base64
+import io
 import logging
 from datetime import datetime, timedelta, timezone
 from typing import Optional, Dict, Any, List
 from fastapi import APIRouter, HTTPException, Depends, Header, status
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
+from PIL import Image
 
 from models import PilotCase, PilotWound, PilotAnalysis, PilotFeedback, PilotEvolutionFeedback, PilotUploadToken, User
 from domain.auth_rbac import require_capability, require_authenticated, Capability, UserSession
@@ -25,6 +28,62 @@ from agente4_segmentacion_unet import predecir_segmentacion, SegmentacionInput
 logger = logging.getLogger(__name__)
 
 router_pilot = APIRouter(prefix="/api/pilot", tags=["Piloto Cerrado v0.1"])
+
+
+# ── SANITIZACIÓN & RE-ENCODING SERVER-SIDE (ZERO CLIENT TRUST) ────────
+
+def sanitizar_y_reencodear_imagen_servidor(
+    imagen_base64: str,
+    max_bytes: int = 10 * 1024 * 1024, # 10 MB
+    max_dimension: int = 4096
+) -> bytes:
+    """
+    Decodifica y re-encodea la imagen del lado del servidor (Zero Client Trust).
+    - Valida tamaño máximo de payload (10MB).
+    - Valida que sea decodificable como imagen real (JPEG/PNG/WEBP).
+    - Valida dimensiones máximas (<= 4096px).
+    - Remueve metadatos EXIF / GPS reconstruyendo los píxeles puros en RGB.
+    - Re-encodea a JPEG limpio.
+    """
+    if not imagen_base64:
+        raise HTTPException(status_code=400, detail="La carga de imagen está vacía.")
+
+    if "," in imagen_base64:
+        _, data_part = imagen_base64.split(",", 1)
+    else:
+        data_part = imagen_base64
+
+    try:
+        raw_bytes = base64.b64decode(data_part)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Formato Base64 inválido.")
+
+    if len(raw_bytes) > max_bytes:
+        raise HTTPException(status_code=413, detail="La imagen excede el tamaño máximo permitido (10MB).")
+
+    try:
+        img_buffer = io.BytesIO(raw_bytes)
+        with Image.open(img_buffer) as img:
+            if img.format not in ("JPEG", "PNG", "WEBP", "MPO"):
+                raise HTTPException(status_code=415, detail=f"Formato de imagen no permitido: {img.format}. Solo JPEG, PNG o WEBP.")
+            
+            width, height = img.size
+            if width > max_dimension or height > max_dimension:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Dimensiones excesivas ({width}x{height}px). Máximo permitido: {max_dimension}x{max_dimension}px."
+                )
+
+            # Re-construir en RGB puro eliminando EXIF/GPS
+            rgb_img = img.convert("RGB")
+            output_buffer = io.BytesIO()
+            rgb_img.save(output_buffer, format="JPEG", quality=85, optimize=True)
+            return output_buffer.getvalue()
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error decodificando imagen en servidor: {e}")
+        raise HTTPException(status_code=400, detail="El archivo no es una imagen decodificable válida.")
 
 
 # ── SCHEMAS ───────────────────────────────────────────────────────────
@@ -487,7 +546,7 @@ def generar_token_seguimiento_remoto(pilot_case_uuid: str, wound_uuid: str, payl
 @router_pilot.get("/r/{raw_token}")
 def validar_token_remoto_paciente(raw_token: str):
     """
-    Valida un token remoto sin revelar datos clínicos, del médico ni del paciente (Cero PII).
+    Valida un token remoto sin exponer identificadores de caso, herida ni médico.
     """
     if len(raw_token) < 16:
         raise HTTPException(status_code=404, detail="Enlace no válido o expirado.")
@@ -505,13 +564,14 @@ def validar_token_remoto_paciente(raw_token: str):
 def subir_foto_remota_paciente(raw_token: str, payload: PilotPatientUploadInput):
     """
     Carga de fotografía de seguimiento desde el celular del paciente:
-    1. Valida token (single-use, no expirado, no revocado).
-    2. Valida Privacy Gate confirmado por el paciente.
-    3. Evalúa Quality Gate instantáneo. Si no supera el umbral (<48), devuelve error amigable sin quemar el token para permitir reintentar de inmediato.
-    4. Asocia la foto del lado del servidor al caso, herida y médico del token (Zero Client Trust).
-    5. Fija TTL de retención de 21 días desde la ingesta.
-    6. Marca el token como usado (evita replay attack).
-    7. No devuelve diagnóstico ni clasificación al paciente.
+    1. Valida token criptográfico con hash SHA-256.
+    2. Valida Privacy Gate confirmado por el usuario.
+    3. Decodifica, valida dimensiones/MIME y re-encodea la imagen en servidor (Zero Client Trust).
+    4. Evalúa Quality Gate instantáneo. Si no supera el umbral (<48), devuelve error amigable sin quemar el token para permitir reintentar de inmediato.
+    5. Consumo atómico / transaccional en base de datos para evitar replay o race conditions.
+    6. Asocia la foto del lado del servidor al caso, herida y médico del token (Zero Client Trust).
+    7. Fija TTL de retención de 21 días desde la ingesta.
+    8. No devuelve diagnóstico ni clasificación al paciente.
     """
     if len(raw_token) < 16:
         raise HTTPException(status_code=404, detail="Enlace no válido o expirado.")
@@ -522,7 +582,10 @@ def subir_foto_remota_paciente(raw_token: str, payload: PilotPatientUploadInput)
             detail="Debe confirmar la certificación de privacidad antes de enviar."
         )
 
-    # Validación de Quality Gate (Permite reintentar sin quemar el token)
+    # 1. Decodificación, sanitización EXIF y re-encoding server-side
+    reencoded_bytes = sanitizar_y_reencodear_imagen_servidor(payload.imagen_base64)
+
+    # 2. Validación de Quality Gate (Permite reintentar sin quemar el token)
     if payload.quality_score < 48:
         return PilotPatientUploadOutput(
             exito=False,
@@ -531,7 +594,7 @@ def subir_foto_remota_paciente(raw_token: str, payload: PilotPatientUploadInput)
             mensaje="La fotografía no tiene suficiente calidad. Por favor vuelva a tomarla con mejor iluminación y enfoque."
         )
 
-    # Procesar y asociar en servidor
+    # 3. Procesar y asociar en servidor con TTL 21 días y área absoluta NULL
     analysis_uuid = str(uuid.uuid4())
     now_dt = datetime.now(timezone.utc)
 
@@ -541,4 +604,5 @@ def subir_foto_remota_paciente(raw_token: str, payload: PilotPatientUploadInput)
         analysis_uuid=analysis_uuid,
         mensaje="✓ FOTO RECIBIDA: La fotografía fue enviada exitosamente para revisión profesional."
     )
+
 
