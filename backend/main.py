@@ -20,7 +20,7 @@ import sys
 import logging
 from typing import List, Optional
 from enum import Enum
-from fastapi import FastAPI, HTTPException, BackgroundTasks
+from fastapi import FastAPI, HTTPException, BackgroundTasks, Depends, Header
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -71,7 +71,11 @@ except ImportError:
     PubMedScraperAgent = RedactorAgent = PDFCompilerAgent = None
 
 
-# ── Inicialización FastAPI ───────────────────────────────────────────
+# ── Configuración de Entorno & Seguridad P0 ──────────────────────────
+ENVIRONMENT = os.getenv("ENVIRONMENT", "development").lower()
+is_production = ENVIRONMENT in ["production", "prod"]
+
+# En producción se deshabilitan docs, redoc y openapi público
 app = FastAPI(
     title="piediabetico.lat — API Clínica Unificada",
     description=(
@@ -80,14 +84,18 @@ app = FastAPI(
         "Todas las calculadoras son herramientas de referencia educativa basadas en guías IWGDF 2023 e IDSA."
     ),
     version="2.0.0",
-    docs_url="/docs",
-    redoc_url="/redoc",
+    docs_url=None if is_production else "/docs",
+    redoc_url=None if is_production else "/redoc",
+    openapi_url=None if is_production else "/openapi.json",
 )
 
-ALLOWED_ORIGINS = os.getenv(
-    "ALLOWED_ORIGINS",
-    "https://piediabetico.lat,https://app.piediabetico.lat,https://piediabetico.online,http://localhost:3000,http://localhost:8000"
-).split(",")
+# CORS Allowlist diferenciada según entorno
+default_origins = (
+    "https://piediabetico.lat,https://app.piediabetico.lat,https://piediabetico.online"
+    if is_production
+    else "https://piediabetico.lat,https://app.piediabetico.lat,https://piediabetico.online,http://localhost:3000,http://localhost:8000,http://127.0.0.1:5500"
+)
+ALLOWED_ORIGINS = [orig.strip() for orig in os.getenv("ALLOWED_ORIGINS", default_origins).split(",") if orig.strip()]
 
 # ── Habilitar CORS con Allowlist Estricta ─────────────────────────────
 app.add_middleware(
@@ -97,6 +105,28 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# ── Dependencia de Autenticación para Triggers Administrativos / Internos ──
+def verify_admin_token(
+    x_admin_key: Optional[str] = Header(None, alias="X-Admin-Key"),
+    authorization: Optional[str] = Header(None)
+):
+    expected_key = os.getenv("ADMIN_API_KEY", "")
+    token = x_admin_key
+    if not token and authorization and authorization.startswith("Bearer "):
+        token = authorization.split("Bearer ")[1].strip()
+    
+    if not expected_key or not token or token != expected_key:
+        if not token:
+            raise HTTPException(
+                status_code=401,
+                detail="Credenciales administrativas requeridas (X-Admin-Key o Bearer token)."
+            )
+        raise HTTPException(
+            status_code=403,
+            detail="Acceso denegado: Token administrativo inválido."
+        )
+    return True
 
 # Registrar Routers
 if FLUJO_DISPONIBLE:
@@ -426,43 +456,34 @@ def _ejecutar_pipeline():
         PDFCompilerAgent().compile_all_pdfs()
     logger.info("[Pipeline] Completado")
 
-@app.post("/orquestador/sync-semanal", tags=["Orquestador"])
+@app.post("/orquestador/sync-semanal", tags=["Orquestador"], dependencies=[Depends(verify_admin_token)])
+@app.post("/pipeline-semanal/ejecutar", tags=["Orquestador"], dependencies=[Depends(verify_admin_token)])
 def api_sync_semanal(background_tasks: BackgroundTasks):
-    """Dispara manualmente el pipeline PubMed → Redactor → PDF."""
+    """Trigger administrativo protegido del pipeline PubMed → Redactor → PDF."""
     if CELERY_DISPONIBLE:
         pipeline_manual.delay()
-        return {"status": "encolado", "modo": "celery", "mensaje": "Pipeline encolado en Celery."}
+        return {"status": "ok", "modo": "celery", "mensaje": "Pipeline administrativo encolado."}
     else:
         background_tasks.add_task(_ejecutar_pipeline)
-        return {"status": "encolado", "modo": "background_tasks", "mensaje": "Pipeline iniciado en segundo plano."}
+        return {"status": "ok", "modo": "background", "mensaje": "Pipeline administrativo iniciado."}
 
 
 # =====================================================================
-# HEALTHCHECK & INFO
+# HEALTHCHECK & INFO MINIMALISTA P0
 # =====================================================================
 
 @app.get("/", tags=["Sistema"])
 def root():
+    """Respuesta mínima sin exponer detalles de arquitectura, proveedores ni claves."""
+    if is_production:
+        return {"status": "ok"}
     return {
-        "plataforma": "piediabetico.lat",
-        "version": "2.0.0",
-        "estado": "operativo",
-        "motores_ia": {
-            "gemini": "Habilitado (Google GenAI)",
-            "claude": "Habilitado (Anthropic)",
-            "onnx_local": "Habilitado (CPU EfficientNet-B0)"
-        },
-        "docs_url": "/docs",
-        "endpoints_principales": [
-            "POST /analizar-foto (Flujo Completo ONNX -> IA)",
-            "POST /agentes/triage-multimodal (Triage Multimodal)",
-            "POST /agentes/iwgdf (Riesgo 0-3)",
-            "POST /agentes/timers (Apósitos)",
-            "POST /agentes/offloading (Descarga)",
-            "POST /agentes/antibioticos (ATB + Cockcroft-Gault)"
-        ]
+        "status": "ok",
+        "service": "piediabetico-api",
+        "env": ENVIRONMENT
     }
 
 @app.get("/health", tags=["Sistema"])
 def health():
-    return {"status": "healthy", "version": "2.0.0"}
+    """Healthcheck estándar minimalista sin hostnames ni versiones internas."""
+    return {"status": "ok"}
