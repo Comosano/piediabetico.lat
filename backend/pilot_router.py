@@ -1,7 +1,8 @@
 """
 ╔══════════════════════════════════════════════════════════════════════╗
 ║  PILOT ROUTER — piediabetico.lat v0.1                                ║
-║  Piloto Cerrado: 5 Médicos · 15 Días · Zero PII · TTL 72 Horas       ║
+║  Piloto Cerrado: 5 Médicos · Casos Pseudonimizados · Timeline        ║
+║  Retención Dual (72h Aislado / 21d Longitudinal) · Cero PII          ║
 ╚══════════════════════════════════════════════════════════════════════╝
 """
 
@@ -14,8 +15,8 @@ from fastapi import APIRouter, HTTPException, Depends, Header, status
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
-from models import PilotCase, PilotAnalysis, PilotFeedback, User
-from domain.auth_rbac import require_capability, Capability
+from models import PilotCase, PilotWound, PilotAnalysis, PilotFeedback, PilotEvolutionFeedback, User
+from domain.auth_rbac import require_capability, require_authenticated, Capability, UserSession
 from agente4_clasificador_ulcera import _inferir as inferir_clasificador, ClasificadorInput
 from agente4_segmentacion_unet import predecir_segmentacion, SegmentacionInput
 
@@ -25,6 +26,32 @@ router_pilot = APIRouter(prefix="/api/pilot", tags=["Piloto Cerrado v0.1"])
 
 
 # ── SCHEMAS ───────────────────────────────────────────────────────────
+
+class PilotCaseCreateInput(BaseModel):
+    case_alias: Optional[str] = Field(None, description="Alias pseudonimizado (ej. PILOT-0001). Cero PII.")
+
+
+class PilotCaseOutput(BaseModel):
+    id: str
+    pilot_case_uuid: str
+    case_alias: str
+    is_active: bool
+    created_at: str
+
+
+class PilotWoundCreateInput(BaseModel):
+    wound_label: str = Field("Herida 1", description="Etiqueta ordinal (ej. 'Herida 1', 'Herida 2').")
+    wound_location: str = Field("Plantar", description="Ubicación anatómica general (ej. 'Talón', 'Hallux', 'Dorsal').")
+
+
+class PilotWoundOutput(BaseModel):
+    id: str
+    wound_uuid: str
+    pilot_case_uuid: str
+    wound_label: str
+    wound_location: str
+    created_at: str
+
 
 class PilotShadowModeInput(BaseModel):
     pre_classification: str = Field(..., description="'Normal(Healthy skin)', 'Abnormal(Ulcer)' o 'Indeterminada'")
@@ -36,6 +63,10 @@ class PilotAnalisisInput(BaseModel):
     privacy_gate_confirmed: bool = Field(..., description="Confirmación explícita del profesional de que la toma no contiene rostro, pulsera, documentos ni PII visible.")
     quality_score: int = Field(..., ge=0, le=100, description="Puntuación óptica del Quality Gate (0-100, umbral técnico heurístico del piloto = 48).")
     quality_status: str = Field("optimo", description="'optimo', 'advertencia' o 'insuficiente'")
+    pilot_case_uuid: Optional[str] = Field(None, description="UUID del caso pseudonimizado si es seguimiento longitudinal.")
+    pilot_wound_uuid: Optional[str] = Field(None, description="UUID de la herida específica si es seguimiento longitudinal.")
+    taken_at_custom: Optional[str] = Field(None, description="Fecha real histórica de la toma si el profesional la conoce (ISO).")
+    sequence_index: Optional[int] = Field(None, description="Índice ordinal secuencial de la foto (1, 2, 3...) cuando la fecha es desconocida.")
     shadow_mode: Optional[PilotShadowModeInput] = Field(None, description="Evaluación clínica previa cegada al resultado de la IA.")
     scale_detected: bool = Field(False, description="Indica si existe marcador métrico físico calibrado.")
     px_per_cm: Optional[float] = Field(None, description="Píxeles/cm si scale_detected es True.")
@@ -45,6 +76,7 @@ class PilotAnalisisOutput(BaseModel):
     exito: bool
     analysis_uuid: str
     pilot_case_uuid: str
+    pilot_wound_uuid: Optional[str] = None
     photo_uuid: str
     ai_status: str # "COMPLETED", "NO_EVALUABLE", "AI_FAILED", "PROVIDER_FAILED"
     quality_gate_score: int
@@ -59,6 +91,9 @@ class PilotAnalisisOutput(BaseModel):
     shadow_mode_recorded: bool
     concordance_pre_ai: Optional[bool] = None
     processing_duration_ms: int
+    taken_at_display: str
+    sequence_index: Optional[int] = None
+    is_longitudinal: bool
     created_at: str
     expires_at: str
     mensaje: str
@@ -81,17 +116,99 @@ class PilotFeedbackOutput(BaseModel):
     mensaje: str
 
 
-# ── ENDPOINTS ─────────────────────────────────────────────────────────
+class PilotEvolutionFeedbackInput(BaseModel):
+    baseline_analysis_uuid: str = Field(..., description="UUID del análisis inicial / anterior.")
+    followup_analysis_uuid: str = Field(..., description="UUID del análisis actual / posterior.")
+    clinical_evolution: str = Field(..., description="'MEJOR', 'SIMILAR' o 'PEOR'")
+    system_representation_agreement: str = Field(..., description="'SI', 'PARCIAL' o 'NO'")
+    comment: Optional[str] = Field(None, max_length=250, description="Comentario libre opcional (máx. 250 caracteres). AVISO: No incluya nombres ni datos identificatorios.")
+
+
+class PilotEvolutionFeedbackOutput(BaseModel):
+    exito: bool
+    feedback_id: str
+    mensaje: str
+
+
+class TimelineEventItem(BaseModel):
+    analysis_uuid: str
+    photo_uuid: str
+    sequence_index: Optional[int] = None
+    taken_at: Optional[str] = None
+    display_date: str
+    quality_gate_score: int
+    quality_gate_status: str
+    ai_status: str
+    classification_label: Optional[str] = None
+    classification_confidence: Optional[float] = None
+    pixel_area: Optional[int] = None
+    relative_area_percent: Optional[float] = None
+    segmentation_mask_base64: Optional[str] = None
+    has_feedback: bool
+    feedback_rating: Optional[str] = None
+
+
+class PilotWoundTimelineGroup(BaseModel):
+    wound_uuid: str
+    wound_label: str
+    wound_location: str
+    events: List[TimelineEventItem]
+
+
+class PilotCaseTimelineOutput(BaseModel):
+    pilot_case_uuid: str
+    case_alias: str
+    created_at: str
+    wounds: List[PilotWoundTimelineGroup]
+
+
+# ── ENDPOINTS DE CASOS Y HERIDAS ──────────────────────────────────────
+
+@router_pilot.post("/cases", response_model=PilotCaseOutput)
+def crear_caso_piloto(payload: PilotCaseCreateInput):
+    """Crea un caso pseudonimizado para seguimiento longitudinal (ej. PILOT-0001)."""
+    case_uuid = str(uuid.uuid4())
+    alias = payload.case_alias or f"PILOT-{case_uuid[:6].upper()}"
+    now_iso = datetime.now(timezone.utc).isoformat()
+
+    return PilotCaseOutput(
+        id=case_uuid,
+        pilot_case_uuid=case_uuid,
+        case_alias=alias,
+        is_active=True,
+        created_at=now_iso
+    )
+
+
+@router_pilot.post("/cases/{case_uuid}/wounds", response_model=PilotWoundOutput)
+def crear_herida_caso_piloto(case_uuid: str, payload: PilotWoundCreateInput):
+    """Crea una herida clínica dentro de un caso pseudonimizado."""
+    wound_uuid = str(uuid.uuid4())
+    now_iso = datetime.now(timezone.utc).isoformat()
+
+    return PilotWoundOutput(
+        id=wound_uuid,
+        wound_uuid=wound_uuid,
+        pilot_case_uuid=case_uuid,
+        wound_label=payload.wound_label,
+        wound_location=payload.wound_location,
+        created_at=now_iso
+    )
+
+
+# ── ENDPOINT DE ANÁLISIS E INFERENCIA TÉCNICA ─────────────────────────
 
 @router_pilot.post("/analisis", response_model=PilotAnalisisOutput)
 def procesar_analisis_piloto(payload: PilotAnalisisInput):
     """
     Procesa un análisis fotográfico del piloto cerrado:
     1. Valida confirmación explícita de Privacy Gate por el médico.
-    2. Evalúa Quality Gate (emite NO_EVALUABLE si la calidad es inferior al umbral técnico del piloto: score < 48).
+    2. Evalúa Quality Gate (emite NO_EVALUABLE si score < 48).
     3. Ejecuta inferencia técnica (Clasificador ONNX + Segmentador).
     4. Garantiza honestidad física (cero cm² arbitrarios sin calibrador).
-    5. Registra evaluación previa cegada (Shadow Mode) y programa TTL de 72 horas.
+    5. Aplica política de retención dual:
+       - 72 horas para fotos aisladas.
+       - 21 días para fotos longitudinales vinculadas a PilotCase + PilotWound.
     """
     t_inicio = time.time()
 
@@ -103,10 +220,27 @@ def procesar_analisis_piloto(payload: PilotAnalisisInput):
         )
 
     analysis_uuid = str(uuid.uuid4())
-    pilot_case_uuid = str(uuid.uuid4())
+    pilot_case_uuid = payload.pilot_case_uuid or str(uuid.uuid4())
     photo_uuid = str(uuid.uuid4())
     now_dt = datetime.now(timezone.utc)
-    expires_dt = now_dt + timedelta(hours=72)
+
+    # Política de retención dual
+    is_longitudinal = bool(payload.pilot_wound_uuid)
+    ttl_delta = timedelta(days=21) if is_longitudinal else timedelta(hours=72)
+    expires_dt = now_dt + ttl_delta
+
+    # Formateo de fecha de visualización (fecha real si se conoce, o secuencia ordinal)
+    taken_at_display = "Foto"
+    if payload.taken_at_custom:
+        try:
+            custom_dt = datetime.fromisoformat(payload.taken_at_custom.replace("Z", "+00:00"))
+            taken_at_display = custom_dt.strftime("%d %b %Y")
+        except Exception:
+            taken_at_display = payload.taken_at_custom[:10]
+    elif payload.sequence_index is not None:
+        taken_at_display = f"Foto {payload.sequence_index}"
+    else:
+        taken_at_display = now_dt.strftime("%d %b %Y")
 
     # 2. Quality Gate & Abstención (NO_EVALUABLE) — Umbral técnico heurístico del piloto
     if payload.quality_score < 48 or payload.quality_status == "insuficiente":
@@ -115,6 +249,7 @@ def procesar_analisis_piloto(payload: PilotAnalisisInput):
             exito=True,
             analysis_uuid=analysis_uuid,
             pilot_case_uuid=pilot_case_uuid,
+            pilot_wound_uuid=payload.pilot_wound_uuid,
             photo_uuid=photo_uuid,
             ai_status="NO_EVALUABLE",
             quality_gate_score=payload.quality_score,
@@ -129,6 +264,9 @@ def procesar_analisis_piloto(payload: PilotAnalisisInput):
             shadow_mode_recorded=payload.shadow_mode is not None,
             concordance_pre_ai=None,
             processing_duration_ms=duration_ms,
+            taken_at_display=taken_at_display,
+            sequence_index=payload.sequence_index,
+            is_longitudinal=is_longitudinal,
             created_at=now_dt.isoformat(),
             expires_at=expires_dt.isoformat(),
             mensaje="NO EVALUABLE: Calidad óptica insuficiente. Sugerimos mejorar la iluminación y reenfocar."
@@ -164,6 +302,7 @@ def procesar_analisis_piloto(payload: PilotAnalisisInput):
         exito=True,
         analysis_uuid=analysis_uuid,
         pilot_case_uuid=pilot_case_uuid,
+        pilot_wound_uuid=payload.pilot_wound_uuid,
         photo_uuid=photo_uuid,
         ai_status="COMPLETED",
         quality_gate_score=payload.quality_score,
@@ -178,9 +317,59 @@ def procesar_analisis_piloto(payload: PilotAnalisisInput):
         shadow_mode_recorded=payload.shadow_mode is not None,
         concordance_pre_ai=concordance,
         processing_duration_ms=duration_ms,
+        taken_at_display=taken_at_display,
+        sequence_index=payload.sequence_index,
+        is_longitudinal=is_longitudinal,
         created_at=now_dt.isoformat(),
         expires_at=expires_dt.isoformat(),
         mensaje="Análisis del piloto completado exitosamente."
+    )
+
+
+# ── ENDPOINTS DE TIMELINE Y FEEDBACK ──────────────────────────────────
+
+@router_pilot.get("/cases/{pilot_case_uuid}/timeline", response_model=PilotCaseTimelineOutput)
+def obtener_timeline_caso_piloto(pilot_case_uuid: str):
+    """
+    Retorna la línea de tiempo vertical de análisis para un caso del piloto.
+    Estructura agrupada por herida con orden cronológico o secuencial.
+    """
+    # En runtime con DB real, se filtraría por pilot_case_uuid y physician_id autenticado (anti-IDOR)
+    now_dt = datetime.now(timezone.utc)
+
+    # Estructura limpia de respuesta
+    mock_events = [
+        TimelineEventItem(
+            analysis_uuid="analisis-demo-1",
+            photo_uuid="photo-demo-1",
+            sequence_index=1,
+            taken_at=None,
+            display_date="Foto 1 (Inicial)",
+            quality_gate_score=88,
+            quality_gate_status="optimo",
+            ai_status="COMPLETED",
+            classification_label="Abnormal(Ulcer)",
+            classification_confidence=0.89,
+            pixel_area=4200,
+            relative_area_percent=4.8,
+            segmentation_mask_base64=None,
+            has_feedback=True,
+            feedback_rating="Correcta"
+        )
+    ]
+
+    wound_group = PilotWoundTimelineGroup(
+        wound_uuid="wound-demo-1",
+        wound_label="Herida 1",
+        wound_location="Plantar antepié",
+        events=mock_events
+    )
+
+    return PilotCaseTimelineOutput(
+        pilot_case_uuid=pilot_case_uuid,
+        case_alias=f"PILOT-{pilot_case_uuid[:6].upper()}",
+        created_at=now_dt.isoformat(),
+        wounds=[wound_group]
     )
 
 
@@ -191,7 +380,6 @@ def registrar_feedback_piloto(payload: PilotFeedbackInput):
     - Vinculado exclusivamente al analysis_uuid.
     - Diseñado para no recolectar PII del paciente (comentario sanitizado con advertencia explícita).
     """
-    # Validación simple de contenido para evitar PII accidental
     if payload.comment:
         comentario_lower = payload.comment.lower()
         palabras_bloqueadas = ["dni", "paciente:", "nombre:", "tel:", "dr.", "dra."]
@@ -209,4 +397,36 @@ def registrar_feedback_piloto(payload: PilotFeedbackInput):
         feedback_id=feedback_uuid,
         analysis_uuid=payload.analysis_uuid,
         mensaje="Feedback registrado exitosamente. ¡Muchas gracias por participar del piloto!"
+    )
+
+
+@router_pilot.post("/evolution-feedback", response_model=PilotEvolutionFeedbackOutput)
+def registrar_feedback_evolucion(payload: PilotEvolutionFeedbackInput):
+    """
+    Registra la evaluación clínica longitudinal del médico tras comparar dos momentos:
+    - Evolución: MEJOR | SIMILAR | PEOR
+    - Acuerdo con la representación de la IA: SI | PARCIAL | NO
+    - Comentario opcional libre de PII.
+    """
+    if payload.clinical_evolution not in ("MEJOR", "SIMILAR", "PEOR"):
+        raise HTTPException(status_code=400, detail="Evolución clínica debe ser MEJOR, SIMILAR o PEOR.")
+
+    if payload.system_representation_agreement not in ("SI", "PARCIAL", "NO"):
+        raise HTTPException(status_code=400, detail="Acuerdo de representación debe ser SI, PARCIAL o NO.")
+
+    if payload.comment:
+        comentario_lower = payload.comment.lower()
+        palabras_bloqueadas = ["dni", "paciente:", "nombre:", "tel:", "dr.", "dra."]
+        for p in palabras_bloqueadas:
+            if p in comentario_lower:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="El comentario contiene posibles datos identificatorios. Por favor use solo apreciaciones clínicas/técnicas."
+                )
+
+    evol_id = str(uuid.uuid4())
+    return PilotEvolutionFeedbackOutput(
+        exito=True,
+        feedback_id=evol_id,
+        mensaje="Evaluación longitudinal registrada exitosamente."
     )
