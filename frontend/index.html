@@ -9,11 +9,26 @@
   <meta name="theme-color" content="#FFFFFF">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <!-- Tailwind CDN eliminado para carga instantánea (< 50ms) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              navy: '#0A2463',
+              mint: '#00A878'
+            }
+          }
+        }
+      }
+    };
+  </script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" defer></script>
-  <link rel="stylesheet" href="./styles.css?v=30">
+  <link rel="stylesheet" href="./styles.css?v=34">
 </head>
 <body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col antialiased">
 
@@ -2492,7 +2507,7 @@
 
         <!-- Grid Responsivo de 25 Programas Académicos -->
         <div id="grid-universidades-latam" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          <!-- Populated by renderizarUniversidades() in app.js?v=30 -->
+          <!-- Populated by renderizarUniversidades() in app.js?v=34 -->
         </div>
       </div>
 
@@ -2560,7 +2575,7 @@
 
         <!-- Grid Responsivo de Sociedades Médicas -->
         <div id="grid-sociedades-medicas" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          <!-- Populated by renderizarSociedades() in app.js?v=30 -->
+          <!-- Populated by renderizarSociedades() in app.js?v=34 -->
         </div>
       </div>
 
@@ -2627,7 +2642,7 @@
 
         <!-- Grid Responsivo de Laboratorios y Fármacos -->
         <div id="grid-laboratorios-latam" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <!-- Populated by renderizarLaboratorios() in app.js?v=30 -->
+          <!-- Populated by renderizarLaboratorios() in app.js?v=34 -->
         </div>
       </div>
 
@@ -2676,7 +2691,7 @@
 
         <!-- Grid de Tarjetas de Guías Médicas -->
         <div id="grid-guias-medicas" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          <!-- Renderizado dinámicamente desde app.js?v=30 -->
+          <!-- Renderizado dinámicamente desde app.js?v=34 -->
         </div>
       </div>
 
@@ -4405,7 +4420,7 @@
 
       <!-- Contenido Legal Dinámico por País -->
       <div id="contenedor-detalle-legal" class="p-6 overflow-y-auto space-y-5 text-xs text-slate-700 dark:text-slate-300 leading-relaxed max-h-[60vh]">
-        <!-- Rellenado dinámicamente por seleccionarPaisLegal() en app.js?v=30 -->
+        <!-- Rellenado dinámicamente por seleccionarPaisLegal() en app.js?v=34 -->
       </div>
 
       <!-- Footer Modal Legal con Enlaces a Dossiers Imprimibles -->
@@ -4426,7 +4441,7 @@
     </div>
   </div>
 
-  <script src="./app.js?v=30"></script>
+  <script src="./app.js?v=34"></script>
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./sw.js?v=17').then(function(reg) {
