@@ -1239,11 +1239,11 @@
               </div>
               <div>
                 <label data-i18n="pro_lbl_hba1c" class="block text-slate-600 font-semibold mb-1">HbA1c (%)</label>
-                <input type="number" id="pro-hba1c" step="0.1" placeholder="Ej: 8.5" class="med-input">
+                <input type="number" id="pro-hba1c" step="0.1" placeholder="Ej: 8.5" inputmode="decimal" class="med-input">
               </div>
               <div>
                 <label data-i18n="pro_lbl_creat" class="block text-slate-600 font-semibold mb-1">Creatinina (mg/dL)</label>
-                <input type="number" id="pro-creatinina" step="0.1" placeholder="Ej: 1.3" class="med-input">
+                <input type="number" id="pro-creatinina" step="0.1" placeholder="Ej: 1.3" inputmode="decimal" class="med-input">
               </div>
             </div>
 
@@ -1648,7 +1648,7 @@
           <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
             <label class="block text-xs font-bold text-slate-700">1. Área Inicial (Semana 0)</label>
             <div class="relative">
-              <input type="number" id="cica-area-inicial" value="4.0" step="0.1" min="0.1" oninput="calcularTasaCicatrizacionPro()" class="med-input font-bold text-slate-900 !py-1.5 !text-xs pr-12">
+              <input type="number" id="cica-area-inicial" value="4.0" step="0.1" min="0.1" inputmode="decimal" oninput="calcularTasaCicatrizacionPro()" class="med-input font-bold text-slate-900 !py-1.5 !text-xs pr-12">
               <span class="absolute right-3 top-2 text-xs font-bold text-slate-400">cm²</span>
             </div>
             <p class="text-[11px] text-slate-500">Superficie basal al inicio del tratamiento.</p>
@@ -4574,18 +4574,18 @@
                 <option value="+51">🇵🇪 +51 (PE)</option>
                 <option value="+1">🇺🇸 +1 (US)</option>
               </select>
-              <input type="tel" id="input-alta-pac-whatsapp" required placeholder="Ej: 11 1234 5678" class="med-input flex-1 bg-slate-50 dark:bg-slate-800">
+              <input type="tel" id="input-alta-pac-whatsapp" required placeholder="Ej: 11 1234 5678" inputmode="tel" class="med-input flex-1 bg-slate-50 dark:bg-slate-800">
             </div>
           </div>
 
           <div class="grid grid-cols-2 gap-2">
             <div class="space-y-1">
               <label class="font-bold text-slate-800 dark:text-slate-200">DNI / Identificación</label>
-              <input type="text" id="input-alta-pac-dni" placeholder="Ej: 22.890.140" class="med-input bg-slate-50 dark:bg-slate-800">
+              <input type="text" id="input-alta-pac-dni" placeholder="Ej: 22.890.140" inputmode="numeric" class="med-input bg-slate-50 dark:bg-slate-800">
             </div>
             <div class="space-y-1">
               <label class="font-bold text-slate-800 dark:text-slate-200">Edad</label>
-              <input type="text" id="input-alta-pac-edad" placeholder="Ej: 64 años" class="med-input bg-slate-50 dark:bg-slate-800">
+              <input type="text" id="input-alta-pac-edad" placeholder="Ej: 64" inputmode="numeric" class="med-input bg-slate-50 dark:bg-slate-800">
             </div>
           </div>
 
