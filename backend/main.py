@@ -17,6 +17,7 @@
 
 import os
 import sys
+import secrets
 import logging
 from typing import List, Optional
 from enum import Enum
@@ -108,23 +109,19 @@ app.add_middleware(
 
 # ── Dependencia de Autenticación para Triggers Administrativos / Internos ──
 def verify_admin_token(
-    x_admin_key: Optional[str] = Header(None, alias="X-Admin-Key"),
-    authorization: Optional[str] = Header(None)
+    x_admin_key: Optional[str] = Header(None, alias="X-Admin-Key")
 ):
     expected_key = os.getenv("ADMIN_API_KEY", "")
-    token = x_admin_key
-    if not token and authorization and authorization.startswith("Bearer "):
-        token = authorization.split("Bearer ")[1].strip()
+    if not x_admin_key:
+        raise HTTPException(
+            status_code=401,
+            detail="Credenciales administrativas requeridas (Cabecera X-Admin-Key)."
+        )
     
-    if not expected_key or not token or token != expected_key:
-        if not token:
-            raise HTTPException(
-                status_code=401,
-                detail="Credenciales administrativas requeridas (X-Admin-Key o Bearer token)."
-            )
+    if not expected_key or not secrets.compare_digest(x_admin_key, expected_key):
         raise HTTPException(
             status_code=403,
-            detail="Acceso denegado: Token administrativo inválido."
+            detail="Acceso denegado: Cabecera X-Admin-Key inválida."
         )
     return True
 

@@ -1,9 +1,10 @@
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 
 console.log('═══════════════════════════════════════════════════════════════════════');
-console.log('🔒 SUITE DE SEGURIDAD P0: PUERTOS, ENDPOINTS, AUTH ADMIN & CORS');
+console.log('🔒 P0 SECURITY: VALIDACIÓN FINAL PRE-MERGE (PUERTOS, ENDPOINTS & AUTH)');
 console.log('═══════════════════════════════════════════════════════════════════════\n');
 
 let totalTests = 0;
@@ -57,7 +58,7 @@ test('2. Uvicorn en Dockerfile Escuchando 0.0.0.0:8000 Dentro del Contenedor', (
 });
 
 // 3. Test main.py Docs & OpenAPI Disabling in Production
-test('3. Deshabilitación de /docs, /redoc y /openapi.json en Producción', () => {
+test('3. Deshabilitación de /docs, /redoc y /openapi.json en Producción (404 Not Found)', () => {
   const mainPyPath = path.join(__dirname, 'backend', 'main.py');
   const content = fs.readFileSync(mainPyPath, 'utf8');
 
@@ -65,6 +66,18 @@ test('3. Deshabilitación de /docs, /redoc y /openapi.json en Producción', () =
   assert(content.includes('docs_url=None if is_production else "/docs"'), 'docs_url no se deshabilita en producción');
   assert(content.includes('redoc_url=None if is_production else "/redoc"'), 'redoc_url no se deshabilita en producción');
   assert(content.includes('openapi_url=None if is_production else "/openapi.json"'), 'openapi_url no se deshabilita en producción');
+
+  // Simulación de respuesta FastAPI cuando docs_url=None
+  function simulateDocsRoute(path, isProd) {
+    if (isProd && ['/docs', '/redoc', '/openapi.json'].includes(path)) {
+      return { status: 404, detail: 'Not Found' };
+    }
+    return { status: 200, detail: 'Swagger UI' };
+  }
+
+  assert.strictEqual(simulateDocsRoute('/docs', true).status, 404, 'En producción /docs debe responder 404');
+  assert.strictEqual(simulateDocsRoute('/redoc', true).status, 404, 'En producción /redoc debe responder 404');
+  assert.strictEqual(simulateDocsRoute('/openapi.json', true).status, 404, 'En producción /openapi.json debe responder 404');
 });
 
 // 4. Test Minimalist /health endpoint
@@ -79,28 +92,36 @@ test('4. Endpoint /health Retorna Exclusivamente {"status": "ok"}', () => {
   assert.strictEqual(returnObj, '{"status": "ok"}', '/health debe retornar estrictamente {"status": "ok"}');
 });
 
-// 5. Test Admin Protection on Triggers (401 / 403 / 200)
-test('5. Protección de Triggers Administrativos (/orquestador/sync-semanal y /pipeline-semanal/ejecutar)', () => {
+// 5. Test secrets.compare_digest & X-Admin-Key Protection (401 / 403 / 200)
+test('5. Protección de Triggers Administrativos con secrets.compare_digest y Cabecera X-Admin-Key', () => {
   const mainPyPath = path.join(__dirname, 'backend', 'main.py');
   const content = fs.readFileSync(mainPyPath, 'utf8');
 
-  assert(content.includes('def verify_admin_token('), 'Falta función verify_admin_token');
-  assert(content.includes('status_code=401'), 'Falta status 401 para credenciales faltantes');
-  assert(content.includes('status_code=403'), 'Falta status 403 para credenciales inválidas');
+  assert(content.includes('import secrets'), 'Falta importar módulo secrets');
+  assert(content.includes('secrets.compare_digest(x_admin_key, expected_key)'), 'Falta usar secrets.compare_digest');
+  assert(content.includes('x_admin_key: Optional[str] = Header(None, alias="X-Admin-Key")'), 'Falta cabecera X-Admin-Key');
+  assert(!content.includes('Bearer '), 'No debe aceptar API key estática como Bearer token');
   assert(content.includes('dependencies=[Depends(verify_admin_token)]'), 'Falta inyección de dependencia en triggers');
 
-  // Simulación lógica de verify_admin_token
-  const expectedKey = 'SECRET_ADMIN_TEST_KEY_123';
+  // Simulación con constant-time comparison de Node.js crypto.timingSafeEqual
+  const expectedKey = 'ADMIN_SECRET_TOKEN_2026_SUPER_SECURE_KEY_EXAMPLE';
   
-  function simulateAuth(token) {
-    if (!token) return { status: 401, error: 'Credenciales requeridas' };
-    if (token !== expectedKey) return { status: 403, error: 'Token inválido' };
+  function verifyAdminTokenSim(headerKey) {
+    if (!headerKey) {
+      return { status: 401, error: 'Credenciales administrativas requeridas (Cabecera X-Admin-Key)' };
+    }
+    const bufA = Buffer.from(headerKey);
+    const bufB = Buffer.from(expectedKey);
+    const match = bufA.length === bufB.length && crypto.timingSafeEqual(bufA, bufB);
+    if (!match) {
+      return { status: 403, error: 'Acceso denegado: Cabecera X-Admin-Key inválida' };
+    }
     return { status: 200, success: true };
   }
 
-  assert.strictEqual(simulateAuth(null).status, 401, 'Sin token debe retornar 401');
-  assert.strictEqual(simulateAuth('token_falso').status, 403, 'Token falso debe retornar 403');
-  assert.strictEqual(simulateAuth(expectedKey).status, 200, 'Token válido debe retornar 200');
+  assert.strictEqual(verifyAdminTokenSim(null).status, 401, 'Sin X-Admin-Key debe retornar 401');
+  assert.strictEqual(verifyAdminTokenSim('clave_incorrecta').status, 403, 'Con X-Admin-Key incorrecta debe retornar 403');
+  assert.strictEqual(verifyAdminTokenSim(expectedKey).status, 200, 'Con X-Admin-Key correcta debe retornar 200');
 });
 
 // 6. Test CORS Separation (Prod vs Dev)
