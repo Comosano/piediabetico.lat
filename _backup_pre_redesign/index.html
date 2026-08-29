@@ -28,7 +28,7 @@
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" defer></script>
-  <link rel="stylesheet" href="./styles.css?v=35">
+  <link rel="stylesheet" href="./styles.css?v=34">
 </head>
 <body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col antialiased">
 
@@ -589,281 +589,485 @@
     <!-- ═════════════════════════════════════════════════════════════════ -->
     <!-- PORTAL 1: MODO PACIENTE / FAMILIAR (EXPERIENCIA SIMPLE Y CLARA) -->
     <!-- ═════════════════════════════════════════════════════════════════ -->
-        <!-- ═════════════════════════════════════════════════════════════════ -->
-    <!-- PORTAL 1: MODO PACIENTE / FAMILIAR (REDISEÑO V3 WIZARD GUIADO) -->
-    <!-- ═════════════════════════════════════════════════════════════════ -->
-    <div id="portal-paciente-view" class="hidden space-y-4 max-w-xl mx-auto pb-16">
+    <div id="portal-paciente-view" class="hidden space-y-6">
       
-      <!-- Topbar del Wizard Paciente -->
-      <div class="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-800">
-        <button type="button" onclick="goBackPacStep()" id="pac-btn-back" class="text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-emerald-600 flex items-center gap-1 transition-colors">
-          <i data-lucide="arrow-left" class="w-4 h-4"></i>
-          <span id="pac-btn-back-txt">Volver al Inicio</span>
+      <!-- Barra Superior con Botón Volver -->
+      <div class="flex items-center justify-between pb-2 border-b border-slate-200">
+        <button onclick="switchPortal('landing')" class="text-xs font-bold text-slate-600 hover:text-emerald-700 flex items-center gap-1.5 transition-colors">
+          <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+          <span data-i18n="btn_volver_inicio">Volver al Inicio</span>
         </button>
-        <span id="pac-top-step-indicator" class="text-[11px] font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-3 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">Paso 1 de 4</span>
+        <span data-i18n="pac_top_tag" class="text-xs font-semibold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">Portal de Orientación para Pacientes</span>
       </div>
 
       <!-- Banner Interactivo de Simulación / Demo Paciente -->
-      <div id="pac-demo-banner" class="hidden p-3 rounded-2xl bg-amber-50 dark:bg-amber-950/70 border border-amber-300 dark:border-amber-700 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs shadow-2xs">
-        <div class="flex items-center gap-2">
-          <span class="text-base">⚡</span>
-          <span class="font-bold text-amber-900 dark:text-amber-200">Modo Demo Activo</span>
-        </div>
-        <div class="flex gap-1.5">
-          <button type="button" onclick="cargarCasoEjemploPaciente('verde')" class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-600 text-white">🟢 Caso Verde</button>
-          <button type="button" onclick="cargarCasoEjemploPaciente('amarillo')" class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-600 text-white">🟡 Caso Amarillo</button>
-          <button type="button" onclick="cargarCasoEjemploPaciente('rojo')" class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-rose-600 text-white">🔴 Caso Rojo</button>
-        </div>
-      </div>
-
-      <!-- ═══════════════════════════════════════════════════════════════
-           PASO 1 (s0): FOTO DE LA LESIÓN Y SLOTS
-      ════════════════════════════════════════════════════════════════ -->
-      <div id="pac-step-0" class="pac-screen space-y-4">
-        
-        <div class="space-y-1">
-          <h2 class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">Fotografiá la herida</h2>
-          <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300">Una sola foto es suficiente para comenzar. Tres fotos nos dan el análisis más completo.</p>
-        </div>
-
-        <!-- Strip de Alarma Inmediata -->
-        <div onclick="mostrarPantallaEmergenciaPac()" class="p-3 rounded-2xl bg-rose-50 dark:bg-rose-950/70 border-2 border-rose-300 dark:border-rose-700 text-xs text-rose-900 dark:text-rose-200 flex items-start gap-2.5 cursor-pointer shadow-2xs hover:bg-rose-100 transition-all">
-          <span class="text-base shrink-0">🚨</span>
-          <p class="leading-snug">
-            <strong>¿Tenés fiebre, dolor súbito o mal olor nuevo?</strong> — Esto puede ser una urgencia, <span class="underline font-bold text-rose-700 dark:text-rose-300">tocá aquí para orientación inmediata</span>.
-          </p>
-        </div>
-
-        <!-- Selector Paciente vs Cuidador -->
-        <div class="p-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 flex items-center justify-between gap-2 text-xs">
-          <span class="font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
-            <span>👤</span>
-            <span>Consulta para:</span>
-          </span>
-          <div class="flex rounded-xl bg-white dark:bg-slate-900 p-0.5 border border-slate-200 dark:border-slate-700 text-xs shrink-0">
-            <button type="button" id="btn-rol-propio" onclick="setRolConsultaPaciente('propio')" class="px-3 py-1 rounded-lg font-bold bg-emerald-600 text-white shadow-2xs transition-all">
-              Para mí
-            </button>
-            <button type="button" id="btn-rol-cuidador" onclick="setRolConsultaPaciente('cuidador')" class="px-3 py-1 rounded-lg font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 transition-all">
-              Familiar
-            </button>
-          </div>
-        </div>
-
-        <!-- Alerta de Iluminación Canvas -->
-        <div id="pac-alerta-iluminacion" class="hidden p-3 rounded-2xl bg-amber-50 dark:bg-amber-950/70 border border-amber-300 dark:border-amber-700 text-xs text-amber-950 dark:text-amber-200 flex items-start gap-2.5">
-          <span class="text-base shrink-0">💡</span>
+      <div id="pac-demo-banner" class="hidden p-4 rounded-3xl bg-gradient-to-r from-amber-500/15 via-emerald-500/15 to-blue-500/15 border-2 border-amber-400 dark:border-amber-600 flex flex-col md:flex-row items-center justify-between gap-4 text-xs shadow-md animate-in fade-in">
+        <div class="flex items-center gap-3 text-center md:text-left">
+          <div class="w-10 h-10 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center text-xl font-bold shrink-0 shadow-sm">⚡</div>
           <div>
-            <strong id="pac-alerta-luz-tit" class="block font-bold">Foto con poca luz</strong>
-            <span id="pac-alerta-luz-desc" class="text-[11px]">Acercate a una ventana para mayor nitidez clínica.</span>
-          </div>
-        </div>
-
-        <!-- Zona de Carga Inicial -->
-        <div id="pac-upload-area">
-          <div onclick="document.getElementById('input-foto-p').click()" class="border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-emerald-500 rounded-3xl p-8 text-center bg-white dark:bg-slate-900 cursor-pointer transition-all space-y-2 shadow-xs group">
-            <div class="w-14 h-14 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 flex items-center justify-center text-3xl mx-auto group-hover:scale-105 transition-transform">
-              📷
+            <div class="flex items-center gap-2 justify-center md:justify-start">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-400 text-slate-950 uppercase">Modo Simulación Activo</span>
+              <span class="text-[11px] text-slate-700 dark:text-slate-300 font-semibold">Caso Clínico Pre-cargado</span>
             </div>
-            <h3 class="text-sm sm:text-base font-bold text-slate-900 dark:text-white">Tocar para sacar o subir foto</h3>
-            <p class="text-xs text-slate-500 dark:text-slate-400">Cámara trasera o galería · A 15–20 cm de distancia</p>
-          </div>
-          <input type="file" id="input-foto-p" accept="image/*" capture="environment" onchange="handleImageUploadPatient(event)" class="hidden">
-
-          <div class="p-3 rounded-2xl bg-amber-50/80 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-xs text-amber-900 dark:text-amber-300 flex items-start gap-2 mt-3">
-            <span class="text-base shrink-0">☀️</span>
-            <p class="leading-tight">Usá buena luz natural o lámpara frontal. Evitá el flash directo para que no oculte el color real de la piel.</p>
+            <p class="text-slate-700 dark:text-slate-200 mt-0.5 text-xs font-medium">Probá los 3 comportamientos de telemedicina según tu equipo de salud vinculado:</p>
           </div>
         </div>
-
-        <!-- Slots de Fotos (Post Carga) -->
-        <div id="pac-slots-area" class="hidden space-y-3">
-          <div class="p-4 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
-            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
-              <span class="text-xs font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
-                <i data-lucide="check-circle-2" class="w-4 h-4"></i>
-                <span id="badge-paso-1">✓ Foto principal lista</span>
-              </span>
-              <button type="button" onclick="resetPatientPhoto()" class="text-xs font-bold text-blue-600 hover:text-blue-700">Cambiar</button>
-            </div>
-            <div class="grid grid-cols-3 gap-2">
-              <div class="relative rounded-xl overflow-hidden aspect-square border-2 border-emerald-500 bg-slate-100 dark:bg-slate-800">
-                <img id="img-preview-p" src="" alt="Detalle herida" class="w-full h-full object-cover">
-                <span class="absolute bottom-1 left-1 right-1 text-[9px] font-black bg-slate-900/80 text-white rounded px-1 text-center truncate">1. Detalle</span>
-              </div>
-              <div onclick="document.getElementById('input-foto-slot-2').click()" class="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 aspect-square flex flex-col items-center justify-center gap-1 text-slate-400 hover:border-emerald-500 cursor-pointer bg-slate-50 dark:bg-slate-800/50 p-1 text-center">
-                <span class="text-base">📸</span>
-                <span class="text-[9px] font-bold leading-tight">2. Pie entero<br>(Opcional)</span>
-              </div>
-              <div onclick="document.getElementById('input-foto-slot-3').click()" class="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 aspect-square flex flex-col items-center justify-center gap-1 text-slate-400 hover:border-emerald-500 cursor-pointer bg-slate-50 dark:bg-slate-800/50 p-1 text-center">
-                <span class="text-base">📸</span>
-                <span class="text-[9px] font-bold leading-tight">3. Planta<br>(Opcional)</span>
-              </div>
-            </div>
-          </div>
-          <input type="file" id="input-foto-slot-2" accept="image/*" capture="environment" onchange="handleImageSlotUpload(2, event)" class="hidden">
-          <input type="file" id="input-foto-slot-3" accept="image/*" capture="environment" onchange="handleImageSlotUpload(3, event)" class="hidden">
-        </div>
-
-        <button type="button" id="pac-btn-s0-next" onclick="goPacStep(1)" disabled class="btn-primary w-full py-4 rounded-2xl text-sm font-black shadow-md flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white disabled:bg-slate-300 disabled:text-slate-500 transition-all">
-          <span>Continuar a las 3 Preguntas</span>
-          <i data-lucide="arrow-right" class="w-4 h-4"></i>
-        </button>
-      </div>
-
-      <!-- ═══════════════════════════════════════════════════════════════
-           PASO 2 (s1): LAS 3 PREGUNTAS CLÍNICAS
-      ════════════════════════════════════════════════════════════════ -->
-      <div id="pac-step-1" class="pac-screen hidden space-y-4">
-        
-        <div class="space-y-1">
-          <h2 class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">Contanos cómo está el pie</h2>
-          <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300">3 preguntas simples para que la IA determine el nivel de urgencia adecuado.</p>
-        </div>
-
-        <!-- Pregunta 1: Fiebre -->
-        <div class="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2 shadow-xs">
-          <label class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2" data-i18n="pac_q_fiebre">
-            <span>🌡️</span>
-            <span>¿Tenés fiebre o chuchos de frío?</span>
-          </label>
-          <div class="grid grid-cols-2 gap-2">
-            <button type="button" id="btn-fiebre-no" onclick="setSurveyAnswer('fiebre', false)" class="py-3 rounded-xl text-xs font-black transition-all bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700">No</button>
-            <button type="button" id="btn-fiebre-si" onclick="setSurveyAnswer('fiebre', true)" class="py-3 rounded-xl text-xs font-black transition-all bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700">Sí</button>
-          </div>
-        </div>
-
-        <!-- Pregunta 2: Olor -->
-        <div class="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2 shadow-xs">
-          <label class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2" data-i18n="pac_q_olor">
-            <span>👃</span>
-            <span>¿La herida tiene feo olor o secreción?</span>
-          </label>
-          <div class="grid grid-cols-2 gap-2">
-            <button type="button" id="btn-olor-no" onclick="setSurveyAnswer('olor', false)" class="py-3 rounded-xl text-xs font-black transition-all bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700">No</button>
-            <button type="button" id="btn-olor-si" onclick="setSurveyAnswer('olor', true)" class="py-3 rounded-xl text-xs font-black transition-all bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700">Sí</button>
-          </div>
-        </div>
-
-        <!-- Pregunta 3: Tiempo de evolución (Chips Táctiles) -->
-        <div class="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2 shadow-xs">
-          <label class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2" data-i18n="pac_q_tiempo">
-            <span>📅</span>
-            <span>¿Cuánto tiempo hace que tenés esta herida?</span>
-          </label>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            <button type="button" onclick="setTiempoEvolucionPac('Menos de 1 semana (Reciente)', 0)" id="btn-tiempo-0" class="chip-tiempo-pac p-2.5 rounded-xl text-xs font-black transition-all bg-emerald-600 text-white shadow-xs">
-              Menos de 1 semana
-            </button>
-            <button type="button" onclick="setTiempoEvolucionPac('Entre 1 y 4 semanas (En evolución)', 1)" id="btn-tiempo-1" class="chip-tiempo-pac p-2.5 rounded-xl text-xs font-bold transition-all bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 shadow-2xs hover:bg-slate-50">
-              1 a 4 semanas
-            </button>
-            <button type="button" onclick="setTiempoEvolucionPac('Más de 1 mes (Crónica / No cicatriza)', 2)" id="btn-tiempo-2" class="chip-tiempo-pac p-2.5 rounded-xl text-xs font-bold transition-all bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 shadow-2xs hover:bg-slate-50">
-              Más de 1 mes
-            </button>
-          </div>
-          <input type="hidden" id="pac-tiempo" value="Menos de 1 semana (Reciente)">
-        </div>
-
-        <button type="button" id="btn-consultar-paciente" onclick="ejecutarConsultaPaciente()" class="btn-primary w-full py-4 rounded-2xl text-sm font-black shadow-lg flex items-center justify-center gap-2 bg-gradient-to-r from-blue-900 via-teal-700 to-emerald-600 hover:from-blue-950 hover:to-emerald-700 text-white transition-all">
-          <i data-lucide="brain" class="w-4 h-4"></i>
-          <span>Analizar con Inteligencia Artificial</span>
-        </button>
-      </div>
-
-      <!-- ═══════════════════════════════════════════════════════════════
-           PASO 3 (s2): ANIMACIÓN DE ANÁLISIS EN VIVO
-      ════════════════════════════════════════════════════════════════ -->
-      <div id="pac-step-2" class="pac-screen hidden p-8 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-center space-y-6 shadow-md">
-        <div class="w-16 h-16 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin mx-auto"></div>
-        <div class="space-y-1">
-          <h3 class="text-lg font-black text-slate-900 dark:text-white">Analizando tu fotografía...</h3>
-          <p class="text-xs text-slate-500 dark:text-slate-400">Verificamos la zona anatómica y los signos de infección. Tarda menos de 15 segundos.</p>
-        </div>
-        
-        <div class="space-y-2 text-left text-xs bg-slate-50 dark:bg-slate-800/60 p-4 rounded-2xl border border-slate-200 dark:border-slate-700">
-          <div id="pac-p1" class="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 font-bold">
-            <span>✓</span><span>1. Imagen recibida y optimizada</span>
-          </div>
-          <div id="pac-p2" class="flex items-center gap-2 text-blue-700 dark:text-sky-300 font-bold animate-pulse">
-            <span>●</span><span>2. Detectando zona anatómica</span>
-          </div>
-          <div id="pac-p3" class="flex items-center gap-2 text-slate-400">
-            <span>○</span><span>3. Analizando signos de inflamación y tejido</span>
-          </div>
-          <div id="pac-p4" class="flex items-center gap-2 text-slate-400">
-            <span>○</span><span>4. Generando semáforo de urgencia IWGDF</span>
-          </div>
-        </div>
-
-        <p class="text-[11px] text-slate-400">Herramienta orientativa basada en consensos IWGDF 2023.</p>
-      </div>
-
-      <!-- ═══════════════════════════════════════════════════════════════
-           PASO 4 (s3): RESULTADO SEMÁFORO Y ACCIÓN CLARA
-      ════════════════════════════════════════════════════════════════ -->
-      <div id="pac-step-3" class="pac-screen hidden space-y-4">
-        
-        <!-- Semáforo Card -->
-        <div id="pac-semaforo-card" class="p-6 rounded-3xl text-center space-y-3 shadow-md bg-emerald-50 border-2 border-emerald-400 text-emerald-950">
-          <div id="pac-sem-icon" class="text-5xl leading-none">🟢</div>
-          <div>
-            <span id="pac-sem-badge" class="px-3 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-200 text-emerald-900">Podés esperar</span>
-            <h3 id="pac-sem-title" class="text-xl font-black mt-1 text-slate-900">Sin Urgencia Inmediata</h3>
-            <p id="pac-sem-desc" class="text-xs mt-1 text-slate-700 leading-relaxed font-medium">La herida no presenta signos de alarma grave. Atendela en tu turno médico programado.</p>
-          </div>
-        </div>
-
-        <!-- Dictamen Detallado -->
-        <div class="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3 shadow-sm">
-          <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
-            <span class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-              <span>📋</span>
-              <span>Dictamen Asistido por IA</span>
-            </span>
-            <div class="flex items-center gap-1.5">
-              <button type="button" id="btn-audio-paciente" onclick="toggleAudioDictamenPaciente()" class="text-xs font-bold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-lg flex items-center gap-1">
-                <span>🎧</span><span>Audio</span>
-              </button>
-              <button type="button" onclick="descargarInformePDF('paciente')" class="text-xs font-bold text-slate-700 bg-slate-100 px-2.5 py-1 rounded-lg flex items-center gap-1">
-                <span>📥</span><span>PDF</span>
-              </button>
-            </div>
-          </div>
-          <div id="pac-texto-resultado" class="report-content text-xs sm:text-sm text-slate-800 dark:text-slate-200 leading-relaxed max-h-60 overflow-y-auto pr-1"></div>
-        </div>
-
-        <!-- Botones de Acción Inmediata -->
-        <div class="space-y-2">
-          <button type="button" id="pac-btn-pedir-turno-cta" onclick="abrirModalTurnosPaciente()" class="btn-primary w-full py-4 rounded-2xl text-sm font-black shadow-md flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-700 text-white">
-            <i data-lucide="calendar-check" class="w-4 h-4"></i>
-            <span>Pedir Turno / Teleconsulta Online</span>
+        <div class="flex flex-wrap items-center justify-center gap-2 shrink-0">
+          <button id="btn-demo-sim-ninguno" onclick="simularPerfilEquipoPaciente('ninguno')" class="py-2 px-3.5 rounded-xl font-black text-xs transition-all bg-amber-600 text-white shadow-sm border border-amber-500">
+            1. Sin Equipo
           </button>
+          <button id="btn-demo-sim-enfermera" onclick="simularPerfilEquipoPaciente('enfermera')" class="py-2 px-3.5 rounded-xl font-bold text-xs transition-all bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 hover:border-emerald-500">
+            2. Con Enfermera
+          </button>
+          <button id="btn-demo-sim-medico" onclick="simularPerfilEquipoPaciente('medico')" class="py-2 px-3.5 rounded-xl font-bold text-xs transition-all bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 hover:border-blue-500">
+            3. Con Médico
+          </button>
+        </div>
+      </div>
+
+      <!-- Banner Amigable Paciente -->
+      <div class="med-card banner-clinico-pac p-5 sm:p-6 shadow-md">
+        <div class="flex items-start gap-4">
+          <div class="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center flex-shrink-0 shadow-md shadow-emerald-600/20 text-2xl">
+            🦶
+          </div>
+          <div class="space-y-1">
+            <span data-i18n="pac_banner_badge" class="text-xs font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-900/60 border border-emerald-200 dark:border-emerald-700 px-2.5 py-0.5 rounded-full">Asistente para Pacientes</span>
+            <h2 data-i18n="pac_banner_title" class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white mt-1">¿Tenés una herida o cambio en tu pie?</h2>
+            <p data-i18n="pac_banner_desc" class="text-xs sm:text-sm text-slate-700 dark:text-slate-300 mt-1 leading-relaxed font-medium">Te ayudamos a saber en 30 segundos si es una emergencia para ir a la guardia o si podés esperar a tu consulta médica habitual.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Flujo Paso a Paso Paciente -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- COLUMNA 1: FOTO + 3 PREGUNTAS -->
+        <div class="lg:col-span-6 space-y-5">
           
-          <button type="button" onclick="resetPatientPhoto(); goPacStep(0);" class="btn-sec w-full py-3 rounded-2xl text-xs font-bold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 border border-slate-300 dark:border-slate-700 flex items-center justify-center gap-1.5">
-            <span>📷 Realizar Nueva Consulta con Otra Foto</span>
-          </button>
-        </div>
+          <!-- PASO 1: Sacar Foto -->
+          <div class="med-card p-5 space-y-3">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+              <div class="flex items-center gap-2">
+                <span class="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-bold">1</span>
+                <span data-i18n="pac_step1_tit" class="text-xs font-bold text-slate-800 uppercase tracking-wide">Fotografía de tu pie</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <button type="button" onclick="abrirModalGuiaFotos()" class="text-[11px] font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 px-2.5 py-0.5 rounded-full flex items-center gap-1 transition-colors">
+                  <i data-lucide="help-circle" class="w-3.5 h-3.5"></i>
+                  <span data-i18n="pac_btn_guia_foto">¿Cómo sacar la foto?</span>
+                </button>
+                <span id="badge-paso-1" class="text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                  <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                  <span data-i18n="pac_badge_foto_pend">Foto pendiente</span>
+                </span>
+              </div>
+            </div>
 
-        <!-- Profesional / Enfermera Vinculada -->
-        <div class="p-4 rounded-2xl bg-blue-50 dark:bg-slate-800 border border-blue-200 dark:border-blue-700 text-xs flex items-center justify-between gap-3">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm shrink-0">👨‍⚕️</div>
-            <div>
-              <strong class="text-blue-950 dark:text-blue-200 block text-xs">Equipo de Salud Vinculado</strong>
-              <span id="pac-equipo-salud-txt" class="text-[11px] text-slate-600 dark:text-slate-300">Dr. Gómez (Infectología) · Notificado</span>
+            <!-- Selector de Modalidad: 1 Foto vs Protocolo de 3 Fotos -->
+            <div class="flex rounded-xl bg-slate-100 p-1 border border-slate-200 text-xs">
+              <button type="button" id="btn-foto-modo-1" onclick="cambiarModoFotosPaciente(1)" class="flex-1 py-1.5 rounded-lg font-bold bg-white text-emerald-900 shadow-sm transition-all text-center">
+                <span data-i18n="pac_btn_1foto">📷 1 Foto Rápida</span>
+              </button>
+              <button type="button" id="btn-foto-modo-3" onclick="cambiarModoFotosPaciente(3)" class="flex-1 py-1.5 rounded-lg font-semibold text-slate-600 transition-all text-center flex items-center justify-center gap-1">
+                <span data-i18n="pac_btn_3fotos">📸 Protocolo 3 Tomas</span>
+                <span data-i18n="pac_badge_rec" class="px-1.5 py-0.2 rounded-full text-[9px] font-black bg-emerald-100 text-emerald-800">Recomendado</span>
+              </button>
+            </div>
+
+            <!-- Control de Frecuencia / Rate Limiting & Switch de Alarma -->
+            
+            <!-- Selector de Rol: Paciente Propio vs Familiar / Cuidador -->
+            <div class="p-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+              <span class="font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
+                <span>👤</span>
+                <span>¿Para quién es la orientación?</span>
+              </span>
+              <div class="flex rounded-xl bg-white dark:bg-slate-900 p-0.5 border border-slate-200 dark:border-slate-700 text-xs shrink-0">
+                <button type="button" id="btn-rol-propio" onclick="setRolConsultaPaciente('propio')" class="px-3 py-1 rounded-lg font-bold bg-emerald-600 text-white shadow-2xs transition-all">
+                  Para mí (Paciente)
+                </button>
+                <button type="button" id="btn-rol-cuidador" onclick="setRolConsultaPaciente('cuidador')" class="px-3 py-1 rounded-lg font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all">
+                  Familiar / Cuidador
+                </button>
+              </div>
+            </div>
+  
+
+            <div id="pac-rate-limit-box" class="p-3.5 rounded-2xl bg-emerald-50/90 dark:bg-slate-900 border-2 border-emerald-300 dark:border-emerald-600/70 text-xs space-y-2 shadow-xs">
+              <div class="flex items-center justify-between">
+                <span class="text-[11.5px] font-bold text-emerald-950 dark:text-emerald-300 flex items-center gap-1.5">
+                  <i data-lucide="clock" class="w-4 h-4 text-emerald-600 dark:text-emerald-400"></i>
+                  <span data-i18n="pac_rate_tit">Frecuencia Recomendada: 1 foto cada 72-96 hs</span>
+                </span>
+                <span id="pac-rate-status-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-600 dark:bg-emerald-500 text-white dark:text-slate-950 shadow-2xs">Habilitado</span>
+              </div>
+              <label class="flex items-start gap-2.5 p-2.5 rounded-xl bg-white dark:bg-slate-800/90 border-2 border-rose-200 dark:border-rose-500/50 cursor-pointer shadow-xs hover:border-rose-400 transition-colors">
+                <input type="checkbox" id="pac-check-alarma-aguda" onchange="toggleAlarmaAgudaPaciente(this.checked)" class="mt-0.5 accent-rose-600 w-4 h-4 rounded">
+                <div>
+                  <span data-i18n="pac_check_alarma_txt" class="font-bold text-rose-900 dark:text-rose-300 block text-[11px]">⚠️ Noté un empeoramiento agudo / Signos de alarma</span>
+                  <span data-i18n="pac_check_alarma_sub" class="text-[10.5px] text-slate-700 dark:text-slate-300 block mt-0.5">Fiebre, dolor súbito e intenso, mal olor nuevo o hinchazón/enrojecimiento que avanza rápidamente.</span>
+                </div>
+              </label>
+            </div>
+
+            <!-- VISTA 1 FOTO RÁPIDA -->
+            <div id="pac-contenedor-1-foto" class="space-y-3">
+              <input type="file" id="input-foto-p" accept="image/*" capture="environment" class="hidden" onchange="handleImageUploadPatient(event)">
+              
+              <div id="dropzone-empty-p" class="border-2 border-dashed border-slate-300 hover:border-emerald-500 rounded-2xl p-5 text-center transition-all bg-slate-50 hover:bg-emerald-50/30 space-y-3">
+                <div class="w-12 h-12 mx-auto rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-2xl shadow-sm">
+                  📸
+                </div>
+                <div>
+                  <p data-i18n="pac_drop_title" class="text-sm font-bold text-slate-800">Subir fotografía de la lesión</p>
+                  <p data-i18n="pac_drop_sub" class="text-xs text-slate-500 mt-0.5">Enfocá con buena luz a unos 15–20 cm de distancia</p>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-2 pt-1 max-w-sm mx-auto">
+                  <button type="button" onclick="iniciarCamaraEnVivo('paciente', 1)" class="btn-primary flex-1 !py-2.5 !text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm flex items-center justify-center gap-1.5">
+                    <i data-lucide="camera" class="w-4 h-4"></i>
+                    <span data-i18n="pac_btn_camara">Usar Cámara</span>
+                  </button>
+                  <button type="button" onclick="document.getElementById('input-foto-p').click()" class="btn-sec flex-1 !py-2.5 !text-xs font-bold text-slate-700 hover:text-emerald-800 bg-white border border-slate-300 flex items-center justify-center gap-1.5">
+                    <i data-lucide="image" class="w-4 h-4 text-emerald-600"></i>
+                    <span data-i18n="pac_btn_galeria">Subir de Galería / PC</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Preview de 1 Foto -->
+              
+              <!-- Alerta de Calidad de Iluminación de Foto (Histograma en Canvas) -->
+              <div id="pac-alerta-iluminacion" class="hidden p-3 rounded-2xl bg-amber-50 dark:bg-amber-950/70 border-2 border-amber-300 dark:border-amber-700 text-xs text-amber-950 dark:text-amber-200 flex items-start gap-2.5 shadow-xs animate-in fade-in">
+                <span class="text-base shrink-0">💡</span>
+                <div class="space-y-0.5">
+                  <strong id="pac-alerta-luz-tit" class="block font-bold">Foto con poca iluminación</strong>
+                  <span id="pac-alerta-luz-desc" class="block text-[11px] text-slate-700 dark:text-slate-300">Te sugerimos acercarte a una ventana de día o encender una luz directa para que la IA y los médicos distingan con máxima nitidez el tejido de granulación.</span>
+                </div>
+              </div>
+  
+
+              <div id="dropzone-preview-p" class="hidden relative">
+                <img id="img-preview-p" src="" alt="Foto Paciente" class="max-h-64 mx-auto rounded-xl object-contain shadow-md border border-emerald-200">
+                <button type="button" onclick="clearImagePatient(event)" class="absolute top-2 right-2 bg-slate-900/80 hover:bg-rose-600 text-white p-2 rounded-full shadow-lg transition-colors flex items-center gap-1 text-xs">
+                  <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                  <span data-i18n="pac_btn_cambiar_foto">Cambiar foto</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- VISTA PROTOCOLO DE 3 FOTOS MULTIFOCAL -->
+            <div id="pac-contenedor-3-fotos" class="hidden space-y-3">
+              <p data-i18n="pac_3fotos_desc" class="text-xs text-slate-500">Tomá las 3 fotos para un análisis clínico completo de 360°:</p>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                
+                <!-- Ranura 1: Detalle -->
+                <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-center space-y-2">
+                  <span data-i18n="pac_slot1_title" class="text-[11px] font-bold text-slate-700 block">1. Detalle de Herida</span>
+                  <div id="slot-preview-1" class="h-28 bg-white border-2 border-dashed border-slate-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-emerald-500 overflow-hidden relative" onclick="iniciarCamaraEnVivo('paciente', 1)">
+                    <i data-lucide="camera" class="w-5 h-5 text-emerald-600 mb-1"></i>
+                    <span data-i18n="pac_slot_touch" class="text-[10px] text-slate-500 font-semibold">Tocar para tomar</span>
+                  </div>
+                  <span data-i18n="pac_slot1_sub" class="text-[10px] text-slate-400 block">Primer plano (15 cm)</span>
+                </div>
+
+                <!-- Ranura 2: Panorámica -->
+                <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-center space-y-2">
+                  <span data-i18n="pac_slot2_title" class="text-[11px] font-bold text-slate-700 block">2. Pie & Tobillo</span>
+                  <div id="slot-preview-2" class="h-28 bg-white border-2 border-dashed border-slate-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-emerald-500 overflow-hidden relative" onclick="iniciarCamaraEnVivo('paciente', 2)">
+                    <i data-lucide="camera" class="w-5 h-5 text-emerald-600 mb-1"></i>
+                    <span data-i18n="pac_slot_touch" class="text-[10px] text-slate-500 font-semibold">Tocar para tomar</span>
+                  </div>
+                  <span data-i18n="pac_slot2_sub" class="text-[10px] text-slate-400 block">Panorámica completa</span>
+                </div>
+
+                <!-- Ranura 3: Planta / Comparativa -->
+                <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-center space-y-2">
+                  <span data-i18n="pac_slot3_title" class="text-[11px] font-bold text-slate-700 block">3. Planta / Comparativa</span>
+                  <div id="slot-preview-3" class="h-28 bg-white border-2 border-dashed border-slate-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-emerald-500 overflow-hidden relative" onclick="iniciarCamaraEnVivo('paciente', 3)">
+                    <i data-lucide="camera" class="w-5 h-5 text-emerald-600 mb-1"></i>
+                    <span data-i18n="pac_slot_touch" class="text-[10px] text-slate-500 font-semibold">Tocar para tomar</span>
+                  </div>
+                  <span data-i18n="pac_slot3_sub" class="text-[10px] text-slate-400 block">Planta o pie sano</span>
+                </div>
+
+              </div>
             </div>
           </div>
-          <a id="pac-btn-wa-referente" href="https://wa.me/5491112345678" target="_blank" class="px-3 py-1.5 rounded-xl font-bold bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-1 shrink-0 text-xs">
-            <span>WhatsApp</span>
-          </a>
+
+          <!-- PASO 2: 3 Preguntas Táctiles con Emojis -->
+          <div class="med-card p-5 space-y-3">
+            <div class="border-b border-slate-100 pb-2">
+              <span class="text-xs font-bold text-slate-800 uppercase tracking-wide flex items-center gap-1.5">
+                <span class="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs">2</span>
+                <span data-i18n="pac_step2_tit">Contanos sobre tu herida</span>
+              </span>
+            </div>
+
+            <div class="space-y-2.5 text-xs">
+              <!-- Fiebre -->
+              <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200">
+                <div class="flex items-center gap-2.5">
+                  <span class="text-xl">🤒</span>
+                  <span data-i18n="pac_q_fiebre" class="text-slate-800 font-semibold text-sm">¿Tenés fiebre o chuchos de frío?</span>
+                </div>
+                <div class="flex gap-1.5">
+                  <button type="button" id="btn-pac-fiebre-no" onclick="setPatientSurveyVal('fiebre', false)" data-i18n="btn_no" class="px-4 py-1.5 rounded-full text-xs font-bold bg-emerald-600 text-white shadow-sm">No</button>
+                  <button type="button" id="btn-pac-fiebre-si" onclick="setPatientSurveyVal('fiebre', true)" data-i18n="btn_si" class="px-4 py-1.5 rounded-full text-xs font-semibold bg-white border border-slate-300 text-slate-600">Sí</button>
+                </div>
+              </div>
+
+              <!-- Olor -->
+              <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200">
+                <div class="flex items-center gap-2.5">
+                  <span class="text-xl">👃</span>
+                  <span data-i18n="pac_q_olor" class="text-slate-800 font-semibold text-sm">¿La herida tiene feo olor?</span>
+                </div>
+                <div class="flex gap-1.5">
+                  <button type="button" id="btn-pac-olor-no" onclick="setPatientSurveyVal('olor', false)" data-i18n="btn_no" class="px-4 py-1.5 rounded-full text-xs font-bold bg-emerald-600 text-white shadow-sm">No</button>
+                  <button type="button" id="btn-pac-olor-si" onclick="setPatientSurveyVal('olor', true)" data-i18n="btn_si" class="px-4 py-1.5 rounded-full text-xs font-semibold bg-white border border-slate-300 text-slate-600">Sí</button>
+                </div>
+              </div>
+
+              <!-- Dolor -->
+              <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200">
+                <div class="flex items-center gap-2.5">
+                  <span class="text-xl">🩹</span>
+                  <span data-i18n="pac_q_dolor" class="text-slate-800 font-semibold text-sm">¿Sentís dolor en la herida?</span>
+                </div>
+                <div class="flex gap-1.5">
+                  <button type="button" id="btn-pac-dolor-no" onclick="setPatientSurveyVal('dolor', false)" data-i18n="btn_no" class="px-4 py-1.5 rounded-full text-xs font-bold bg-emerald-600 text-white shadow-sm">No</button>
+                  <button type="button" id="btn-pac-dolor-si" onclick="setPatientSurveyVal('dolor', true)" data-i18n="btn_si" class="px-4 py-1.5 rounded-full text-xs font-semibold bg-white border border-slate-300 text-slate-600">Sí</button>
+                </div>
+              </div>
+
+              <!-- Tiempo -->
+              <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
+                <label data-i18n="pac_q_tiempo" class="text-slate-700 font-semibold text-xs flex items-center gap-1.5">
+                  <span>⏱️</span>
+                  <span>¿Cuánto tiempo hace que apareció?</span>
+                </label>
+                <select id="pac-survey-tiempo" class="med-input !py-2 bg-white">
+                  <option value="Menos de 1 semana (Reciente)" data-i18n="pac_opt_tiempo_1">Apareció hace pocos días (Menos de 1 semana)</option>
+                  <option value="1 a 3 semanas" data-i18n="pac_opt_tiempo_2">Hace unas 2 semanas</option>
+                  <option value="Más de 1 mes (Crónica)" data-i18n="pac_opt_tiempo_3">Hace más de 1 mes (No cicatriza)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Botón Grande de Consulta -->
+            <button id="btn-consultar-paciente" onclick="ejecutarConsultaPaciente()" class="w-full py-4 px-6 rounded-2xl text-sm sm:text-base font-black text-white bg-gradient-to-r from-blue-900 via-teal-700 to-emerald-600 hover:from-blue-950 hover:to-emerald-700 shadow-xl hover:shadow-2xl border-2 border-emerald-400/40 transition-all flex items-center justify-center gap-2.5 mt-3 active:scale-[0.98] cursor-pointer">
+              <i data-lucide="sparkles" class="w-5 h-5 text-amber-300 animate-pulse"></i>
+              <span data-i18n="pac_btn_consultar_ia" class="tracking-wide">Consultar a la IA Médica Ahora</span>
+            </button>
+
+                      <!-- 🎧 PABELLÓN DE AUDIOGUÍAS DE PREVENCIÓN PARA PACIENTES -->
+          <div class="med-card p-5 bg-gradient-to-br from-indigo-50/70 via-slate-50 to-white dark:from-slate-900 dark:to-slate-900/90 border border-indigo-200 dark:border-slate-800 rounded-3xl space-y-3.5 shadow-sm">
+            <div class="flex items-center justify-between border-b border-indigo-100 dark:border-slate-800 pb-2">
+              <div class="flex items-center gap-2">
+                <span class="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center text-base shadow-xs">🎧</span>
+                <div>
+                  <h4 class="text-xs sm:text-sm font-black text-slate-900 dark:text-white">Audioguías de Prevención IWGDF</h4>
+                  <p class="text-[10px] text-slate-500 dark:text-slate-400">Diseñado especialmente para pacientes con baja visión o dificultad para leer</p>
+                </div>
+              </div>
+              <span class="px-2 py-0.5 rounded-full text-[9px] font-black bg-indigo-100 dark:bg-indigo-900/60 text-indigo-900 dark:text-indigo-200 border border-indigo-200 dark:border-indigo-700">5 Audios Libres</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2" id="lista-audioguias-iwgdf">
+              <div onclick="reproducirAudioguia(0)" class="p-3 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-indigo-500 cursor-pointer transition-all flex items-center justify-between group shadow-2xs">
+                <div class="space-y-0.5">
+                  <span class="text-[10px] font-bold text-indigo-700 dark:text-indigo-400 block">Capítulo 1</span>
+                  <p class="text-xs font-bold text-slate-800 dark:text-slate-200">Revisión diaria de pies con espejo</p>
+                </div>
+                <span class="w-7 h-7 rounded-full bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 flex items-center justify-center text-xs group-hover:bg-indigo-600 group-hover:text-white transition-colors">▶</span>
+              </div>
+
+              <div onclick="reproducirAudioguia(1)" class="p-3 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-indigo-500 cursor-pointer transition-all flex items-center justify-between group shadow-2xs">
+                <div class="space-y-0.5">
+                  <span class="text-[10px] font-bold text-indigo-700 dark:text-indigo-400 block">Capítulo 2</span>
+                  <p class="text-xs font-bold text-slate-800 dark:text-slate-200">El corte de uñas y cuidado de callos</p>
+                </div>
+                <span class="w-7 h-7 rounded-full bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 flex items-center justify-center text-xs group-hover:bg-indigo-600 group-hover:text-white transition-colors">▶</span>
+              </div>
+
+              <div onclick="reproducirAudioguia(2)" class="p-3 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-indigo-500 cursor-pointer transition-all flex items-center justify-between group shadow-2xs">
+                <div class="space-y-0.5">
+                  <span class="text-[10px] font-bold text-indigo-700 dark:text-indigo-400 block">Capítulo 3</span>
+                  <p class="text-xs font-bold text-slate-800 dark:text-slate-200">Elección de calzado y medias sin costura</p>
+                </div>
+                <span class="w-7 h-7 rounded-full bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 flex items-center justify-center text-xs group-hover:bg-indigo-600 group-hover:text-white transition-colors">▶</span>
+              </div>
+
+              <div onclick="reproducirAudioguia(3)" class="p-3 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-indigo-500 cursor-pointer transition-all flex items-center justify-between group shadow-2xs">
+                <div class="space-y-0.5">
+                  <span class="text-[10px] font-bold text-rose-700 dark:text-rose-400 block">Capítulo 4 (Alerta)</span>
+                  <p class="text-xs font-bold text-slate-800 dark:text-slate-200">Banderas rojas para ir a la guardia</p>
+                </div>
+                <span class="w-7 h-7 rounded-full bg-rose-50 dark:bg-rose-950 text-rose-700 dark:text-rose-300 flex items-center justify-center text-xs group-hover:bg-rose-600 group-hover:text-white transition-colors">▶</span>
+              </div>
+            </div>
+
+            <!-- Reproductor de Audio Activo -->
+            <div id="audioplayer-bar" class="hidden p-3 rounded-2xl bg-indigo-900 text-white flex items-center justify-between gap-3 shadow-md animate-in fade-in">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <span class="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center text-xs shrink-0">🔊</span>
+                <div class="truncate">
+                  <span id="audioplayer-title" class="text-xs font-black block truncate">Reproduciendo Audioguía...</span>
+                  <span id="audioplayer-status" class="text-[10px] text-indigo-200 block">Voz Asistente en Español</span>
+                </div>
+              </div>
+              <button onclick="detenerAudioActual()" class="btn-sec !py-1 !px-3 text-xs font-bold bg-white text-indigo-950 hover:bg-indigo-50 shrink-0">
+                Detener ⏹
+              </button>
+            </div>
+          </div>
+
+            <!-- MI RED DE CUIDADO: PROFESIONALES REFERENTES -->
+            <div class="med-card p-5 space-y-3 bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 shadow-sm rounded-3xl">
+              <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2.5">
+                <div class="flex items-center gap-2">
+                  <span class="text-base">👨‍⚕️</span>
+                  <span data-i18n="pac_ref_title" class="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wide">Mi Equipo de Salud Referente</span>
+                </div>
+                <button type="button" onclick="abrirModalVincularProfesional()" class="text-[11px] font-bold text-blue-900 dark:text-sky-300 hover:text-blue-950 bg-blue-100 dark:bg-blue-950/80 hover:bg-blue-200 px-3 py-1 rounded-full border border-blue-300 dark:border-blue-700 transition-colors flex items-center gap-1 shadow-2xs">
+                  <i data-lucide="user-plus" class="w-3.5 h-3.5"></i>
+                  <span data-i18n="pac_btn_vincular">+ Vincular</span>
+                </button>
+              </div>
+
+              <div id="pac-lista-referentes" class="space-y-2">
+                <!-- Rellenado dinámicamente por renderizarReferentesPaciente() -->
+              </div>
+
+              <p data-i18n="pac_ref_hint_bottom" class="text-[10px] text-slate-500 italic flex items-center gap-1 pt-1">
+                <i data-lucide="bell" class="w-3 h-3 text-blue-600"></i>
+                <span>Tus fotos y reportes se notifican automáticamente a tu equipo tratante.</span>
+              </p>
+            </div>
+          </div>
+
         </div>
 
-        <p class="text-[11px] text-slate-400 text-center">Esta es una orientación asistida por IA. Ante cualquier duda, consultá siempre con tu médico de cabecera.</p>
+        <!-- COLUMNA 2: EL RESULTADO (SEMÁFORO GIGANTE Y QUÉ HACER) -->
+        <div class="lg:col-span-6 space-y-5">
+          
+          <!-- Placeholder Paciente -->
+          <div id="pac-res-placeholder" class="med-card p-8 text-center min-h-[400px] flex flex-col items-center justify-center space-y-4 bg-white dark:bg-slate-900 border-2 border-slate-200/90 dark:border-slate-800 shadow-lg">
+            <div class="w-20 h-20 rounded-3xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-300 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-4xl shadow-inner">
+              🔍
+            </div>
+            <div class="space-y-1">
+              <h3 data-i18n="pac_place_title" class="text-lg font-black text-slate-900 dark:text-white">Esperando tu foto</h3>
+              <p data-i18n="pac_place_desc" class="text-xs text-slate-600 dark:text-slate-300 max-w-sm font-medium">Cargá una foto y tocá el botón verde para recibir la orientación médica sobre tu pie.</p>
+            </div>
+          </div>
+
+          <!-- Loading Paciente -->
+          <div id="pac-res-loading" class="hidden med-card p-10 text-center min-h-[380px] flex flex-col items-center justify-center space-y-4 bg-white">
+            <div class="w-14 h-14 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin"></div>
+            <div class="space-y-1">
+              <h3 data-i18n="pac_load_title" class="text-base font-bold text-slate-900">Analizando tu fotografía con IA...</h3>
+              <p data-i18n="pac_load_desc" class="text-xs text-slate-500">Estamos verificando la zona anatómica y los signos de la lesión.</p>
+            </div>
+          </div>
+
+          <!-- Tarjeta de Error: Imagen Inválida (No es un Pie / Borrosa) -->
+          <div id="pac-res-invalid" class="hidden med-card p-8 text-center min-h-[380px] flex flex-col items-center justify-center space-y-4 bg-rose-50/60 border-2 border-rose-200">
+            <div class="w-16 h-16 rounded-2xl bg-rose-100 text-rose-700 flex items-center justify-center text-3xl shadow-sm">
+              🚫
+            </div>
+            <div class="space-y-1.5 max-w-md mx-auto">
+              <span data-i18n="pac_err_badge" class="px-3 py-1 rounded-full text-xs font-black bg-rose-200 text-rose-900 uppercase tracking-wider">Filtro de Seguridad Clínica</span>
+              <h3 data-i18n="pac_err_title" class="text-lg font-black text-slate-900 mt-1">No detectamos un pie o una herida</h3>
+              <p id="pac-invalid-msg" data-i18n="pac_err_desc" class="text-xs text-slate-600 leading-relaxed">
+                La fotografía enviada no corresponde a un pie, tobillo o úlcera cutánea. Por tu seguridad, el sistema <strong>no emitirá recomendaciones médicas</strong> sobre imágenes de rostros, objetos o entornos.
+              </p>
+            </div>
+            <div class="pt-2">
+              <button type="button" onclick="iniciarCamaraEnVivo('paciente')" class="btn-primary !py-2.5 !px-5 text-xs font-bold bg-rose-700 hover:bg-rose-800 text-white shadow-md inline-flex items-center gap-2">
+                <i data-lucide="camera" class="w-4 h-4"></i>
+                <span data-i18n="pac_btn_reintentar_foto">Tomar Nueva Foto Enfocando el Pie</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Tarjeta de Resultado Paciente -->
+          <div id="pac-res-card" class="hidden med-card p-6 space-y-5 bg-white border-2">
+            
+            <!-- Semáforo Grande -->
+            <div id="pac-traffic-box" class="p-5 rounded-2xl flex items-center justify-between traffic-light-green shadow-sm">
+              <div class="flex items-center gap-4">
+                <span id="pac-traffic-icon" class="text-4xl">🟢</span>
+                <div>
+                  <span id="pac-traffic-badge" data-i18n="semaforo_badge_esperar" class="text-xs font-black uppercase tracking-wider px-3 py-1 rounded-full bg-white/80 shadow-sm">PODÉS ESPERAR</span>
+                  <h3 id="pac-traffic-title" data-i18n="semaforo_title_esperar" class="text-xl font-black mt-1 text-slate-900">Atendelo en tu próxima consulta</h3>
+                </div>
+              </div>
+            </div>
+
+            <!-- Contenido del Dictamen -->
+            <div class="space-y-2">
+              <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
+                  <i data-lucide="file-text" class="w-4 h-4 text-emerald-600"></i>
+                  <span data-i18n="pac_res_dictamen_title">Explicación en lenguaje simple:</span>
+                </span>
+                <div class="flex items-center gap-2">
+                  <button onclick="copiarDictamenPaciente()" class="text-xs font-semibold text-emerald-600 hover:text-emerald-700 flex items-center gap-1 bg-emerald-50 px-2.5 py-1 rounded-lg">
+                    <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                    <span id="copy-text-pac" data-i18n="btn_copiar">Copiar</span>
+                  </button>
+                                    <button id="btn-audio-paciente" onclick="toggleAudioDictamenPaciente()" class="text-xs font-bold text-indigo-900 dark:text-indigo-200 hover:text-indigo-950 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900 px-3 py-1 rounded-lg transition-all shadow-2xs flex items-center gap-1.5 border border-indigo-200 dark:border-indigo-700">
+                    <i data-lucide="headphones" id="icon-audio-pac" class="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400"></i>
+                    <span id="txt-audio-pac">🎧 Escuchar Dictamen</span>
+                  </button>
+                  <button onclick="descargarInformePDF('paciente')" class="text-xs font-bold text-slate-800 hover:text-emerald-700 flex items-center gap-1.5 bg-slate-100 hover:bg-emerald-100 px-3 py-1 rounded-lg transition-colors shadow-sm">
+                    <i data-lucide="download" class="w-3.5 h-3.5 text-emerald-600"></i>
+                    <span data-i18n="btn_descargar_pdf">Descargar PDF</span>
+                  </button>
+                </div>
+              </div>
+
+              <div id="pac-texto-resultado" class="report-content text-sm text-slate-800 leading-relaxed max-h-[380px] overflow-y-auto pr-2"></div>
+            </div>
+
+            <!-- Botón Solicitar Turno / Teleconsulta (Dinámico según Equipo Referente) -->
+            <button id="pac-btn-pedir-turno-cta" type="button" onclick="abrirModalTurnosPaciente()" class="btn-primary w-full !py-3.5 text-xs sm:text-sm font-bold shadow-md flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white transition-all">
+              <i data-lucide="calendar-check" class="w-4 h-4"></i>
+              <span>Solicitar Turno / Consulta Sanitaria Online con Especialistas</span>
+            </button>
+
+            <!-- Aviso cuando el Paciente YA TIENE MÉDICO VINCULADO -->
+            <div id="pac-aviso-medico-vinculado" class="hidden p-4 rounded-2xl bg-blue-50 dark:bg-slate-800 border-2 border-blue-200 dark:border-blue-700/80 text-xs flex items-center justify-between gap-3 shadow-xs">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center text-xl shrink-0">👨‍⚕️</div>
+                <div>
+                  <span class="font-black text-blue-950 dark:text-blue-200 block text-xs">Tu médico tratante está vinculado</span>
+                  <p class="text-[11px] text-slate-600 dark:text-slate-300 mt-0.5">
+                    Tus fotos y este reporte fueron notificados automáticamente a <strong id="pac-txt-med-nombre-vinculado" class="text-blue-900 dark:text-sky-300">tu médico tratante</strong>.
+                  </p>
+                </div>
+              </div>
+              <span class="px-2.5 py-1 rounded-full text-[10px] font-black bg-blue-600 text-white shrink-0">Notificado</span>
+            </div>
+
+            <!-- Disclaimer Amigable -->
+            <div class="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-start gap-2.5">
+              <span class="text-base">⚠️</span>
+              <span data-i18n="pac_res_disclaimer"><strong>Importante:</strong> Esta es una orientación asistida por IA para ayudarte a decidir. Ante cualquier duda, consultá siempre con tu médico de cabecera.</span>
+            </div>
+
+          </div>
+
+        </div>
+
       </div>
 
     </div>
-
+    <!-- ═════════════════════════════════════════════════════════════════ -->
+    <!-- PORTAL 2: ESTACIÓN CLÍNICA DEL PROFESIONAL (CONSOLA MÉDICA)     -->
+    <!-- ═════════════════════════════════════════════════════════════════ -->
     <div id="portal-profesional-view" class="hidden space-y-6">
       
       <!-- Breadcrumb y Tag de Consola -->
@@ -2303,7 +2507,7 @@
 
         <!-- Grid Responsivo de 25 Programas Académicos -->
         <div id="grid-universidades-latam" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          <!-- Populated by renderizarUniversidades() in app.js?v=35 -->
+          <!-- Populated by renderizarUniversidades() in app.js?v=34 -->
         </div>
       </div>
 
@@ -2371,7 +2575,7 @@
 
         <!-- Grid Responsivo de Sociedades Médicas -->
         <div id="grid-sociedades-medicas" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          <!-- Populated by renderizarSociedades() in app.js?v=35 -->
+          <!-- Populated by renderizarSociedades() in app.js?v=34 -->
         </div>
       </div>
 
@@ -2438,7 +2642,7 @@
 
         <!-- Grid Responsivo de Laboratorios y Fármacos -->
         <div id="grid-laboratorios-latam" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <!-- Populated by renderizarLaboratorios() in app.js?v=35 -->
+          <!-- Populated by renderizarLaboratorios() in app.js?v=34 -->
         </div>
       </div>
 
@@ -2487,7 +2691,7 @@
 
         <!-- Grid de Tarjetas de Guías Médicas -->
         <div id="grid-guias-medicas" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          <!-- Renderizado dinámicamente desde app.js?v=35 -->
+          <!-- Renderizado dinámicamente desde app.js?v=34 -->
         </div>
       </div>
 
@@ -4216,7 +4420,7 @@
 
       <!-- Contenido Legal Dinámico por País -->
       <div id="contenedor-detalle-legal" class="p-6 overflow-y-auto space-y-5 text-xs text-slate-700 dark:text-slate-300 leading-relaxed max-h-[60vh]">
-        <!-- Rellenado dinámicamente por seleccionarPaisLegal() en app.js?v=35 -->
+        <!-- Rellenado dinámicamente por seleccionarPaisLegal() en app.js?v=34 -->
       </div>
 
       <!-- Footer Modal Legal con Enlaces a Dossiers Imprimibles -->
@@ -4237,7 +4441,7 @@
     </div>
   </div>
 
-  <script src="./app.js?v=35"></script>
+  <script src="./app.js?v=34"></script>
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./sw.js?v=17').then(function(reg) {

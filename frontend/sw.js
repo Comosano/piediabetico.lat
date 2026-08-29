@@ -1,12 +1,12 @@
-const CACHE_NAME = 'piediabetico-v34-cache';
+const CACHE_NAME = 'piediabetico-v35-cache';
 const OFFLINE_URL = './offline.html';
 
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './offline.html',
-  './styles.css?v=34',
-  './app.js?v=34',
+  './styles.css?v=35',
+  './app.js?v=35',
   './manifest.json',
   './icon.svg'
 ];
@@ -72,61 +72,5 @@ self.addEventListener('fetch', (event) => {
       .catch(() => {
         return caches.match(event.request);
       })
-  );
-});
-
-self.addEventListener('push', (event) => {
-  let data = {
-    title: 'piediabetico.lat — Alerta Clínica',
-    body: 'Nueva actualización en tu ficha de seguimiento o consulta médica.',
-    icon: './icon.svg',
-    badge: './icon.svg',
-    data: { url: './index.html' }
-  };
-
-  if (event.data) {
-    try {
-      data = Object.assign(data, event.data.json());
-    } catch (e) {
-      data.body = event.data.text();
-    }
-  }
-
-  const options = {
-    body: data.body,
-    icon: data.icon || './icon.svg',
-    badge: data.badge || './icon.svg',
-    vibrate: [200, 100, 200],
-    tag: data.tag || 'piediabetico-notification',
-    renotify: true,
-    data: data.data || { url: './index.html' },
-    actions: [
-      { action: 'open', title: 'Ver en la App' },
-      { action: 'close', title: 'Descartar' }
-    ]
-  };
-
-  event.waitUntil(
-    self.registration.showNotification(data.title, options)
-  );
-});
-
-self.addEventListener('notificationclick', (event) => {
-  event.notification.close();
-  if (event.action === 'close') return;
-
-  const targetUrl = (event.notification.data && event.notification.data.url) || './index.html';
-
-  event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-      for (const client of clientList) {
-        if (client.url.includes('index.html') && 'focus' in client) {
-          return client.focus();
-        }
-      }
-      if (clients.openWindow) {
-        return clients.openWindow(targetUrl);
-      }
-    })
   );
 });

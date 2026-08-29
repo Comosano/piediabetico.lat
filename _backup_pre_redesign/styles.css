@@ -1,0 +1,1276 @@
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 85px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   PIEDIABETICO.LAT — DESIGN SYSTEM ULTRA FIDELITY (LIGHT & DARK CLINICAL)
+   ═══════════════════════════════════════════════════════════════════════ */
+
+
+/* ═══════════════════════════════════════════════════════════════════════
+   🎨 TAREA 2: SISTEMA DE VARIABLES CSS (DESIGN TOKENS) & THEME ENGINE
+   ═══════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* Paleta Base - Modo Claro Predeterminado */
+  --bg-primary: #F8FAFC;
+  --bg-surface: #FFFFFF;
+  --bg-elevated: #F1F5F9;
+  --bg-subtle: #E2E8F0;
+  
+  --text-primary: #0F172A;
+  --text-secondary: #334155;
+  --text-muted: #64748B;
+  --text-inverse: #FFFFFF;
+
+  --border-color: #E2E8F0;
+  --border-focus: #3B82F6;
+
+  --brand-primary: #0A2463;
+  --brand-primary-hover: #081B4B;
+  --brand-secondary: #00A878;
+  --brand-secondary-hover: #008F66;
+  --cyan-accent: #0284C7;
+  
+  --color-success: #059669;
+  --color-success-bg: #ECFDF5;
+  --color-warning: #D97706;
+  --color-warning-bg: #FFFBEB;
+  --color-danger: #E11D48;
+  --color-danger-bg: #FFF1F2;
+  --color-info: #0284C7;
+  --color-info-bg: #F0F9FF;
+
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-card: 0 10px 30px -5px rgba(10, 36, 99, 0.08), 0 4px 12px -2px rgba(10, 36, 99, 0.04);
+  --shadow-modal: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-card: 20px;
+  --radius-full: 9999px;
+  --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* Detección Automática de Preferencia de Modo Oscuro del Sistema */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg-primary: #080D1A;
+    --bg-surface: #0F172A;
+    --bg-elevated: #1E293B;
+    --bg-subtle: #334155;
+    
+    --text-primary: #F8FAFC;
+    --text-secondary: #CBD5E1;
+    --text-muted: #94A3B8;
+    --text-inverse: #0F172A;
+
+    --border-color: #334155;
+    --border-focus: #60A5FA;
+
+    --brand-primary: #2563EB;
+    --brand-primary-hover: #1D4ED8;
+    --brand-secondary: #10B981;
+    --brand-secondary-hover: #059669;
+
+    --color-success-bg: rgba(6, 78, 59, 0.45);
+    --color-warning-bg: rgba(120, 53, 15, 0.45);
+    --color-danger-bg: rgba(136, 19, 55, 0.45);
+    --color-info-bg: rgba(30, 58, 138, 0.45);
+
+    --shadow-card: 0 10px 30px -5px rgba(0, 0, 0, 0.5), 0 4px 12px -2px rgba(0, 0, 0, 0.3);
+  }
+}
+
+/* Forzado Manual: Modo Oscuro (vía data-theme o clase .dark) */
+[data-theme="dark"],
+.dark {
+  --bg-primary: #080D1A;
+  --bg-surface: #0F172A;
+  --bg-elevated: #1E293B;
+  --bg-subtle: #334155;
+  
+  --text-primary: #F8FAFC;
+  --text-secondary: #CBD5E1;
+  --text-muted: #94A3B8;
+  --text-inverse: #0F172A;
+
+  --border-color: #334155;
+  --border-focus: #60A5FA;
+
+  --brand-primary: #2563EB;
+  --brand-primary-hover: #1D4ED8;
+  --brand-secondary: #10B981;
+  --brand-secondary-hover: #059669;
+
+  --color-success-bg: rgba(6, 78, 59, 0.45);
+  --color-warning-bg: rgba(120, 53, 15, 0.45);
+  --color-danger-bg: rgba(136, 19, 55, 0.45);
+  --color-info-bg: rgba(30, 58, 138, 0.45);
+
+  --shadow-card: 0 10px 30px -5px rgba(0, 0, 0, 0.5), 0 4px 12px -2px rgba(0, 0, 0, 0.3);
+}
+
+/* Forzado Manual: Modo Claro */
+[data-theme="light"] {
+  --bg-primary: #F8FAFC;
+  --bg-surface: #FFFFFF;
+  --bg-elevated: #F1F5F9;
+  --bg-subtle: #E2E8F0;
+  
+  --text-primary: #0F172A;
+  --text-secondary: #334155;
+  --text-muted: #64748B;
+  --text-inverse: #FFFFFF;
+
+  --border-color: #E2E8F0;
+  --border-focus: #3B82F6;
+
+  --brand-primary: #0A2463;
+  --brand-primary-hover: #081B4B;
+  --brand-secondary: #00A878;
+  --brand-secondary-hover: #008F66;
+  
+  --color-success: #059669;
+  --color-success-bg: #ECFDF5;
+  --color-warning: #D97706;
+  --color-warning-bg: #FFFBEB;
+  --color-danger: #E11D48;
+  --color-danger-bg: #FFF1F2;
+  --color-info: #0284C7;
+  --color-info-bg: #F0F9FF;
+}
+
+/* Aplicación de Variables a Elementos Estructurales */
+body {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+  font-family: var(--font-family);
+}
+
+.med-card {
+  background-color: var(--bg-surface) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+  box-shadow: var(--shadow-card) !important;
+}
+
+.btn-primary {
+  background-color: var(--brand-primary);
+  color: #FFFFFF !important;
+}
+
+.btn-primary:hover {
+  background-color: var(--brand-primary-hover);
+}
+
+.btn-sec {
+  background-color: var(--bg-elevated);
+  color: var(--text-secondary);
+  border-color: var(--border-color);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ── MODO CLARO PREDETERMINADO (☀️) ── */
+body {
+  font-family: var(--font-family);
+  background-color: #F8FAFC;
+  color: #0F172A;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+.medical-bg-mesh {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 70% 50% at 50% 0%, rgba(0, 168, 120, 0.05) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 40% at 90% 90%, rgba(10, 36, 99, 0.04) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 30% at 10% 60%, rgba(2, 132, 199, 0.04) 0%, transparent 50%);
+}
+
+.medical-bg-dots {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: radial-gradient(rgba(10, 36, 99, 0.06) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+/* ── TARJETAS ELEVADAS CON SOMBRAS MÉDICAS SUAVES ── */
+.med-card {
+  background: #FFFFFF;
+  border: 1.5px solid #E2E8F0;
+  border-radius: var(--radius-card);
+  box-shadow: 0 10px 30px -5px rgba(10, 36, 99, 0.08), 0 4px 12px -2px rgba(10, 36, 99, 0.04);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.med-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 40px -8px rgba(10, 36, 99, 0.14), 0 8px 18px -4px rgba(10, 36, 99, 0.06);
+  border-color: #CBD5E1;
+}
+
+/* Tarjetas Gateway personalizadas */
+.card-gateway-paciente {
+  background: linear-gradient(180deg, #FFFFFF 0%, #F0FDF4 100%) !important;
+  border: 2px solid #86EFAC !important;
+}
+
+.card-gateway-profesional {
+  background: linear-gradient(180deg, #FFFFFF 0%, #EFF6FF 100%) !important;
+  border: 2px solid #93C5FD !important;
+}
+
+/* Textos de alta definición en modo claro */
+h1, h2, h3, h4, h5, h6 {
+  color: #0F172A;
+}
+
+.text-slate-900, .text-slate-800 {
+  color: #0F172A !important;
+}
+
+.text-slate-700 {
+  color: #1E293B !important;
+}
+
+.text-slate-600 {
+  color: #334155 !important;
+}
+
+.text-slate-500 {
+  color: #475569 !important;
+}
+
+
+/* ── DEFINICIÓN ROBUSTA DE BOTONES PRIMARIOS (LIGHT & DARK INDESTRUCTIBLES) ── */
+.btn-primary {
+  background: linear-gradient(135deg, #0A2463, #00A878) !important;
+  color: #FFFFFF !important;
+  padding: 12px 24px;
+  border-radius: 100px;
+  font-size: 14px;
+  font-weight: 800;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 15px rgba(0, 168, 120, 0.3) !important;
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0, 168, 120, 0.45) !important;
+  background: linear-gradient(135deg, #081B4B, #008F66) !important;
+  color: #FFFFFF !important;
+}
+
+.dark .btn-primary {
+  background: linear-gradient(135deg, #2563EB, #10B981) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4) !important;
+}
+
+
+.btn-sec {
+  background: #FFFFFF;
+  color: #0F172A;
+  border: 1.5px solid #CBD5E1;
+  padding: 10px 20px;
+  border-radius: 100px;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.btn-sec:hover {
+  background: #F1F5F9;
+  border-color: #94A3B8;
+  color: var(--azul-primary);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* ── INPUTS & FORMULARIOS ── */
+.med-input {
+  width: 100%;
+  padding: 11px 15px;
+  background: #FFFFFF;
+  border: 1.5px solid #CBD5E1;
+  border-radius: 12px;
+  color: #0F172A;
+  font-family: var(--font-family);
+  font-size: 13.5px;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.med-input:focus {
+  border-color: var(--azul-secondary);
+  box-shadow: 0 0 0 3px rgba(26, 58, 143, 0.15);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   MODO OSCURO CLÍNICO (🌙 DEEP OBSIDIAN CON NEÓN Y CONTRASTE WCAG AAA)
+   ═══════════════════════════════════════════════════════════════════════ */
+.dark {
+  color-scheme: dark;
+}
+
+.dark body {
+  background-color: #080D1A !important;
+  color: #F8FAFC !important;
+}
+
+.dark .medical-bg-mesh {
+  background:
+    radial-gradient(ellipse 70% 50% at 50% 0%, rgba(14, 165, 233, 0.12) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 40% at 90% 90%, rgba(16, 185, 129, 0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 30% at 10% 60%, rgba(99, 102, 241, 0.08) 0%, transparent 50%) !important;
+}
+
+.dark .medical-bg-dots {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px) !important;
+}
+
+.dark header {
+  background-color: rgba(15, 23, 42, 0.95) !important;
+  border-color: #1E293B !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6) !important;
+}
+
+.dark .med-card, .dark .card-congreso {
+  background-color: #0F172A !important;
+  border: 1.5px solid #1E293B !important;
+  box-shadow: 0 12px 35px -6px rgba(0, 0, 0, 0.75), 0 4px 14px -2px rgba(0, 0, 0, 0.5) !important;
+  color: #F8FAFC !important;
+}
+
+.dark .med-card:hover, .dark .card-congreso:hover {
+  border-color: #38BDF8 !important;
+  box-shadow: 0 20px 45px -8px rgba(0, 0, 0, 0.85), 0 0 20px rgba(56, 189, 248, 0.2) !important;
+}
+
+.dark .card-gateway-paciente {
+  background: linear-gradient(180deg, #0F172A 0%, rgba(6, 78, 59, 0.45) 100%) !important;
+  border: 2px solid rgba(16, 185, 129, 0.6) !important;
+  color: #F8FAFC !important;
+}
+
+.dark .card-gateway-profesional {
+  background: linear-gradient(180deg, #0F172A 0%, rgba(30, 58, 138, 0.45) 100%) !important;
+  border: 2px solid rgba(59, 130, 246, 0.6) !important;
+  color: #F8FAFC !important;
+}
+
+.dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
+  color: #F8FAFC !important;
+}
+
+.dark .text-slate-900, .dark .text-slate-800 {
+  color: #F8FAFC !important;
+}
+
+.dark .text-slate-700, .dark .text-slate-600 {
+  color: #CBD5E1 !important;
+}
+
+.dark .text-slate-500, .dark .text-slate-400 {
+  color: #94A3B8 !important;
+}
+
+.dark .bg-slate-50, .dark .bg-slate-100 {
+  background-color: #1E293B !important;
+  color: #F1F5F9 !important;
+}
+
+.dark .border-slate-200, .dark .border-slate-100, .dark .border-slate-300 {
+  border-color: #1E293B !important;
+}
+
+.dark .med-input, .dark input:not([type="checkbox"]):not([type="radio"]), .dark select, .dark textarea {
+  background-color: #1E293B !important;
+  color: #F8FAFC !important;
+  border-color: #334155 !important;
+}
+
+.dark .med-input:focus, .dark input:focus, .dark select:focus {
+  border-color: #38BDF8 !important;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.25) !important;
+}
+
+.dark .btn-sec {
+  background-color: #1E293B !important;
+  color: #F8FAFC !important;
+  border-color: #334155 !important;
+}
+
+.dark .btn-sec:hover {
+  background-color: #334155 !important;
+  color: #38BDF8 !important;
+}
+
+.dark select option {
+  background-color: #0F172A !important;
+  color: #F8FAFC !important;
+}
+
+/* ── BADGES Y CHIPS DE ALTO CONTRASTE EN DARK MODE ── */
+.dark .bg-blue-50, .dark .bg-blue-100, .dark .bg-sky-50, .dark .bg-sky-100 {
+  background-color: rgba(30, 58, 138, 0.5) !important;
+  border-color: rgba(96, 165, 250, 0.4) !important;
+  color: #93C5FD !important;
+}
+
+.dark .bg-teal-50, .dark .bg-teal-100 {
+  background-color: rgba(19, 78, 74, 0.5) !important;
+  border-color: rgba(45, 212, 191, 0.4) !important;
+  color: #5EEAD4 !important;
+}
+
+.dark .bg-emerald-50, .dark .bg-emerald-100 {
+  background-color: rgba(6, 78, 59, 0.5) !important;
+  border-color: rgba(52, 211, 153, 0.4) !important;
+  color: #6EE7B7 !important;
+}
+
+.dark .bg-indigo-50, .dark .bg-indigo-100 {
+  background-color: rgba(49, 46, 129, 0.5) !important;
+  border-color: rgba(129, 140, 248, 0.4) !important;
+  color: #A5B4FC !important;
+}
+
+.dark .bg-purple-50, .dark .bg-purple-100 {
+  background-color: rgba(88, 28, 135, 0.5) !important;
+  border-color: rgba(192, 132, 252, 0.4) !important;
+  color: #D8B4FE !important;
+}
+
+.dark .bg-amber-50, .dark .bg-amber-100 {
+  background-color: rgba(120, 53, 15, 0.5) !important;
+  border-color: rgba(251, 191, 36, 0.4) !important;
+  color: #FDE047 !important;
+}
+
+.dark .bg-red-50, .dark .bg-red-100, .dark .bg-rose-50, .dark .bg-rose-100 {
+  background-color: rgba(153, 27, 27, 0.5) !important;
+  border-color: rgba(248, 113, 113, 0.4) !important;
+  color: #FCA5A5 !important;
+}
+
+.dark .text-blue-800, .dark .text-blue-900, .dark .text-blue-950, .dark .text-blue-700 {
+  color: #93C5FD !important;
+}
+
+.dark .text-teal-800, .dark .text-teal-900, .dark .text-teal-950, .dark .text-teal-700 {
+  color: #5EEAD4 !important;
+}
+
+.dark .text-emerald-800, .dark .text-emerald-900, .dark .text-emerald-950, .dark .text-emerald-700 {
+  color: #6EE7B7 !important;
+}
+
+.dark .text-indigo-800, .dark .text-indigo-900, .dark .text-indigo-950, .dark .text-indigo-700 {
+  color: #A5B4FC !important;
+}
+
+.dark .text-purple-800, .dark .text-purple-900, .dark .text-purple-700 {
+  color: #D8B4FE !important;
+}
+
+.dark .text-amber-800, .dark .text-amber-900, .dark .text-amber-700 {
+  color: #FDE047 !important;
+}
+
+.dark .text-red-800, .dark .text-red-900, .dark .text-red-700 {
+  color: #FCA5A5 !important;
+}
+
+/* Modales y Drawers */
+.dark #drawer-menu-lateral > div {
+  background-color: #0B1120 !important;
+  color: #F8FAFC !important;
+}
+
+.dark #modal-registro-paciente > div,
+.dark #modal-registro-profesional > div,
+.dark #modal-auth-general > div,
+.dark #modal-newsletter-rapido > div,
+.dark #modal-contacto-general > div,
+.dark #modal-marco-legal-paises > div,
+.dark #modal-detalle-universidad > div,
+.dark #modal-detalle-congreso > div,
+.dark #modal-detalle-sociedad > div,
+.dark #modal-detalle-laboratorio > div {
+  background-color: #0F172A !important;
+  border-color: #1E293B !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8) !important;
+}
+
+/* ── HEADER CLÍNICO (LIGHT & DARK EXPLICIT) ── */
+header {
+  background-color: rgba(255, 255, 255, 0.98) !important;
+  border-bottom: 1.5px solid #E2E8F0 !important;
+  color: #0F172A !important;
+  box-shadow: 0 4px 20px -2px rgba(10, 36, 99, 0.05) !important;
+}
+
+header nav button {
+  color: #1E293B !important;
+  font-weight: 700 !important;
+}
+
+header nav button:hover {
+  background-color: #F1F5F9 !important;
+  color: #0A2463 !important;
+}
+
+.dark header {
+  background-color: rgba(15, 23, 42, 0.98) !important;
+  border-bottom: 1.5px solid #1E293B !important;
+  color: #F8FAFC !important;
+  box-shadow: 0 4px 25px rgba(0, 0, 0, 0.6) !important;
+}
+
+.dark header nav button {
+  color: #E2E8F0 !important;
+}
+
+.dark header nav button:hover {
+  background-color: #1E293B !important;
+  color: #38BDF8 !important;
+}
+
+
+
+/* ── BANNERS CLÍNICOS DEDICADOS (SIN CONFLICTOS DE SELECTOR) ── */
+.banner-clinico-prof {
+  background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 50%, #FFFFFF 100%) !important;
+  border: 2px solid #BFDBFE !important;
+}
+.banner-clinico-prof h2 {
+  color: #0F172A !important;
+}
+.banner-clinico-prof p {
+  color: #334155 !important;
+}
+
+.dark .banner-clinico-prof {
+  background: linear-gradient(135deg, #0F172A 0%, #1E1B4B 50%, #0F172A 100%) !important;
+  border: 2px solid #38BDF8 !important;
+}
+.dark .banner-clinico-prof h2 {
+  color: #FFFFFF !important;
+}
+.dark .banner-clinico-prof p {
+  color: #CBD5E1 !important;
+}
+
+.banner-clinico-pac {
+  background: linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 50%, #FFFFFF 100%) !important;
+  border: 2px solid #A7F3D0 !important;
+}
+.banner-clinico-pac h2 {
+  color: #0F172A !important;
+}
+.banner-clinico-pac p {
+  color: #334155 !important;
+}
+
+.dark .banner-clinico-pac {
+  background: linear-gradient(135deg, #0F172A 0%, #064E3B 50%, #0F172A 100%) !important;
+  border: 2px solid #34D399 !important;
+}
+.dark .banner-clinico-pac h2 {
+  color: #FFFFFF !important;
+}
+.dark .banner-clinico-pac p {
+  color: #CBD5E1 !important;
+}
+
+.banner-newsletter-dark {
+  background: linear-gradient(135deg, #020617 0%, #0F172A 50%, #1E1B4B 100%) !important;
+  border: 2px solid #312E81 !important;
+  color: #FFFFFF !important;
+}
+.banner-newsletter-dark h3 {
+  color: #FFFFFF !important;
+}
+.banner-newsletter-dark p {
+  color: #E2E8F0 !important;
+}
+
+.banner-legal-dark {
+  background: linear-gradient(135deg, #020617 0%, #0F172A 50%, #1E1B4B 100%) !important;
+  border: 2px solid #312E81 !important;
+  color: #FFFFFF !important;
+}
+.banner-legal-dark h3 {
+  color: #FFFFFF !important;
+}
+.banner-legal-dark p {
+  color: #E2E8F0 !important;
+}
+
+
+/* ── CALIBRACIÓN GLOBAL DE MODALES DE DETALLE (ALTO CONTRASTE MODO CLARO/OSCURO) ── */
+.dark #modal-detalle-sociedad > div,
+.dark #modal-detalle-laboratorio > div,
+.dark #modal-detalle-universidad > div,
+.dark #modal-detalle-guia > div,
+.dark #modal-detalle-fhir > div {
+  background-color: #0F172A !important;
+  border-color: #334155 !important;
+  color: #F8FAFC !important;
+}
+
+.dark #soc-modal-descripcion,
+.dark #univ-modal-descripcion,
+.dark #lab-modal-mecanismo,
+.dark #guia-modal-resumen {
+  background-color: #1E293B !important;
+  color: #F1F5F9 !important;
+  border-color: #334155 !important;
+}
+
+.dark #soc-modal-ejes li,
+.dark #univ-modal-ejes li,
+.dark #lab-modal-indicaciones li,
+.dark #guia-modal-recomendaciones li {
+  color: #CBD5E1 !important;
+}
+
+.dark #soc-modal-email-box,
+.dark #soc-modal-tel-box,
+.dark #soc-modal-sede-box {
+  background-color: #1E293B !important;
+  border-color: #334155 !important;
+}
+
+.dark #soc-modal-email,
+.dark #soc-modal-telefono,
+.dark #soc-modal-sede {
+  color: #F8FAFC !important;
+}
+
+
+
+/* ═══════════════════════════════════════════════════════════════════════ */
+/* ESTILOS ROBUSTOS PARA PESTAÑAS CLÍNICAS (MODO CLARO & MODO OSCURO)     */
+/* ═══════════════════════════════════════════════════════════════════════ */
+.btn-ptab {
+  background-color: #FFFFFF !important;
+  color: #334155 !important;
+  border: 1.5px solid #CBD5E1 !important;
+  border-radius: 0.75rem !important;
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  padding: 0.5rem 0.75rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.375rem !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+  transition: all 0.15s ease-in-out !important;
+  cursor: pointer !important;
+}
+
+.btn-ptab:hover {
+  background-color: #F1F5F9 !important;
+  color: #0F172A !important;
+  border-color: #94A3B8 !important;
+}
+
+.btn-ptab.active-tab,
+.btn-ptab[data-active="true"] {
+  background-color: #1E3A8A !important;
+  color: #FFFFFF !important;
+  border-color: #1D4ED8 !important;
+  font-weight: 800 !important;
+  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3) !important;
+  transform: scale(1.02) !important;
+}
+
+.btn-ptab.active-tab span,
+.btn-ptab[data-active="true"] span {
+  color: #FFFFFF !important;
+}
+
+/* Modo Oscuro para Pestañas Clínicas */
+.dark .btn-ptab {
+  background-color: #1E293B !important;
+  color: #E2E8F0 !important;
+  border: 1.5px solid #334155 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4) !important;
+}
+
+.dark .btn-ptab:hover {
+  background-color: #334155 !important;
+  color: #FFFFFF !important;
+  border-color: #475569 !important;
+}
+
+.dark .btn-ptab.active-tab,
+.dark .btn-ptab[data-active="true"] {
+  background-color: #2563EB !important;
+  color: #FFFFFF !important;
+  border-color: #60A5FA !important;
+  font-weight: 800 !important;
+  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.45) !important;
+  transform: scale(1.02) !important;
+}
+
+.dark .btn-ptab.active-tab span,
+.dark .btn-ptab[data-active="true"] span {
+  color: #FFFFFF !important;
+}
+
+/* Pestaña de Alertas / Pacientes vinculados */
+.btn-ptab#btn-ptab-alertas:not(.active-tab) {
+  background-color: #FFF1F2 !important;
+  color: #9F1239 !important;
+  border-color: #FECDD3 !important;
+}
+
+.dark .btn-ptab#btn-ptab-alertas:not(.active-tab) {
+  background-color: rgba(136, 19, 55, 0.25) !important;
+  color: #FDA4AF !important;
+  border-color: #881337 !important;
+}
+
+/* Badges internos de las pestañas en modo oscuro */
+.dark .btn-ptab:not(.active-tab) #badge-tab-pubmed {
+  background-color: rgba(49, 46, 129, 0.5) !important;
+  color: #C7D2FE !important;
+  border-color: #4338CA !important;
+}
+
+.dark .btn-ptab:not(.active-tab) #badge-tab-sewss {
+  background-color: rgba(30, 58, 138, 0.5) !important;
+  color: #BFDBFE !important;
+  border-color: #1D4ED8 !important;
+}
+
+.dark .btn-ptab:not(.active-tab) #badge-tab-wifi {
+  background-color: rgba(136, 19, 55, 0.5) !important;
+  color: #FECDD3 !important;
+  border-color: #BE123C !important;
+}
+
+.dark .btn-ptab:not(.active-tab) #badge-tab-cica {
+  background-color: rgba(19, 78, 74, 0.5) !important;
+  color: #99F6E4 !important;
+  border-color: #0F766E !important;
+}
+
+.dark .btn-ptab:not(.active-tab) #badge-tab-multi {
+  background-color: #2563EB !important;
+  color: #FFFFFF !important;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════ */
+/* CORRECCIÓN INTEGRAL DE TARJETAS, RESULTADOS & INPUTS EN MODO OSCURO     */
+/* ═══════════════════════════════════════════════════════════════════════ */
+
+/* 1. Contenedores de resultados y gradientes clínicos en modo oscuro */
+.dark #prof-sec-wifi [class*="bg-gradient-to-r"],
+.dark #prof-sec-sanelian [class*="bg-gradient-to-r"],
+.dark #prof-sec-cicatrizacion [class*="bg-gradient-to-r"],
+.dark #prof-sec-evolucion [class*="bg-gradient-to-r"],
+.dark .prof-result-card {
+  background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%) !important;
+  border-color: #334155 !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* 2. Cajas internas de resultados (Pronósticos, Conductas, Beneficios) */
+.dark #prof-sec-wifi .bg-white,
+.dark #prof-sec-sanelian .bg-white,
+.dark #prof-sec-cicatrizacion .bg-white,
+.dark #prof-sec-atb .bg-white,
+.dark #prof-sec-atb .bg-slate-50,
+.dark #prof-sec-timers .bg-slate-50,
+.dark #prof-sec-iwgdf .bg-slate-50,
+.dark #prof-sec-offloading .bg-slate-50,
+.dark #prof-sec-turnos .bg-white,
+.dark #prof-sec-turnos .bg-slate-50,
+.dark #prof-sec-evolucion .bg-white {
+  background-color: #0F172A !important;
+  border-color: #334155 !important;
+  color: #E2E8F0 !important;
+}
+
+/* 3. Títulos y encabezados dentro de las tarjetas de resultados */
+.dark #wifi-title-res,
+.dark #sewss-title-res,
+.dark #cica-title-res,
+.dark #prof-sec-wifi h3,
+.dark #prof-sec-sanelian h3,
+.dark #prof-sec-cicatrizacion h3,
+.dark #prof-sec-multiescala h3,
+.dark #prof-sec-atb h3,
+.dark #prof-sec-turnos h3 {
+  color: #F8FAFC !important;
+}
+
+/* 4. Textos descriptivos dentro de cajas de pronóstico */
+.dark #wifi-txt-amputacion,
+.dark #wifi-txt-revasc,
+.dark #sewss-txt-prono,
+.dark #sewss-txt-conducta,
+.dark #cica-txt-meta,
+.dark #cica-txt-conducta,
+.dark #atb-pro-esquema,
+.dark #atb-pro-dosis {
+  color: #CBD5E1 !important;
+}
+
+/* 5. Etiquetas y títulos dentro de cajas de pronóstico */
+.dark #prof-sec-wifi strong,
+.dark #prof-sec-sanelian strong,
+.dark #prof-sec-cicatrizacion strong,
+.dark #prof-sec-atb strong {
+  color: #38BDF8 !important;
+}
+
+/* 6. Inputs y selects dentro de las estaciones clínicas */
+.dark #portal-profesional-view .med-input,
+.dark #portal-profesional-view select,
+.dark #portal-paciente-view .med-input,
+.dark #portal-paciente-view select {
+  background-color: #0F172A !important;
+  border-color: #334155 !important;
+  color: #F8FAFC !important;
+}
+
+.dark #portal-profesional-view select option,
+.dark #portal-paciente-view select option {
+  background-color: #0F172A !important;
+  color: #F8FAFC !important;
+}
+
+/* 7. Cajas contenedoras de parámetros (Wound, Ischemia, Infection, etc.) */
+.dark #prof-sec-wifi .p-4.rounded-xl.bg-slate-50,
+.dark #prof-sec-sanelian .p-4.rounded-xl.bg-slate-50,
+.dark #prof-sec-cicatrizacion .p-4.rounded-xl.bg-slate-50,
+.dark #prof-sec-multiescala .p-4.rounded-xl.bg-blue-50 {
+  background-color: #1E293B !important;
+  border-color: #334155 !important;
+}
+
+.dark #prof-sec-wifi label,
+.dark #prof-sec-sanelian label,
+.dark #prof-sec-cicatrizacion label,
+.dark #prof-sec-atb label {
+  color: #94A3B8 !important;
+}
+
+/* 8. Botones de "Copiar a Historia Clínica" en modo oscuro */
+.dark #prof-sec-wifi button[onclick*="copiar"],
+.dark #prof-sec-sanelian button[onclick*="copiar"],
+.dark #prof-sec-cicatrizacion button[onclick*="copiar"],
+.dark #prof-sec-multiescala button[onclick*="copiar"] {
+  background-color: #1E293B !important;
+  color: #38BDF8 !important;
+  border-color: #0284C7 !important;
+}
+
+.dark #prof-sec-wifi button[onclick*="copiar"]:hover,
+.dark #prof-sec-sanelian button[onclick*="copiar"]:hover,
+.dark #prof-sec-cicatrizacion button[onclick*="copiar"]:hover,
+.dark #prof-sec-multiescala button[onclick*="copiar"]:hover {
+  background-color: #0369A1 !important;
+  color: #FFFFFF !important;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════ */
+/* CORRECCIÓN INTEGRAL DE MODALES, VENTANAS & CAJAS EN MODO OSCURO       */
+/* ═══════════════════════════════════════════════════════════════════════ */
+.dark [id^="modal-"] > div:not(.bg-transparent),
+.dark #modal-detalle-congreso > div,
+.dark #modal-detalle-universidad > div,
+.dark #modal-detalle-sociedad > div,
+.dark #modal-detalle-laboratorio > div,
+.dark #modal-detalle-guia > div,
+.dark #modal-turnos-paciente > div,
+.dark #modal-enviar-trabajo > div,
+.dark #modal-vincular-profesional > div,
+.dark #modal-auth > div,
+.dark #modal-legal > div,
+.dark #modal-contacto > div,
+.dark #modal-newsletter-rapido > div,
+.dark #modal-marco-legal-paises > div {
+  background-color: #0F172A !important;
+  color: #F8FAFC !important;
+  border-color: #334155 !important;
+}
+
+/* Cajas internas de modales (Ejes, Simposios, Hoteles, Call for Papers) */
+.dark [id^="modal-"] .bg-slate-50,
+.dark [id^="modal-"] .bg-slate-100,
+.dark #mcongreso-ejes > div,
+.dark #univ-modal-ejes li,
+.dark #soc-modal-comisiones li,
+.dark #lab-modal-indicaciones li,
+.dark #guia-modal-recomendaciones li {
+  background-color: #1E293B !important;
+  border-color: #334155 !important;
+  color: #F1F5F9 !important;
+}
+
+.dark #mcongreso-hotel,
+.dark #mcongreso-descripcion,
+.dark [id^="modal-"] p {
+  color: #CBD5E1 !important;
+}
+
+.dark [id^="modal-"] h1,
+.dark [id^="modal-"] h2,
+.dark [id^="modal-"] h3,
+.dark [id^="modal-"] h4 {
+  color: #FFFFFF !important;
+}
+
+/* Botones secundarios dentro de modales */
+.dark [id^="modal-"] .btn-sec {
+  background-color: #1E293B !important;
+  color: #F1F5F9 !important;
+  border-color: #475569 !important;
+}
+
+.dark [id^="modal-"] .btn-sec:hover {
+  background-color: #334155 !important;
+  color: #FFFFFF !important;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════ */
+/* 🛡️ BLINDAJE UNIVERSAL DE CONTRASTES (MODO OSCURO & CLARO)              */
+/* ═══════════════════════════════════════════════════════════════════════ */
+
+/* Garantizar que ningún bg-white quede blanco en modo oscuro */
+.dark .bg-white:not(.keep-white) {
+  background-color: #0F172A !important;
+  color: #F8FAFC !important;
+  border-color: #334155 !important;
+}
+
+.dark .bg-slate-50:not(.keep-light),
+.dark .bg-slate-100:not(.keep-light),
+.dark .bg-gray-50:not(.keep-light) {
+  background-color: #1E293B !important;
+  color: #E2E8F0 !important;
+  border-color: #334155 !important;
+}
+
+/* Tablas, listas y contenedores */
+.dark table,
+.dark th,
+.dark td {
+  border-color: #334155 !important;
+  color: #F1F5F9 !important;
+}
+
+.dark th {
+  background-color: #1E293B !important;
+}
+
+/* Tarjetas y Paneles Clínicos */
+.dark .med-card {
+  background-color: #0F172A !important;
+  border-color: #334155 !important;
+  color: #F8FAFC !important;
+}
+
+/* Entradas de formulario, selectores y textarea */
+.dark input:not([type="checkbox"]):not([type="radio"]),
+.dark select,
+.dark textarea {
+  background-color: #1E293B !important;
+  border-color: #475569 !important;
+  color: #FFFFFF !important;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #94A3B8 !important;
+}
+
+/* Títulos y Párrafos */
+.dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
+  color: #FFFFFF !important;
+}
+
+.dark p, .dark li {
+  color: #CBD5E1 !important;
+}
+
+.dark strong {
+  color: #F8FAFC !important;
+}
+
+/* Botones Secundarios */
+.dark .btn-sec:not([class*="text-"]) {
+  background-color: #1E293B !important;
+  border-color: #475569 !important;
+  color: #F8FAFC !important;
+}
+
+.dark .btn-sec:hover {
+  background-color: #334155 !important;
+  color: #FFFFFF !important;
+}
+
+/* Cajas de Alerta y Semáforos */
+.dark .traffic-light-green {
+  background: linear-gradient(135deg, rgba(6, 78, 59, 0.45) 0%, rgba(2, 44, 34, 0.7) 100%) !important;
+  border-color: rgba(16, 185, 129, 0.5) !important;
+}
+
+.dark .traffic-light-yellow {
+  background: linear-gradient(135deg, rgba(120, 53, 15, 0.45) 0%, rgba(69, 26, 3, 0.7) 100%) !important;
+  border-color: rgba(245, 158, 11, 0.5) !important;
+}
+
+.dark .traffic-light-red {
+  background: linear-gradient(135deg, rgba(136, 19, 55, 0.45) 0%, rgba(76, 5, 25, 0.7) 100%) !important;
+  border-color: rgba(244, 63, 94, 0.5) !important;
+}
+
+/* Todos los Modales y Overlays */
+.dark [id^="modal-"] {
+  background-color: rgba(2, 6, 23, 0.85) !important;
+}
+
+.dark [id^="modal-"] > div:not(.bg-transparent) {
+  background-color: #0F172A !important;
+  border-color: #334155 !important;
+  color: #F8FAFC !important;
+}
+
+
+
+
+/* ═══════════════════════════════════════════════════════════════════════ */
+/* 📱 CORRECCIÓN CRÍTICA DE RESPONSIVE & MOBILE-FIRST UX (SIN OVERFLOW)    */
+/* ═══════════════════════════════════════════════════════════════════════ */
+
+/* Prevención absoluta de desbordes horizontales */
+html, body {
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+  position: relative;
+  box-sizing: border-box;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* Multimedia y Canvas fluidos al 100% del contenedor */
+img, video, canvas, svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Contenedores principales y cards fluidas */
+.med-card,
+.main-container,
+[id^="portal-"],
+.banner-clinico-prof,
+.banner-clinico-pac {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Envoltorios de tablas clínicas con scroll táctil nativo */
+.table-responsive,
+.overflow-x-auto {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── MEDIA QUERIES PARA PANTALLAS MÓVILES Y TABLETS (< 768px) ── */
+@media (max-width: 767px) {
+  /* Reducción ergonómica de paddings en tarjetas clínicas */
+  .med-card {
+    padding: 1rem !important;
+    border-radius: 18px !important;
+    max-width: 100% !important;
+  }
+
+  /* Banner clínico compacto */
+  .banner-clinico-prof,
+  .banner-clinico-pac {
+    padding: 1rem !important;
+  }
+
+  .banner-clinico-prof h2,
+  .banner-clinico-pac h2 {
+    font-size: 1.25rem !important;
+    line-height: 1.25 !important;
+  }
+
+  .banner-clinico-prof p,
+  .banner-clinico-pac p {
+    font-size: 0.75rem !important;
+  }
+
+  /* CUADRÍCULA DE HERRAMIENTAS Y CALCULADORAS (2 COLUMNAS ERGONÓMICAS) */
+  #tab-bar-profesional {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.5rem !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: visible !important;
+    padding-bottom: 0.5rem !important;
+  }
+
+  #tab-bar-profesional .btn-ptab {
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 0.65rem 0.75rem !important;
+    font-size: 11.5px !important;
+    font-weight: 700 !important;
+    border-radius: 14px !important;
+    min-height: 48px !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+  }
+
+  #tab-bar-profesional .btn-ptab span {
+    line-height: 1.25 !important;
+  }
+
+  /* Modales en pantalla completa o centrados con márgenes seguros */
+  [id^="modal-"] > div:not(.bg-transparent) {
+    width: 100% !important;
+    max-width: calc(100vw - 1rem) !important;
+    margin: 0.5rem auto !important;
+    max-height: 92vh !important;
+  }
+
+  /* Touch targets mínimos de 44px */
+  button, 
+  .btn-primary, 
+  .btn-sec, 
+  select, 
+  input[type="button"], 
+  input[type="submit"] {
+    min-height: 44px;
+  }
+
+  header {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+}
+
+/* ── MEDIA QUERIES PARA PANTALLAS ULTRA COMPACTAS (< 480px) ── */
+@media (max-width: 479px) {
+  h1 { font-size: 1.3rem !important; line-height: 1.25 !important; }
+  h2 { font-size: 1.15rem !important; line-height: 1.3 !important; }
+  h3 { font-size: 1.0rem !important; line-height: 1.35 !important; }
+
+  #tab-bar-profesional {
+    grid-template-columns: 1fr !important;
+  }
+
+  .gateway-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════
+   OPTIMIZACIONES MÓVILES EXTREMAS (GALAXY A23 / GAMA MEDIA / MOBILE-FIRST)
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Header Móvil Ultra Compacto (máx 56px de alto) */
+@media (max-width: 768px) {
+  header {
+    padding-top: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
+    min-height: 52px !important;
+  }
+  
+  header .text-xl, header .text-2xl {
+    font-size: 1.125rem !important;
+  }
+
+  .banner-clinico-prof {
+    padding: 1rem !important;
+  }
+
+  /* Ocultar footer gigante en modo móvil por defecto */
+  #footer-institucional-columnas {
+    display: none !important;
+  }
+  
+  #footer-institucional-compacto {
+    display: block !important;
+  }
+
+  /* Hero móvil compacto */
+  .hero-mobile-container {
+    padding-top: 0.5rem !important;
+    space-y: 1rem !important;
+  }
+
+  .hero-mobile-title {
+    font-size: 1.65rem !important;
+    line-height: 1.2 !important;
+  }
+
+  .btn-gateway-mobile {
+    min-height: 52px !important;
+    font-size: 0.95rem !important;
+  }
+}
+
+@media (min-width: 769px) {
+  #footer-institucional-columnas {
+    display: grid !important;
+  }
+  
+  #footer-institucional-compacto {
+    display: none !important;
+  }
+}
+
+/* Chips Táctiles de Tiempo de Evolución */
+.chip-tiempo-pac {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}

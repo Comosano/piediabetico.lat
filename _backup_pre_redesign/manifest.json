@@ -1,0 +1,37 @@
+{
+  "name": "piediabetico.lat — Triage y Ficha Clínica",
+  "short_name": "PieDiabético",
+  "description": "Plataforma clínica de triaje con IA, calculadoras médicas y telemedicina para pie diabético.",
+  "id": "/?source=pwa",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": [
+    "window-controls-overlay",
+    "standalone",
+    "minimal-ui"
+  ],
+  "background_color": "#080D1A",
+  "theme_color": "#0A2463",
+  "orientation": "portrait-primary",
+  "categories": [
+    "medical",
+    "health",
+    "productivity",
+    "utilities"
+  ],
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}
