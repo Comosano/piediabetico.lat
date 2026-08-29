@@ -9029,3 +9029,45 @@ function calcularPhotoQualityGate(ctx, width, height) {
     return { overallScore: 80, estado: 'optimo', mensaje: 'Foto lista' };
   }
 }
+
+
+// ═══════════════════════════════════════════════════════════════════════
+// FASE 3: GESTOR DE IDENTIDAD DE LESIÓN (#WOUND_ID)
+// Permite asociar cada fotografía y evaluación a una lesión persistente
+// ═══════════════════════════════════════════════════════════════════════
+
+const WoundManager = {
+  getOrInitWoundId: function(footSide = 'D', location = 'Hallux Plantar') {
+    if (!state.activeWound) {
+      const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+      state.activeWound = {
+        wound_id: `DFU-${new Date().getFullYear()}-${randomSuffix}`,
+        patient_id: state.currentUser?.id || 'PAC-DEMO',
+        foot_side: footSide,
+        location: location,
+        first_seen: new Date().toISOString().split('T')[0],
+        status: 'activa',
+        evaluaciones: []
+      };
+    }
+    return state.activeWound.wound_id;
+  },
+
+  registrarEvaluacion: function(triage, qualityScore, areaCm2 = null) {
+    const woundId = this.getOrInitWoundId();
+    const evalRecord = {
+      eval_id: 'EVAL-' + Date.now(),
+      fecha: new Date().toISOString(),
+      triage: triage,
+      quality_score: qualityScore,
+      area_cm2: areaCm2
+    };
+
+    if (state.activeWound && state.activeWound.evaluaciones) {
+      state.activeWound.evaluaciones.push(evalRecord);
+    }
+
+    console.log(`🧬 [WoundManager] Evaluación registrada bajo Lesión ID: ${woundId}`, evalRecord);
+    return woundId;
+  }
+};
