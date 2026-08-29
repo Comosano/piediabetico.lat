@@ -42,7 +42,7 @@ Los scripts operan en `backend/scripts/backup/`.
 ### A. Configuración de Variables de Entorno en el VPS
 ```bash
 # Variables para Restic y Cloudflare R2 Standard (S3-compatible)
-export RESTIC_REPOSITORY="s3:https://<ACCOUNT_ID>.r2.cloudflarestorage.com/<BUCKET_NAME>"
+export RESTIC_REPOSITORY="s3:https://<ACCOUNT_ID>.r2.cloudflarestorage.com/piediabetico-backup-prod"
 export RESTIC_PASSWORD="<CLAVE_MAESTRA_RESTIC_FUERA_DE_GIT>"
 export AWS_ACCESS_KEY_ID="<R2_ACCESS_KEY_ID>"
 export AWS_SECRET_ACCESS_KEY="<R2_SECRET_ACCESS_KEY>"
@@ -102,7 +102,7 @@ cd /opt/piediabetico
 
 ### Paso 3: Configurar variables de recuperación
 ```bash
-export RESTIC_REPOSITORY="s3:https://<ACCOUNT_ID>.r2.cloudflarestorage.com/<BUCKET_NAME>"
+export RESTIC_REPOSITORY="s3:https://<ACCOUNT_ID>.r2.cloudflarestorage.com/piediabetico-backup-prod"
 export RESTIC_PASSWORD="<CLAVE_MAESTRA_RESTIC_FUERA_DE_GIT>"
 export AWS_ACCESS_KEY_ID="<R2_ACCESS_KEY_ID>"
 export AWS_SECRET_ACCESS_KEY="<R2_SECRET_ACCESS_KEY>"
