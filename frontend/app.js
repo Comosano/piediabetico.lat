@@ -9071,3 +9071,110 @@ const WoundManager = {
     return woundId;
   }
 };
+
+
+// ═══════════════════════════════════════════════════════════════════════
+// FASE 4: HERRAMIENTAS MÉDICAS AVANZADAS
+// Dashboard por Excepción, Dictado Clínico por Voz y Modo Cuidador
+// ═══════════════════════════════════════════════════════════════════════
+
+let voiceRecognition = null;
+let isRecordingVoice = false;
+
+function toggleDictadoVozPro() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    alert('Tu navegador no soporta reconocimiento de voz nativo. Por favor usá Chrome o Edge.');
+    return;
+  }
+
+  const btnMic = document.getElementById('btn-mic-dictado-pro');
+  const txtMic = document.getElementById('txt-mic-dictado-pro');
+
+  if (isRecordingVoice) {
+    if (voiceRecognition) voiceRecognition.stop();
+    isRecordingVoice = false;
+    if (btnMic) btnMic.classList.remove('bg-rose-600', 'text-white', 'animate-pulse');
+    if (txtMic) txtMic.innerText = '🎙️ Dictar por Voz';
+    return;
+  }
+
+  try {
+    voiceRecognition = new SpeechRecognition();
+    voiceRecognition.lang = 'es-AR';
+    voiceRecognition.continuous = false;
+    voiceRecognition.interimResults = false;
+
+    voiceRecognition.onstart = function() {
+      isRecordingVoice = true;
+      if (btnMic) btnMic.classList.add('bg-rose-600', 'text-white', 'animate-pulse');
+      if (txtMic) txtMic.innerText = '🔴 Escuchando...';
+    };
+
+    voiceRecognition.onresult = function(event) {
+      const transcript = event.results[0][0].transcript;
+      console.log('🎙️ [Dictado Clínico]:', transcript);
+      
+      const inputLoc = document.getElementById('pro-localizacion');
+      if (inputLoc) {
+        inputLoc.value = (inputLoc.value ? inputLoc.value + ' · ' : '') + transcript;
+      }
+
+      // Autodetectar signos clínicos en el dictado
+      const lower = transcript.toLowerCase();
+      if (lower.includes('fiebre') || lower.includes('chuchos')) {
+        const chk = document.getElementById('pro-fiebre');
+        if (chk) chk.checked = true;
+      }
+      if (lower.includes('olor') || lower.includes('fétido') || lower.includes('secreción')) {
+        const chk = document.getElementById('pro-olor');
+        if (chk) chk.checked = true;
+      }
+      if (lower.includes('pulso') && (lower.includes('ausente') || lower.includes('no tiene'))) {
+        const chk = document.getElementById('pro-pulsos');
+        if (chk) chk.checked = false;
+      }
+    };
+
+    voiceRecognition.onerror = function(e) {
+      console.warn('Error en dictado por voz:', e);
+      isRecordingVoice = false;
+      if (btnMic) btnMic.classList.remove('bg-rose-600', 'text-white', 'animate-pulse');
+      if (txtMic) txtMic.innerText = '🎙️ Dictar por Voz';
+    };
+
+    voiceRecognition.onend = function() {
+      isRecordingVoice = false;
+      if (btnMic) btnMic.classList.remove('bg-rose-600', 'text-white', 'animate-pulse');
+      if (txtMic) txtMic.innerText = '🎙️ Dictar por Voz';
+    };
+
+    voiceRecognition.start();
+  } catch (err) {
+    console.warn('No se pudo iniciar el dictado:', err);
+  }
+}
+
+function filtrarDashboardExcepcion(filtro) {
+  const feed = document.getElementById('feed-pacientes-vinculados');
+  if (!feed) return;
+  
+  const cards = feed.querySelectorAll('.card-paciente-item');
+  cards.forEach(card => {
+    if (filtro === 'todos') {
+      card.classList.remove('hidden');
+    } else {
+      const match = card.getAttribute('data-triage') === filtro;
+      if (match) card.classList.remove('hidden');
+      else card.classList.add('hidden');
+    }
+  });
+
+  ['todos', 'rojo', 'estancada', 'pendiente', 'favorable'].forEach(f => {
+    const btn = document.getElementById('btn-filtro-dash-' + f);
+    if (btn) {
+      if (f === filtro) btn.classList.add('ring-2', 'ring-blue-600', 'font-black');
+      else btn.classList.remove('ring-2', 'ring-blue-600', 'font-black');
+    }
+  });
+}
