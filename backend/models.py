@@ -618,40 +618,69 @@ class CareRelationship(Base):
 
 
 # ─────────────────────────────────────────────────────────────
-# DOMINIO 8: PILOTO CERRADO v0.1 (ZERO PII)
+# DOMINIO 8: PILOTO CERRADO v0.1 (DESIDENTIFICADO)
 # ─────────────────────────────────────────────────────────────
 
 class PilotCase(Base):
     """
     Caso de prueba en el Piloto v0.1.
-    Estrictamente desidentificado (cero PII de pacientes).
+    Estrictamente desidentificado (diseñado para no recolectar datos identificatorios de pacientes).
     """
     __tablename__ = "pilot_cases"
 
-    id              : Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    pilot_case_uuid : Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), unique=True, nullable=False, default=uuid.uuid4)
-    physician_id    : Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    is_active       : Mapped[bool]      = mapped_column(Boolean, nullable=False, default=True)
-    created_at      : Mapped[datetime]  = mapped_column(DateTime(timezone=True), server_default=func.now())
+    id              : Mapped[uuid.UUID]       = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    pilot_case_uuid : Mapped[uuid.UUID]       = mapped_column(UUID(as_uuid=True), unique=True, nullable=False, default=uuid.uuid4)
+    physician_id    : Mapped[uuid.UUID]       = mapped_column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    case_alias      : Mapped[Optional[str]]   = mapped_column(String(50), nullable=True) # e.g. "PILOT-0001"
+    is_active       : Mapped[bool]            = mapped_column(Boolean, nullable=False, default=True)
+    created_at      : Mapped[datetime]        = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     __table_args__ = (
         Index("idx_pilot_cases_physician", "physician_id"),
         Index("idx_pilot_cases_uuid", "pilot_case_uuid"),
+        Index("idx_pilot_cases_alias", "case_alias"),
     )
 
     physician : Mapped["User"] = relationship("User")
+    wounds    : Mapped[List["PilotWound"]]    = relationship("PilotWound", back_populates="pilot_case", cascade="all, delete-orphan")
     analyses  : Mapped[List["PilotAnalysis"]] = relationship("PilotAnalysis", back_populates="pilot_case", cascade="all, delete-orphan")
+
+
+class PilotWound(Base):
+    """
+    Herida o lesión clínica identificada dentro de un PilotCase.
+    Permite seguimiento longitudinal de múltiples lesiones en un mismo paciente.
+    """
+    __tablename__ = "pilot_wounds"
+
+    id              : Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    wound_uuid      : Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), unique=True, nullable=False, default=uuid.uuid4)
+    pilot_case_id   : Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("pilot_cases.id", ondelete="CASCADE"), nullable=False)
+    wound_label     : Mapped[str]       = mapped_column(String(100), nullable=False, default="Herida 1") # e.g. "Herida 1"
+    wound_location  : Mapped[str]       = mapped_column(String(100), nullable=False, default="Plantar")  # e.g. "Talón", "Hallux"
+    created_at      : Mapped[datetime]  = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    __table_args__ = (
+        Index("idx_pilot_wounds_case", "pilot_case_id"),
+        Index("idx_pilot_wounds_uuid", "wound_uuid"),
+    )
+
+    pilot_case : Mapped["PilotCase"]           = relationship("PilotCase", back_populates="wounds")
+    analyses   : Mapped[List["PilotAnalysis"]] = relationship("PilotAnalysis", back_populates="pilot_wound")
 
 
 class PilotAnalysis(Base):
     """
     Sesión individual de análisis fotográfico e inferencia en el Piloto v0.1.
-    Almacena resultados técnicos, shadow mode y control de retención TTL (72h).
+    Almacena resultados técnicos, shadow mode y control de retención TTL:
+    - 72 horas para fotos aisladas.
+    - 21 días para fotos longitudinales vinculadas a PilotCase + PilotWound.
     """
     __tablename__ = "pilot_analyses"
 
     id                         : Mapped[uuid.UUID]        = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     pilot_case_id              : Mapped[uuid.UUID]        = mapped_column(UUID(as_uuid=True), ForeignKey("pilot_cases.id", ondelete="CASCADE"), nullable=False)
+    pilot_wound_id             : Mapped[Optional[uuid.UUID]]= mapped_column(UUID(as_uuid=True), ForeignKey("pilot_wounds.id", ondelete="SET NULL"), nullable=True)
     physician_id               : Mapped[uuid.UUID]        = mapped_column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     analysis_uuid              : Mapped[uuid.UUID]        = mapped_column(UUID(as_uuid=True), unique=True, nullable=False, default=uuid.uuid4)
     photo_uuid                 : Mapped[uuid.UUID]        = mapped_column(UUID(as_uuid=True), unique=True, nullable=False, default=uuid.uuid4)
@@ -672,25 +701,29 @@ class PilotAnalysis(Base):
     segmentation_mask_key      : Mapped[Optional[str]]    = mapped_column(String(500), nullable=True)
     shadow_mode_assessment     : Mapped[Optional[dict]]   = mapped_column(JSONB, nullable=True) # Impresión preliminar ciega del médico
     processing_duration_ms     : Mapped[Optional[int]]    = mapped_column(Integer, nullable=True)
+    taken_at_custom            : Mapped[Optional[datetime]]= mapped_column(DateTime(timezone=True), nullable=True) # Fecha histórica real si se conoce
+    sequence_index             : Mapped[Optional[int]]    = mapped_column(Integer, nullable=True) # 1, 2, 3...
     created_at                 : Mapped[datetime]         = mapped_column(DateTime(timezone=True), server_default=func.now())
-    expires_at                 : Mapped[datetime]         = mapped_column(DateTime(timezone=True), nullable=False) # created_at + 72h
+    expires_at                 : Mapped[datetime]         = mapped_column(DateTime(timezone=True), nullable=False) # 72h o 21d
     deleted_at                 : Mapped[Optional[datetime]]= mapped_column(DateTime(timezone=True), nullable=True) # Timestamp de purga de foto
 
     __table_args__ = (
         Index("idx_pilot_analysis_case", "pilot_case_id"),
+        Index("idx_pilot_analysis_wound", "pilot_wound_id"),
         Index("idx_pilot_analysis_physician", "physician_id"),
         Index("idx_pilot_analysis_uuid", "analysis_uuid"),
         Index("idx_pilot_analysis_expires", "expires_at"),
     )
 
-    pilot_case : Mapped["PilotCase"]     = relationship("PilotCase", back_populates="analyses")
-    physician  : Mapped["User"]          = relationship("User")
-    feedback   : Mapped[Optional["PilotFeedback"]] = relationship("PilotFeedback", back_populates="analysis", uselist=False, cascade="all, delete-orphan")
+    pilot_case  : Mapped["PilotCase"]     = relationship("PilotCase", back_populates="analyses")
+    pilot_wound : Mapped[Optional["PilotWound"]] = relationship("PilotWound", back_populates="analyses")
+    physician   : Mapped["User"]          = relationship("User")
+    feedback    : Mapped[Optional["PilotFeedback"]] = relationship("PilotFeedback", back_populates="analysis", uselist=False, cascade="all, delete-orphan")
 
 
 class PilotFeedback(Base):
     """
-    Evaluación y retroalimentación emitida por el médico sobre el análisis de la IA.
+    Evaluación y retroalimentación emitida por el médico sobre el análisis individual de la IA.
     Estrictamente desidentificada.
     """
     __tablename__ = "pilot_feedbacks"
@@ -716,6 +749,64 @@ class PilotFeedback(Base):
 
     analysis  : Mapped["PilotAnalysis"] = relationship("PilotAnalysis", back_populates="feedback")
     physician : Mapped["User"]          = relationship("User")
+
+
+class PilotEvolutionFeedback(Base):
+    """
+    Evaluación médica longitudinal comparativa entre dos análisis de la misma herida.
+    """
+    __tablename__ = "pilot_evolution_feedbacks"
+
+    id                              : Mapped[uuid.UUID]     = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    baseline_analysis_id            : Mapped[uuid.UUID]     = mapped_column(UUID(as_uuid=True), ForeignKey("pilot_analyses.id", ondelete="CASCADE"), nullable=False)
+    followup_analysis_id            : Mapped[uuid.UUID]     = mapped_column(UUID(as_uuid=True), ForeignKey("pilot_analyses.id", ondelete="CASCADE"), nullable=False)
+    physician_id                    : Mapped[uuid.UUID]     = mapped_column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    clinical_evolution              : Mapped[str]           = mapped_column(String(20), nullable=False) # "MEJOR", "SIMILAR", "PEOR"
+    system_representation_agreement : Mapped[str]           = mapped_column(String(20), nullable=False) # "SI", "PARCIAL", "NO"
+    comment                         : Mapped[Optional[str]] = mapped_column(String(250), nullable=True)
+    created_at                      : Mapped[datetime]      = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    __table_args__ = (
+        CheckConstraint("clinical_evolution IN ('MEJOR','SIMILAR','PEOR')", name="ck_pilot_evol_rating"),
+        CheckConstraint("system_representation_agreement IN ('SI','PARCIAL','NO')", name="ck_pilot_evol_agree"),
+        Index("idx_pilot_evol_baseline", "baseline_analysis_id"),
+        Index("idx_pilot_evol_followup", "followup_analysis_id"),
+        Index("idx_pilot_evol_physician", "physician_id"),
+    )
+
+    baseline_analysis : Mapped["PilotAnalysis"] = relationship("PilotAnalysis", foreign_keys=[baseline_analysis_id])
+    followup_analysis : Mapped["PilotAnalysis"] = relationship("PilotAnalysis", foreign_keys=[followup_analysis_id])
+    physician         : Mapped["User"]          = relationship("User")
+
+
+class PilotUploadToken(Base):
+    """
+    Token criptográfico de uso único para solicitud de fotografía remota de control (Día +4).
+    Almacena exclusivamente el hash SHA-256 (nunca el token en claro).
+    """
+    __tablename__ = "pilot_upload_tokens"
+
+    id             : Mapped[uuid.UUID]          = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    token_hash     : Mapped[str]                = mapped_column(String(64), unique=True, nullable=False) # SHA-256
+    pilot_case_id  : Mapped[uuid.UUID]          = mapped_column(UUID(as_uuid=True), ForeignKey("pilot_cases.id", ondelete="CASCADE"), nullable=False)
+    pilot_wound_id : Mapped[uuid.UUID]          = mapped_column(UUID(as_uuid=True), ForeignKey("pilot_wounds.id", ondelete="CASCADE"), nullable=False)
+    physician_id   : Mapped[uuid.UUID]          = mapped_column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    created_at     : Mapped[datetime]           = mapped_column(DateTime(timezone=True), server_default=func.now())
+    due_at         : Mapped[datetime]           = mapped_column(DateTime(timezone=True), nullable=False) # Fecha sugerida de control (ej. +4 días)
+    expires_at     : Mapped[datetime]           = mapped_column(DateTime(timezone=True), nullable=False) # Fecha de caducidad (ej. +7 días)
+    used_at        : Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)  # Momento en que se utilizó (single-use)
+    revoked_at     : Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)  # Momento de revocación si aplica
+
+    __table_args__ = (
+        Index("idx_pilot_tokens_hash", "token_hash"),
+        Index("idx_pilot_tokens_case", "pilot_case_id"),
+        Index("idx_pilot_tokens_wound", "pilot_wound_id"),
+        Index("idx_pilot_tokens_physician", "physician_id"),
+    )
+
+    pilot_case  : Mapped["PilotCase"]  = relationship("PilotCase")
+    pilot_wound : Mapped["PilotWound"] = relationship("PilotWound")
+    physician   : Mapped["User"]       = relationship("User")
 
 
 # ─────────────────────────────────────────────────────────────

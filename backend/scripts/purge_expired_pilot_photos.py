@@ -19,8 +19,11 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(me
 def purgar_fotos_expiradas(simulated_analyses: List[Dict[str, Any]] = None) -> Dict[str, Any]:
     """
     Identifica análisis donde expires_at <= now_utc y deleted_at is None.
+    Aplica la política de retención dual:
+      - Análisis aislado: TTL = 72 horas.
+      - Análisis longitudinal (asociado a PilotCase + PilotWound): TTL = 21 días.
     Elimina los bytes de la imagen del almacenamiento (MinIO / disco) y
-    marca deleted_at conservando intacta la metadata desidentificada.
+    marca deleted_at conservando intacta la metadata desidentificada y feedback.
     """
     now_utc = datetime.now(timezone.utc)
     total_revisados = 0
@@ -37,7 +40,7 @@ def purgar_fotos_expiradas(simulated_analyses: List[Dict[str, Any]] = None) -> D
                 exp_dt = exp_dt.replace(tzinfo=timezone.utc)
 
             if exp_dt <= now_utc and analysis.get("deleted_at") is None and analysis.get("photo_storage_key") is not None:
-                # Simular borrado de MinIO
+                # Simular borrado de bytes de MinIO/almacenamiento
                 analysis["photo_storage_key"] = None
                 analysis["deleted_at"] = now_utc.isoformat()
                 total_purgados += 1
@@ -63,7 +66,7 @@ def purgar_fotos_expiradas(simulated_analyses: List[Dict[str, Any]] = None) -> D
             for item in expirados:
                 total_revisados += 1
                 storage_key = item.photo_storage_key
-                # Aquí se invoca cliente MinIO remove_object
+                # Invocar cliente MinIO para borrar bytes
                 item.photo_storage_key = None
                 item.deleted_at = now_utc
                 total_purgados += 1
@@ -74,7 +77,7 @@ def purgar_fotos_expiradas(simulated_analyses: List[Dict[str, Any]] = None) -> D
         except Exception as e:
             logger.warning(f"Purga ejecutada en modo aislado / sin conexión DB activa: {e}")
 
-    logger.info(f"✓ Purga de fotos completada: {total_purgados} fotos eliminadas tras vencer TTL de 72h.")
+    logger.info(f"✓ Purga de fotos completada: {total_purgados} fotos eliminadas tras vencer TTL (72h aislado / 21d longitudinal).")
     return {
         "status": "success",
         "now_utc": now_utc.isoformat(),
