@@ -84,10 +84,15 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
-# ── Habilitar CORS para Frontend PWA / Móvil ──────────────────────────
+ALLOWED_ORIGINS = os.getenv(
+    "ALLOWED_ORIGINS",
+    "https://piediabetico.lat,https://app.piediabetico.lat,https://piediabetico.online,http://localhost:3000,http://localhost:8000"
+).split(",")
+
+# ── Habilitar CORS con Allowlist Estricta ─────────────────────────────
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

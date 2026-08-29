@@ -1,0 +1,154 @@
+version: '3.9'
+
+# ╔══════════════════════════════════════════════════════════════════════╗
+# ║  PIEDIABETICO.LAT — Docker Compose de Producción Segura             ║
+# ║  Versión 1.0.0 — Puertos internos aislados (Solo 80/443 Públicos)    ║
+# ╚══════════════════════════════════════════════════════════════════════╝
+
+services:
+
+  # ── 1. POSTGRESQL (Solo red interna) ────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: piediadbetico_postgres
+    restart: always
+    env_file: .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-piediadbetico}
+      POSTGRES_USER: ${POSTGRES_USER:-adminpd}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    expose:
+      - "5432" # Expuesto solo a la red interna Docker (No al host público)
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-adminpd}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - piediadbetico_net
+
+  # ── 2. REDIS (Solo red interna) ─────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: piediadbetico_redis
+    restart: always
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - ./data/redis:/data
+    expose:
+      - "6379" # Expuesto solo a la red interna Docker
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - piediadbetico_net
+
+  # ── 3. MINIO (Solo red interna) ─────────────────────────────────────
+  minio:
+    image: minio/minio:latest
+    container_name: piediadbetico_minio
+    restart: always
+    env_file: .env
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-adminminio}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    command: server /data --console-address ':9001'
+    volumes:
+      - ./data/minio:/data
+    expose:
+      - "9000"
+      - "9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - piediadbetico_net
+
+  # ── 4. API FASTAPI (Proxy inverso vía 127.0.0.1:8000) ───────────────
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: piediadbetico_api
+    restart: always
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-adminpd}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-piediadbetico}
+      REDIS_URL: redis://redis:6379/0
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-adminminio}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
+      CLASIFICADOR_ONNX_PATH: /app/modelos/dfu_efficientnet_b0.onnx
+    ports:
+      - "127.0.0.1:8000:8000" # Solo accesible localmente por Nginx/TLS
+    volumes:
+      - ./backend:/app
+      - ./modelos:/app/modelos
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - piediadbetico_net
+
+  # ── 5. CELERY WORKER ────────────────────────────────────────────────
+  celery_worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: piediadbetico_celery_worker
+    restart: always
+    command: celery -A celery_app worker --loglevel=info --concurrency=2
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-adminpd}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-piediadbetico}
+      REDIS_URL: redis://redis:6379/0
+    volumes:
+      - ./backend:/app
+      - ./data/workspace:/workspace
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    networks:
+      - piediadbetico_net
+
+  # ── 6. CELERY BEAT ──────────────────────────────────────────────────
+  celery_beat:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: piediadbetico_celery_beat
+    restart: always
+    command: celery -A celery_app beat --loglevel=info
+    env_file: .env
+    environment:
+      REDIS_URL: redis://redis:6379/0
+    volumes:
+      - ./backend:/app
+    depends_on:
+      redis:
+        condition: service_healthy
+      celery_worker:
+        condition: service_started
+    networks:
+      - piediadbetico_net
+
+networks:
+  piediadbetico_net:
+    driver: bridge
