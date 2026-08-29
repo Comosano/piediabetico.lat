@@ -25,7 +25,7 @@ let state = {
   lastProfResult: '',
   config: {
     apiUrl: localStorage.getItem('pd_api_url') || 'http://localhost:8000',
-    geminiKey: localStorage.getItem('pd_gemini_key') || 'GEMINI_API_KEY_PLACEHOLDER'
+    // API Keys se gestionan 100% en backend por seguridad (Fase 1)
   }
 };
 
@@ -8795,6 +8795,26 @@ function handleImageSlotUpload(slotNum, event) {
 // ═══════════════════════════════════════════════════════════════════════
 
 const CASOS_DEMO_PACIENTE = {
+  gris: {
+    color: 'gris',
+    fotoSvg: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400"><rect width="400" height="400" fill="%23f1f5f9"/><circle cx="200" cy="200" r="80" fill="%23cbd5e1" stroke="%2394a3b8" stroke-width="4" stroke-dasharray="8,8"/><text x="200" y="210" font-family="sans-serif" font-size="36" text-anchor="middle">❓</text><text x="200" y="320" font-family="sans-serif" font-size="14" font-weight="bold" fill="%23475569" text-anchor="middle">Foto No Evaluable (Baja Luz / Borrosa)</text></svg>',
+    fiebre: false,
+    olor: false,
+    tiempo: 'Menos de 1 semana (Reciente)',
+    tiempoIdx: 0,
+    semIcon: '⚪',
+    semBadge: 'No Evaluable · Calidad Insuficiente',
+    semBadgeClass: 'bg-slate-200 text-slate-800',
+    cardBgClass: 'bg-slate-100 border-2 border-slate-400 text-slate-900',
+    semTitle: 'No Pudimos Evaluar la Fotografía',
+    semDesc: 'La imagen se encuentra fuera de foco, demasiado oscura o con reflejos que impiden analizar con certeza clínica los bordes y el tejido.',
+    dictamen: `### ⚪ Inferencia No Concluyente (Principio de Abstención Médica)
+* **Motivo de Abstención**: La calidad óptica de la fotografía no cumple con los estándares mínimos para aplicar los algoritmos IWGDF 2023 de manera segura.
+* **Conducta**: No forzamos un diagnóstico inexacto. Por favor, tomá una nueva fotografía asegurándote de:
+  1. Ubicar el pie a 15–20 cm de distancia.
+  2. Encender una lámpara frontal o acercarte a una ventana con luz de día.
+  3. Evitar sombras sobre la herida y no utilizar flash directo.`
+  },
   verde: {
     color: 'verde',
     fotoSvg: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400"><rect width="400" height="400" fill="%23dcfce7"/><circle cx="200" cy="200" r="70" fill="%2386efac" stroke="%2316a34a" stroke-width="4"/><circle cx="200" cy="200" r="35" fill="%23fca5a5"/><text x="200" y="320" font-family="sans-serif" font-size="14" font-weight="bold" fill="%2314532d" text-anchor="middle">Foto Demo: Lesión Grado 1 (Favorable)</text></svg>',

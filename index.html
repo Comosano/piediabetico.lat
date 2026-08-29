@@ -28,7 +28,7 @@
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" defer></script>
-  <link rel="stylesheet" href="./styles.css?v=35">
+  <link rel="stylesheet" href="./styles.css?v=37">
 </head>
 <body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col antialiased">
 
@@ -610,9 +610,10 @@
           <span class="font-bold text-amber-900 dark:text-amber-200">Modo Demo Activo</span>
         </div>
         <div class="flex gap-1.5">
-          <button type="button" onclick="cargarCasoEjemploPaciente('verde')" class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-600 text-white">🟢 Caso Verde</button>
-          <button type="button" onclick="cargarCasoEjemploPaciente('amarillo')" class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-600 text-white">🟡 Caso Amarillo</button>
-          <button type="button" onclick="cargarCasoEjemploPaciente('rojo')" class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-rose-600 text-white">🔴 Caso Rojo</button>
+          <button type="button" onclick="cargarCasoEjemploPaciente('verde')" class="px-2 py-1 rounded-lg text-[10px] font-bold bg-emerald-600 text-white">🟢 Verde</button>
+          <button type="button" onclick="cargarCasoEjemploPaciente('amarillo')" class="px-2 py-1 rounded-lg text-[10px] font-bold bg-amber-600 text-white">🟡 Amarillo</button>
+          <button type="button" onclick="cargarCasoEjemploPaciente('rojo')" class="px-2 py-1 rounded-lg text-[10px] font-bold bg-rose-600 text-white">🔴 Rojo</button>
+          <button type="button" onclick="cargarCasoEjemploPaciente('gris')" class="px-2 py-1 rounded-lg text-[10px] font-bold bg-slate-600 text-white">⚪ No Evaluable</button>
         </div>
       </div>
 
@@ -2303,7 +2304,7 @@
 
         <!-- Grid Responsivo de 25 Programas Académicos -->
         <div id="grid-universidades-latam" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          <!-- Populated by renderizarUniversidades() in app.js?v=35 -->
+          <!-- Populated by renderizarUniversidades() in app.js?v=37 -->
         </div>
       </div>
 
@@ -2371,7 +2372,7 @@
 
         <!-- Grid Responsivo de Sociedades Médicas -->
         <div id="grid-sociedades-medicas" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          <!-- Populated by renderizarSociedades() in app.js?v=35 -->
+          <!-- Populated by renderizarSociedades() in app.js?v=37 -->
         </div>
       </div>
 
@@ -2438,7 +2439,7 @@
 
         <!-- Grid Responsivo de Laboratorios y Fármacos -->
         <div id="grid-laboratorios-latam" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <!-- Populated by renderizarLaboratorios() in app.js?v=35 -->
+          <!-- Populated by renderizarLaboratorios() in app.js?v=37 -->
         </div>
       </div>
 
@@ -2487,7 +2488,7 @@
 
         <!-- Grid de Tarjetas de Guías Médicas -->
         <div id="grid-guias-medicas" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          <!-- Renderizado dinámicamente desde app.js?v=35 -->
+          <!-- Renderizado dinámicamente desde app.js?v=37 -->
         </div>
       </div>
 
@@ -4216,7 +4217,7 @@
 
       <!-- Contenido Legal Dinámico por País -->
       <div id="contenedor-detalle-legal" class="p-6 overflow-y-auto space-y-5 text-xs text-slate-700 dark:text-slate-300 leading-relaxed max-h-[60vh]">
-        <!-- Rellenado dinámicamente por seleccionarPaisLegal() en app.js?v=35 -->
+        <!-- Rellenado dinámicamente por seleccionarPaisLegal() en app.js?v=37 -->
       </div>
 
       <!-- Footer Modal Legal con Enlaces a Dossiers Imprimibles -->
@@ -4237,7 +4238,7 @@
     </div>
   </div>
 
-  <script src="./app.js?v=35"></script>
+  <script src="./app.js?v=37"></script>
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./sw.js?v=17').then(function(reg) {
