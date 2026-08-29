@@ -87,6 +87,7 @@ class User(Base):
     full_name       : Mapped[str]              = mapped_column(String(200), nullable=False)
     role            : Mapped[str]              = mapped_column(String(30), nullable=False)
     is_active       : Mapped[bool]             = mapped_column(Boolean, nullable=False, default=True)
+    pilot_enabled   : Mapped[bool]             = mapped_column(Boolean, nullable=False, default=False)
     last_login_at   : Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
     created_at      : Mapped[datetime]         = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at      : Mapped[datetime]         = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
@@ -614,6 +615,107 @@ class CareRelationship(Base):
 
     patient : Mapped["Patient"] = relationship("Patient")
     user    : Mapped["User"]    = relationship("User")
+
+
+# ─────────────────────────────────────────────────────────────
+# DOMINIO 8: PILOTO CERRADO v0.1 (ZERO PII)
+# ─────────────────────────────────────────────────────────────
+
+class PilotCase(Base):
+    """
+    Caso de prueba en el Piloto v0.1.
+    Estrictamente desidentificado (cero PII de pacientes).
+    """
+    __tablename__ = "pilot_cases"
+
+    id              : Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    pilot_case_uuid : Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), unique=True, nullable=False, default=uuid.uuid4)
+    physician_id    : Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    is_active       : Mapped[bool]      = mapped_column(Boolean, nullable=False, default=True)
+    created_at      : Mapped[datetime]  = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    __table_args__ = (
+        Index("idx_pilot_cases_physician", "physician_id"),
+        Index("idx_pilot_cases_uuid", "pilot_case_uuid"),
+    )
+
+    physician : Mapped["User"] = relationship("User")
+    analyses  : Mapped[List["PilotAnalysis"]] = relationship("PilotAnalysis", back_populates="pilot_case", cascade="all, delete-orphan")
+
+
+class PilotAnalysis(Base):
+    """
+    Sesión individual de análisis fotográfico e inferencia en el Piloto v0.1.
+    Almacena resultados técnicos, shadow mode y control de retención TTL (72h).
+    """
+    __tablename__ = "pilot_analyses"
+
+    id                         : Mapped[uuid.UUID]        = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    pilot_case_id              : Mapped[uuid.UUID]        = mapped_column(UUID(as_uuid=True), ForeignKey("pilot_cases.id", ondelete="CASCADE"), nullable=False)
+    physician_id               : Mapped[uuid.UUID]        = mapped_column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    analysis_uuid              : Mapped[uuid.UUID]        = mapped_column(UUID(as_uuid=True), unique=True, nullable=False, default=uuid.uuid4)
+    photo_uuid                 : Mapped[uuid.UUID]        = mapped_column(UUID(as_uuid=True), unique=True, nullable=False, default=uuid.uuid4)
+    photo_storage_key          : Mapped[Optional[str]]    = mapped_column(String(500), nullable=True)
+    photo_mime_type            : Mapped[str]              = mapped_column(String(50), default="image/jpeg")
+    privacy_gate_confirmed     : Mapped[bool]             = mapped_column(Boolean, nullable=False, default=False)
+    quality_gate_score         : Mapped[Optional[int]]    = mapped_column(Integer, nullable=True)
+    quality_gate_status        : Mapped[Optional[str]]    = mapped_column(String(50), nullable=True) # "optimo", "advertencia", "insuficiente"
+    ai_status                  : Mapped[str]              = mapped_column(String(50), nullable=False, default="PENDING") # "COMPLETED", "NO_EVALUABLE", "AI_FAILED", "PROVIDER_FAILED", "UPLOAD_FAILED"
+    model_name                 : Mapped[str]              = mapped_column(String(100), default="EfficientNet-B0 + U-Net")
+    model_version              : Mapped[str]              = mapped_column(String(50), default="1.0.0")
+    classification_label       : Mapped[Optional[str]]    = mapped_column(String(100), nullable=True)
+    classification_confidence  : Mapped[Optional[float]]  = mapped_column(Numeric(5, 4), nullable=True)
+    scale_detected             : Mapped[bool]             = mapped_column(Boolean, nullable=False, default=False)
+    pixel_area                 : Mapped[Optional[int]]    = mapped_column(Integer, nullable=True)
+    relative_area_percent      : Mapped[Optional[float]]  = mapped_column(Numeric(5, 2), nullable=True)
+    absolute_area_cm2          : Mapped[Optional[float]]  = mapped_column(Numeric(8, 2), nullable=True) # estrictamente NULL si scale_detected=False
+    segmentation_mask_key      : Mapped[Optional[str]]    = mapped_column(String(500), nullable=True)
+    shadow_mode_assessment     : Mapped[Optional[dict]]   = mapped_column(JSONB, nullable=True) # Impresión preliminar ciega del médico
+    processing_duration_ms     : Mapped[Optional[int]]    = mapped_column(Integer, nullable=True)
+    created_at                 : Mapped[datetime]         = mapped_column(DateTime(timezone=True), server_default=func.now())
+    expires_at                 : Mapped[datetime]         = mapped_column(DateTime(timezone=True), nullable=False) # created_at + 72h
+    deleted_at                 : Mapped[Optional[datetime]]= mapped_column(DateTime(timezone=True), nullable=True) # Timestamp de purga de foto
+
+    __table_args__ = (
+        Index("idx_pilot_analysis_case", "pilot_case_id"),
+        Index("idx_pilot_analysis_physician", "physician_id"),
+        Index("idx_pilot_analysis_uuid", "analysis_uuid"),
+        Index("idx_pilot_analysis_expires", "expires_at"),
+    )
+
+    pilot_case : Mapped["PilotCase"]     = relationship("PilotCase", back_populates="analyses")
+    physician  : Mapped["User"]          = relationship("User")
+    feedback   : Mapped[Optional["PilotFeedback"]] = relationship("PilotFeedback", back_populates="analysis", uselist=False, cascade="all, delete-orphan")
+
+
+class PilotFeedback(Base):
+    """
+    Evaluación y retroalimentación emitida por el médico sobre el análisis de la IA.
+    Estrictamente desidentificada.
+    """
+    __tablename__ = "pilot_feedbacks"
+
+    id                          : Mapped[uuid.UUID]        = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    analysis_id                 : Mapped[uuid.UUID]        = mapped_column(UUID(as_uuid=True), ForeignKey("pilot_analyses.id", ondelete="CASCADE"), unique=True, nullable=False)
+    physician_id                : Mapped[uuid.UUID]        = mapped_column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    is_clinically_evaluable     : Mapped[bool]             = mapped_column(Boolean, nullable=False) # Sí / No
+    segmentation_rating         : Mapped[str]              = mapped_column(String(50), nullable=False) # "Correcta", "Parcial", "Incorrecta"
+    concordance_rating          : Mapped[str]              = mapped_column(String(50), nullable=False) # "Sí", "Parcial", "No"
+    would_modify_classification : Mapped[bool]             = mapped_column(Boolean, nullable=False) # Sí / No
+    utility_score               : Mapped[int]              = mapped_column(SmallInteger, nullable=False) # 1 a 5
+    comment                     : Mapped[Optional[str]]    = mapped_column(String(250), nullable=True)
+    created_at                  : Mapped[datetime]         = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    __table_args__ = (
+        CheckConstraint("segmentation_rating IN ('Correcta','Parcial','Incorrecta')", name="ck_pilot_fb_seg"),
+        CheckConstraint("concordance_rating IN ('Sí','Parcial','No')", name="ck_pilot_fb_conc"),
+        CheckConstraint("utility_score BETWEEN 1 AND 5", name="ck_pilot_fb_utility"),
+        Index("idx_pilot_fb_analysis", "analysis_id"),
+        Index("idx_pilot_fb_physician", "physician_id"),
+    )
+
+    analysis  : Mapped["PilotAnalysis"] = relationship("PilotAnalysis", back_populates="feedback")
+    physician : Mapped["User"]          = relationship("User")
 
 
 # ─────────────────────────────────────────────────────────────

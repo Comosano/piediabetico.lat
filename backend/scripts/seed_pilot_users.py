@@ -1,0 +1,110 @@
+#!/usr/bin/env python3
+"""
+╔══════════════════════════════════════════════════════════════════════╗
+║  SEED_PILOT_USERS.PY — piediabetico.lat                              ║
+║  Generador seguro de 5 cuentas médicas para el Piloto v0.1          ║
+║  Zero Credenciales Hardcodeadas en Git                              ║
+╚══════════════════════════════════════════════════════════════════════╝
+"""
+
+import os
+import sys
+import uuid
+import secrets
+import logging
+from typing import List, Dict, Any
+
+logger = logging.getLogger("seed_pilot_users")
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+
+ROLES_PILOTO = [
+    ("medico_general",    "Dr. Médico General Piloto 1"),
+    ("diabetologo",       "Dra. Diabetóloga Piloto 2"),
+    ("infectologo",       "Dr. Infectólogo Piloto 3"),
+    ("cirujano_vascular", "Dr. Cirujano Vascular Piloto 4"),
+    ("enfermero",         "Lic. Enfermería de Heridas Piloto 5")
+]
+
+
+def generar_usuarios_piloto(simulated: bool = False) -> List[Dict[str, Any]]:
+    """
+    Genera 5 cuentas de profesionales de salud con pilot_enabled=True
+    y contraseñas aleatorias criptográficamente seguras de 16 bytes.
+    """
+    cuentas_generadas = []
+
+    for idx, (rol, nombre) in enumerate(ROLES_PILOTO, start=1):
+        raw_password = secrets.token_urlsafe(16)
+        user_uuid = str(uuid.uuid4())
+        email = f"piloto.medico{idx}@piediabetico.lat"
+
+        cuenta_info = {
+            "id": user_uuid,
+            "email": email,
+            "full_name": nombre,
+            "role": rol,
+            "pilot_enabled": True,
+            "is_active": True,
+            "password_temporal": raw_password # Para entrega segura en mano/SMS al médico
+        }
+        cuentas_generadas.append(cuenta_info)
+
+    if not simulated:
+        try:
+            from sqlalchemy import create_engine
+            from sqlalchemy.orm import sessionmaker
+            from models import Organization, User
+            from agente14_auth import get_password_hash
+
+            db_url = os.getenv("DATABASE_URL", "postgresql://adminpd:password@localhost:5432/piediadbetico")
+            engine = create_engine(db_url)
+            SessionLocal = sessionmaker(bind=engine)
+            db = SessionLocal()
+
+            # Buscar u organizar institución de piloto
+            org = db.query(Organization).filter(Organization.slug == "hospital-piloto-latam").first()
+            if not org:
+                org = Organization(
+                    name="Hospital Piloto LATAM",
+                    slug="hospital-piloto-latam",
+                    country="AR",
+                    plan="institution",
+                    active=True
+                )
+                db.add(org)
+                db.flush()
+
+            for c in cuentas_generadas:
+                existing = db.query(User).filter(User.email == c["email"]).first()
+                if not existing:
+                    user_obj = User(
+                        organization_id=org.id,
+                        email=c["email"],
+                        password_hash=get_password_hash(c["password_temporal"]),
+                        full_name=c["full_name"],
+                        role=c["role"],
+                        pilot_enabled=True,
+                        is_active=True
+                    )
+                    db.add(user_obj)
+            db.commit()
+            db.close()
+            logger.info("✓ 5 usuarios de piloto persistidos en PostgreSQL con pilot_enabled=True.")
+        except Exception as e:
+            logger.warning(f"Seeding ejecutado en modo standalone / sin conexión DB directa: {e}")
+
+    return cuentas_generadas
+
+
+if __name__ == "__main__":
+    usuarios = generar_usuarios_piloto()
+    print("\n═══════════════════════════════════════════════════════════════════════")
+    print("🔑 CUENTAS DE ACCESO PARA LOS 5 MÉDICOS DEL PILOTO v0.1")
+    print("═══════════════════════════════════════════════════════════════════════\n")
+    for u in usuarios:
+        print(f"Médico: {u['full_name']}")
+        print(f"  • Email:    {u['email']}")
+        print(f"  • Rol:      {u['role']}")
+        print(f"  • Password: {u['password_temporal']}")
+        print(f"  • Piloto:   {'ACTIVO' if u['pilot_enabled'] else 'INACTIVO'}\n")
+    print("⚠️ Entregar estas credenciales por canal seguro. NUNCA commitear a Git.")

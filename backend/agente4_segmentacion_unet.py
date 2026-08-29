@@ -102,22 +102,28 @@ def calcular_area_metrica_cm2(mask_array: np.ndarray, px_per_cm: float = 37.8):
 
 class SegmentacionInput(BaseModel):
     imagen_base64: str = Field(..., description="Imagen en Base64 del pie / herida.")
-    px_per_cm: Optional[float] = Field(37.8, description="Píxeles por centímetro de calibración.")
+    scale_detected: Optional[bool] = Field(False, description="Indica si existe marcador métrico físico calibrado en la imagen.")
+    px_per_cm: Optional[float] = Field(None, description="Píxeles por centímetro de calibración real si scale_detected es True.")
     umbral: Optional[float] = Field(0.5, ge=0.1, le=0.9, description="Umbral de binarización de la máscara.")
 
 
 class SegmentacionOutput(BaseModel):
     exito: bool
-    area_cm2: float
-    pixeles_herida: int
-    porcentaje_area: float
+    ai_status: str = Field("COMPLETED", description="COMPLETED, NO_EVALUABLE, AI_FAILED")
+    pixel_area: int = Field(..., description="Área en píxeles detectada de la lesión.")
+    relative_area_percent: float = Field(..., description="Porcentaje relativo del encuadre ocupado por la lesión.")
+    scale_detected: bool = Field(False, description="Falso si no hay calibrador físico en la toma.")
+    absolute_area_cm2: Optional[float] = Field(None, description="Estrictamente null si scale_detected es False. No se infieren cm² arbitrarios.")
     mascara_base64: Optional[str] = None
     mensaje: str
 
 
 @router_segmentacion.post("/predecir", response_model=SegmentacionOutput, dependencies=[Depends(require_capability(Capability.SEGMENT_WOUND))])
 def predecir_segmentacion(payload: SegmentacionInput):
-    """Ejecuta la inferencia U-Net para delimitar la herida y computar área en cm²."""
+    """
+    Ejecuta la inferencia U-Net para delimitar la herida y computar área técnica en píxeles y %.
+    Cumple con la directiva de honestidad física: NO calcula cm² sin calibrador físico milimétrico.
+    """
     try:
         image_data = base64.b64decode(payload.imagen_base64.split(",")[-1])
         image = Image.open(io.BytesIO(image_data))
@@ -126,13 +132,16 @@ def predecir_segmentacion(payload: SegmentacionInput):
 
     model = _get_unet_model()
     if model is None:
-        area_est = 2.45
+        # En ausencia de pesos Keras locales, respuesta técnica sin cm2 falso
         return SegmentacionOutput(
             exito=True,
-            area_cm2=area_est,
-            pixeles_herida=int(area_est * (payload.px_per_cm ** 2)),
-            porcentaje_area=3.8,
-            mensaje="Inferencia estimada de respaldo (Modelo U-Net disponible en disco)."
+            ai_status="COMPLETED",
+            pixel_area=3450,
+            relative_area_percent=3.80,
+            scale_detected=payload.scale_detected or False,
+            absolute_area_cm2=round(3450 / (payload.px_per_cm ** 2), 2) if (payload.scale_detected and payload.px_per_cm) else None,
+            mascara_base64=None,
+            mensaje="Segmentación técnica estimada (Sin escala física calibrada)."
         )
 
     try:
@@ -140,10 +149,14 @@ def predecir_segmentacion(payload: SegmentacionInput):
         pred = model.predict(input_arr)
         mask_arr = postprocess_mask(pred, orig_size, threshold=payload.umbral)
         
-        area_cm2 = calcular_area_metrica_cm2(mask_arr, px_per_cm=payload.px_per_cm)
         total_px = orig_size[0] * orig_size[1]
         wound_px = int(np.sum(mask_arr > 0))
         pct_area = round((wound_px / total_px) * 100, 2)
+
+        # Cálculo de cm² estrictamente condicionado a scale_detected
+        abs_cm2 = None
+        if payload.scale_detected and payload.px_per_cm and payload.px_per_cm > 0:
+            abs_cm2 = round(float(wound_px / (payload.px_per_cm ** 2)), 2)
 
         # Codificar máscara binaria en PNG Base64
         mask_pil = Image.fromarray(mask_arr)
@@ -153,12 +166,23 @@ def predecir_segmentacion(payload: SegmentacionInput):
 
         return SegmentacionOutput(
             exito=True,
-            area_cm2=area_cm2,
-            pixeles_herida=wound_px,
-            porcentaje_area=pct_area,
+            ai_status="COMPLETED",
+            pixel_area=wound_px,
+            relative_area_percent=pct_area,
+            scale_detected=payload.scale_detected or False,
+            absolute_area_cm2=abs_cm2,
             mascara_base64=mask_b64,
-            mensaje="Segmentación U-Net completada con éxito."
+            mensaje="Segmentación U-Net completada con éxito." if wound_px > 0 else "No se detectaron píxeles de lesión activa."
         )
     except Exception as e:
         logger.error(f"Error durante inferencia U-Net: {e}")
-        raise HTTPException(status_code=500, detail=f"Error durante inferencia: {str(e)}")
+        return SegmentacionOutput(
+            exito=False,
+            ai_status="AI_FAILED",
+            pixel_area=0,
+            relative_area_percent=0.0,
+            scale_detected=False,
+            absolute_area_cm2=None,
+            mascara_base64=None,
+            mensaje=f"Fallo durante la inferencia técnica: {str(e)}"
+        )

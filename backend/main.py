@@ -177,6 +177,13 @@ try:
 except ImportError as e:
     logger.warning(f"agente4_segmentacion_unet no disponible: {e}")
 
+try:
+    from pilot_router import router_pilot
+    app.include_router(router_pilot)
+    logger.info("✓ Router Piloto Cerrado v0.1 registrado")
+except ImportError as e:
+    logger.warning(f"pilot_router no disponible: {e}")
+
 DISCLAIMER = (
     "AVISO: Herramienta de referencia educativa basada en guías IWGDF 2023 e IDSA. "
     "No reemplaza el criterio clínico del profesional habilitado."
