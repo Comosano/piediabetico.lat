@@ -189,7 +189,7 @@ def registrar_feedback_piloto(payload: PilotFeedbackInput):
     """
     Registra el feedback del médico post-análisis:
     - Vinculado exclusivamente al analysis_uuid.
-    - Cero PII garantizado (comentario sanitizado).
+    - Diseñado para no recolectar PII del paciente (comentario sanitizado con advertencia explícita).
     """
     # Validación simple de contenido para evitar PII accidental
     if payload.comment:
