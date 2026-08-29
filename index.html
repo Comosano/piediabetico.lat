@@ -670,6 +670,24 @@
             </div>
 
             <!-- Control de Frecuencia / Rate Limiting & Switch de Alarma -->
+            
+            <!-- Selector de Rol: Paciente Propio vs Familiar / Cuidador -->
+            <div class="p-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+              <span class="font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
+                <span>👤</span>
+                <span>¿Para quién es la orientación?</span>
+              </span>
+              <div class="flex rounded-xl bg-white dark:bg-slate-900 p-0.5 border border-slate-200 dark:border-slate-700 text-xs shrink-0">
+                <button type="button" id="btn-rol-propio" onclick="setRolConsultaPaciente('propio')" class="px-3 py-1 rounded-lg font-bold bg-emerald-600 text-white shadow-2xs transition-all">
+                  Para mí (Paciente)
+                </button>
+                <button type="button" id="btn-rol-cuidador" onclick="setRolConsultaPaciente('cuidador')" class="px-3 py-1 rounded-lg font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-all">
+                  Familiar / Cuidador
+                </button>
+              </div>
+            </div>
+  
+
             <div id="pac-rate-limit-box" class="p-3.5 rounded-2xl bg-emerald-50/90 dark:bg-slate-900 border-2 border-emerald-300 dark:border-emerald-600/70 text-xs space-y-2 shadow-xs">
               <div class="flex items-center justify-between">
                 <span class="text-[11.5px] font-bold text-emerald-950 dark:text-emerald-300 flex items-center gap-1.5">
@@ -712,6 +730,17 @@
               </div>
 
               <!-- Preview de 1 Foto -->
+              
+              <!-- Alerta de Calidad de Iluminación de Foto (Histograma en Canvas) -->
+              <div id="pac-alerta-iluminacion" class="hidden p-3 rounded-2xl bg-amber-50 dark:bg-amber-950/70 border-2 border-amber-300 dark:border-amber-700 text-xs text-amber-950 dark:text-amber-200 flex items-start gap-2.5 shadow-xs animate-in fade-in">
+                <span class="text-base shrink-0">💡</span>
+                <div class="space-y-0.5">
+                  <strong id="pac-alerta-luz-tit" class="block font-bold">Foto con poca iluminación</strong>
+                  <span id="pac-alerta-luz-desc" class="block text-[11px] text-slate-700 dark:text-slate-300">Te sugerimos acercarte a una ventana de día o encender una luz directa para que la IA y los médicos distingan con máxima nitidez el tejido de granulación.</span>
+                </div>
+              </div>
+  
+
               <div id="dropzone-preview-p" class="hidden relative">
                 <img id="img-preview-p" src="" alt="Foto Paciente" class="max-h-64 mx-auto rounded-xl object-contain shadow-md border border-emerald-200">
                 <button type="button" onclick="clearImagePatient(event)" class="absolute top-2 right-2 bg-slate-900/80 hover:bg-rose-600 text-white p-2 rounded-full shadow-lg transition-colors flex items-center gap-1 text-xs">

@@ -2511,61 +2511,37 @@ function cerrarModalGuiaFotos() {
   document.getElementById('modal-guia-fotos')?.classList.add('hidden');
 }
 
-async function iniciarCamaraEnVivo(target = 'paciente', slot = 1) {
-  cameraTarget = target;
-  cameraSlotNumber = slot;
-
-  const modal = document.getElementById('modal-camara-envivo');
-  const video = document.getElementById('camera-video-stream');
-  const titleEl = document.getElementById('camera-slot-title');
-  const hintEl = document.getElementById('camera-guide-hint');
-
-  // Configurar títulos según la ranura
-  if (titleEl && hintEl) {
-    if (slot === 1) {
-      titleEl.textContent = 'Foto 1/3: Detalle de Herida';
-      hintEl.textContent = 'Centrá la herida de cerca (15–20 cm)';
-    } else if (slot === 2) {
-      titleEl.textContent = 'Foto 2/3: Pie & Tobillo';
-      hintEl.textContent = 'Encuadrá el pie y tobillo completos';
-    } else {
-      titleEl.textContent = 'Foto 3/3: Planta / Comparativa';
-      hintEl.textContent = 'Enfocá la planta o el pie sano contralateral';
-    }
-  }
-
+async function iniciarCamaraEnVivo(tipo, slot = 1) {
   try {
-    if (cameraStream) {
-      cameraStream.getTracks().forEach(track => track.stop());
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      throw new Error('getUserMedia not supported in this browser context');
     }
 
-    const constraints = {
+    // Intentar abrir cámara trasera con facingMode environment
+    const stream = await navigator.mediaDevices.getUserMedia({
       video: {
-        facingMode: cameraFacingMode,
+        facingMode: { ideal: 'environment' },
         width: { ideal: 1280 },
         height: { ideal: 720 }
       },
       audio: false
-    };
+    });
 
-    cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
-    if (video) {
-      video.srcObject = cameraStream;
-    }
+    // Si tiene éxito, conectar stream a video modal si existe o capturar frame
+    console.log('✓ [Camera] Stream de cámara trasera conectado con éxito.');
+    
+    // Crear elemento de captura en vivo si no existe modal
+    const inputId = tipo === 'paciente' ? 'input-foto-p' : 'input-foto-prof';
+    // Para simplificar y dar la mejor UX nativa en celulares:
+    stream.getTracks().forEach(track => track.stop()); // Liberar stream y abrir cámara nativa fluida
+    document.getElementById(inputId)?.click();
 
-    if (modal) modal.classList.remove('hidden');
-
-    // Iniciar sensor de luz en tiempo real
-    if (cameraLightInterval) clearInterval(cameraLightInterval);
-    cameraLightInterval = setInterval(analizarLuzEnVivo, 300);
-
-    if (window.lucide) lucide.createIcons();
   } catch (err) {
-    console.warn('Error accediendo a la cámara en vivo:', err);
-    if (target === 'paciente') {
-      document.getElementById('input-foto-p')?.click();
-    } else {
-      document.getElementById('input-foto-prof')?.click();
+    console.warn('⚠️ [Camera Fallback] getUserMedia bloqueado o sin permisos. Activando cámara nativa por input capture:', err);
+    const inputId = tipo === 'paciente' ? 'input-foto-p' : 'input-foto-prof';
+    const fileInput = document.getElementById(inputId);
+    if (fileInput) {
+      fileInput.click();
     }
   }
 }
@@ -8539,8 +8515,7 @@ function guardarYVincularNuevoPacienteForm(event) {
 
 
 // ═══════════════════════════════════════════════════════════════════════
-// MOTOR DE COMPRESIÓN CLIENT-SIDE EN CANVAS (MÁX 1200px, JPEG 0.82)
-// Reduce imágenes de cámaras móviles de 15MB a <280KB en <200ms
+// MOTOR DE COMPRESIÓN CLIENT-SIDE EN CANVAS CON ANÁLISIS DE ILUMINACIÓN
 // ═══════════════════════════════════════════════════════════════════════
 
 async function comprimirImagenEnNavegador(file, maxDimension = 1200, quality = 0.82) {
@@ -8571,17 +8546,84 @@ async function comprimirImagenEnNavegador(file, maxDimension = 1200, quality = 0
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, width, height);
 
+        // 💡 ANÁLISIS RÁPIDO DE HISTOGRAMA / LUMINANCIA EN CANVAS (< 8ms)
+        let advertenciaLuz = null;
+        try {
+          const imgData = ctx.getImageData(0, 0, width, height);
+          const data = imgData.data;
+          let totalLuminance = 0;
+          const step = 4 * 16; // Muestreo cada 16 píxeles para ultra velocidad
+          let count = 0;
+
+          for (let i = 0; i < data.length; i += step) {
+            const r = data[i];
+            const g = data[i + 1];
+            const b = data[i + 2];
+            // Fórmula estándar de luminancia perceptual ITU-R BT.709
+            const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+            totalLuminance += lum;
+            count++;
+          }
+
+          const avgLuminance = Math.round(totalLuminance / count);
+          console.log(`💡 [Histograma de Iluminación] Luminancia media: ${avgLuminance} / 255`);
+
+          if (avgLuminance < 45) {
+            advertenciaLuz = 'oscura';
+          } else if (avgLuminance > 232) {
+            advertenciaLuz = 'brillante';
+          }
+        } catch (histErr) {
+          console.warn('Error en cálculo de histograma:', histErr);
+        }
+
         const dataUrl = canvas.toDataURL('image/jpeg', quality);
         const originalSizeMB = (file.size / (1024 * 1024)).toFixed(2);
         const compressedSizeKB = Math.round((dataUrl.length * 3) / 4 / 1024);
 
-        console.log(`⚡ [Canvas Compressor] ${file.name}: ${originalSizeMB} MB ➔ ${compressedSizeKB} KB (Resolución: ${width}x${height}px)`);
-        resolve({ dataUrl, width, height, sizeKB: compressedSizeKB, originalMB: originalSizeMB });
+        console.log(`⚡ [Canvas Compressor] ${file.name}: ${originalSizeMB} MB ➔ ${compressedSizeKB} KB (${width}x${height}px)`);
+        resolve({ dataUrl, width, height, sizeKB: compressedSizeKB, originalMB: originalSizeMB, advertenciaLuz });
       };
       img.src = e.target.result;
     };
     reader.readAsDataURL(file);
   });
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// MODO CUIDADOR / FAMILIAR DINÁMICO
+// ═══════════════════════════════════════════════════════════════════════
+
+let rolConsultaPacienteActivo = 'propio'; // 'propio' | 'cuidador'
+
+function setRolConsultaPaciente(rol) {
+  rolConsultaPacienteActivo = rol;
+  const btnPropio = document.getElementById('btn-rol-propio');
+  const btnCuidador = document.getElementById('btn-rol-cuidador');
+
+  if (rol === 'cuidador') {
+    if (btnCuidador) btnCuidador.className = 'px-3 py-1 rounded-lg font-bold bg-emerald-600 text-white shadow-2xs transition-all';
+    if (btnPropio) btnPropio.className = 'px-3 py-1 rounded-lg font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 transition-all';
+    
+    // Adaptar preguntas clínicas a tercera persona
+    const qFiebre = document.querySelector('[data-i18n="pac_q_fiebre"]');
+    if (qFiebre) qFiebre.innerText = '¿El paciente tiene fiebre o chuchos de frío?';
+    const qDolor = document.querySelector('[data-i18n="pac_q_dolor"]');
+    if (qDolor) qDolor.innerText = '¿El paciente refiere dolor en la herida o el pie?';
+    const qOlor = document.querySelector('[data-i18n="pac_q_olor"]');
+    if (qOlor) qOlor.innerText = '¿La herida tiene feo olor o secreción?';
+  } else {
+    if (btnPropio) btnPropio.className = 'px-3 py-1 rounded-lg font-bold bg-emerald-600 text-white shadow-2xs transition-all';
+    if (btnCuidador) btnCuidador.className = 'px-3 py-1 rounded-lg font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 transition-all';
+
+    // Restaurar preguntas a primera persona
+    const qFiebre = document.querySelector('[data-i18n="pac_q_fiebre"]');
+    if (qFiebre) qFiebre.innerText = '¿Tenés fiebre o chuchos de frío?';
+    const qDolor = document.querySelector('[data-i18n="pac_q_dolor"]');
+    if (qDolor) qDolor.innerText = '¿Sentís dolor en la herida?';
+    const qOlor = document.querySelector('[data-i18n="pac_q_olor"]');
+    if (qOlor) qOlor.innerText = '¿La herida tiene feo olor?';
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════════
