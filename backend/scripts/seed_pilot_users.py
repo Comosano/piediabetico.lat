@@ -29,7 +29,7 @@ ROLES_PILOTO = [
 ]
 
 
-def generar_usuarios_piloto(simulated: bool = False) -> List[Dict[str, Any]]:
+def generar_usuarios_piloto(sync_db: bool = True, force_reset: bool = False) -> List[Dict[str, Any]]:
     """
     Genera 5 cuentas de profesionales de salud con pilot_enabled=True
     y contraseñas aleatorias criptográficamente seguras de 16 bytes.
@@ -48,11 +48,11 @@ def generar_usuarios_piloto(simulated: bool = False) -> List[Dict[str, Any]]:
             "role": rol,
             "pilot_enabled": True,
             "is_active": True,
-            "password_temporal": raw_password # Para entrega segura en mano/SMS al médico
+            "password_temporal": raw_password
         }
         cuentas_generadas.append(cuenta_info)
 
-    if not simulated:
+    if sync_db:
         try:
             from sqlalchemy import create_engine
             from sqlalchemy.orm import sessionmaker
@@ -91,6 +91,12 @@ def generar_usuarios_piloto(simulated: bool = False) -> List[Dict[str, Any]]:
                     )
                     db.add(user_obj)
                     c["status"] = "CREADO_NUEVO"
+                elif force_reset:
+                    existing.pilot_enabled = True
+                    existing.is_active = True
+                    existing.organization_id = org.id
+                    existing.password_hash = hash_password(c["password_temporal"])
+                    c["status"] = "ROTADO_Y_ACTUALIZADO"
                 else:
                     # Idempotente: asegurar que pilot_enabled esté activo pero no sobreescribir password ni reportar password falso
                     existing.pilot_enabled = True
@@ -109,7 +115,9 @@ def generar_usuarios_piloto(simulated: bool = False) -> List[Dict[str, Any]]:
 
 
 if __name__ == "__main__":
-    usuarios = generar_usuarios_piloto()
+    import sys
+    force = "--force-reset" in sys.argv or "--reset" in sys.argv
+    usuarios = generar_usuarios_piloto(force_reset=force)
     print("\n═══════════════════════════════════════════════════════════════════════")
     print("🔑 CUENTAS DE ACCESO PARA LOS 5 MÉDICOS DEL PILOTO v0.1")
     print("═══════════════════════════════════════════════════════════════════════\n")

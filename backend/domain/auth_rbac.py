@@ -423,11 +423,16 @@ def get_current_user(
 def require_authenticated(
     current_user: Optional[UserSession] = Depends(get_current_user)
 ) -> UserSession:
-    """Exige que el usuario esté debidamente autenticado (401 si no)."""
+    """Exige que el usuario esté debidamente autenticado y habilitado para el piloto (401/403 si no)."""
     if not current_user:
         raise HTTPException(
             status_code=401,
             detail="Autenticación requerida. Inicie sesión o proporcione credenciales válidas."
+        )
+    if not getattr(current_user, "pilot_enabled", False):
+        raise HTTPException(
+            status_code=403,
+            detail="Acceso denegado: Usuario no habilitado para el piloto."
         )
     return current_user
 
