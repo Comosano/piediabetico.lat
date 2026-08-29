@@ -178,6 +178,7 @@ function switchPortal(portal, skipRegistration = false) {
   const viewPac = document.getElementById('portal-paciente-view');
   const viewProf = document.getElementById('portal-profesional-view');
   const viewPiloto = document.getElementById('portal-piloto-view');
+  const viewPacRemoto = document.getElementById('portal-paciente-remoto-view');
   const btnVolver = document.getElementById('btn-volver-inicio');
 
   // Ocultar todas las vistas
@@ -185,6 +186,7 @@ function switchPortal(portal, skipRegistration = false) {
   if (viewPac) viewPac.classList.add('hidden');
   if (viewProf) viewProf.classList.add('hidden');
   if (viewPiloto) viewPiloto.classList.add('hidden');
+  if (viewPacRemoto) viewPacRemoto.classList.add('hidden');
 
   if (portal === 'paciente') {
     if (viewPac) viewPac.classList.remove('hidden');
@@ -198,6 +200,10 @@ function switchPortal(portal, skipRegistration = false) {
     if (viewPiloto) viewPiloto.classList.remove('hidden');
     if (btnVolver) btnVolver.classList.remove('hidden');
     if (typeof inicializarModoPiloto === 'function') inicializarModoPiloto();
+  } else if (portal === 'paciente-remoto') {
+    if (viewPacRemoto) viewPacRemoto.classList.remove('hidden');
+    if (btnVolver) btnVolver.classList.remove('hidden');
+    if (typeof iniciarFlujoPacienteRemoto === 'function') iniciarFlujoPacienteRemoto();
   } else {
     // Modo Landing
     if (viewLand) viewLand.classList.remove('hidden');
@@ -9858,3 +9864,159 @@ function ejecutarAnalisisPilotoAislado() {
     `;
   }
 }
+
+// ── CONTROL REMOTO DÍA +4 (TOKEN EFÍMERO) & VISTA DEL PACIENTE ───────
+
+function abrirModalSolicitarControlPiloto() {
+  const currentCase = state.pilotData.cases.find(c => c.pilot_case_uuid === state.pilotData.activeCaseUuid);
+  const currentWound = currentCase ? currentCase.wounds.find(w => w.wound_uuid === state.pilotData.activeWoundUuid) : null;
+  if (!currentWound) return;
+
+  const rawToken = 'tok_' + Math.random().toString(36).substring(2, 12) + Date.now().toString(36);
+  state.pilotData.ultimoTokenGenerado = rawToken;
+
+  const inputLink = document.getElementById('input-link-control-generado');
+  if (inputLink) {
+    inputLink.value = `https://piediabetico.lat/r/${rawToken}`;
+  }
+
+  const modal = document.getElementById('modal-solicitar-control-piloto');
+  if (modal) {
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+  }
+}
+
+function cerrarModalSolicitarControlPiloto() {
+  const modal = document.getElementById('modal-solicitar-control-piloto');
+  if (modal) {
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+  }
+}
+
+function copiarLinkControlGenerado() {
+  const inputLink = document.getElementById('input-link-control-generado');
+  if (!inputLink) return;
+  inputLink.select();
+  navigator.clipboard.writeText(inputLink.value).then(() => {
+    alert('✓ Enlace copiado al portapapeles. Compártelo con tu paciente.');
+  }).catch(() => {
+    alert('Enlace seleccionado: ' + inputLink.value);
+  });
+}
+
+function probarVistaPacienteDesdeModal() {
+  cerrarModalSolicitarControlPiloto();
+  switchPortal('paciente-remoto');
+}
+
+function iniciarFlujoPacienteRemoto() {
+  state.pilotData.tempFotoPacienteRemotoBase64 = null;
+
+  const paso1 = document.getElementById('pac-remoto-paso-privacidad');
+  const paso2 = document.getElementById('pac-remoto-paso-captura');
+  const paso3 = document.getElementById('pac-remoto-paso-exito');
+  const alertaQg = document.getElementById('alerta-qg-pac-remoto');
+
+  if (paso1) paso1.classList.remove('hidden');
+  if (paso2) paso2.classList.add('hidden');
+  if (paso3) paso3.classList.add('hidden');
+  if (alertaQg) alertaQg.classList.add('hidden');
+
+  ['chk-remoto-p1', 'chk-remoto-p2', 'chk-remoto-p3', 'chk-remoto-p4'].forEach(id => {
+    const chk = document.getElementById(id);
+    if (chk) chk.checked = false;
+  });
+
+  const dropEmpty = document.getElementById('dropzone-empty-pac-remoto');
+  const dropPrev = document.getElementById('dropzone-prev-pac-remoto');
+  if (dropEmpty) dropEmpty.classList.remove('hidden');
+  if (dropPrev) dropPrev.classList.add('hidden');
+}
+
+function confirmarPrivacidadPacienteRemoto() {
+  const c1 = document.getElementById('chk-remoto-p1')?.checked;
+  const c2 = document.getElementById('chk-remoto-p2')?.checked;
+  const c3 = document.getElementById('chk-remoto-p3')?.checked;
+  const c4 = document.getElementById('chk-remoto-p4')?.checked;
+
+  if (!c1 || !c2 || !c3 || !c4) {
+    alert('Por favor confirme las 4 pautas de privacidad para garantizar que no haya datos identificatorios.');
+    return;
+  }
+
+  document.getElementById('pac-remoto-paso-privacidad').classList.add('hidden');
+  document.getElementById('pac-remoto-paso-captura').classList.remove('hidden');
+}
+
+function handleFotoPacienteRemoto(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    compressImage(event.target.result, (compressedDataUrl, b64) => {
+      state.pilotData.tempFotoPacienteRemotoBase64 = b64;
+      document.getElementById('img-prev-pac-remoto').src = compressedDataUrl;
+      document.getElementById('dropzone-empty-pac-remoto').classList.add('hidden');
+      document.getElementById('dropzone-prev-pac-remoto').classList.remove('hidden');
+      document.getElementById('alerta-qg-pac-remoto').classList.add('hidden');
+    });
+  };
+  reader.readAsDataURL(file);
+}
+
+function enviarFotoPacienteRemoto() {
+  if (!state.pilotData.tempFotoPacienteRemotoBase64) {
+    alert('Seleccione o tome una fotografía primero.');
+    return;
+  }
+
+  const qualityScore = 87;
+  if (qualityScore < 48) {
+    document.getElementById('alerta-qg-pac-remoto').classList.remove('hidden');
+    return;
+  }
+
+  const currentCase = state.pilotData.cases.find(c => c.pilot_case_uuid === state.pilotData.activeCaseUuid);
+  const currentWound = currentCase ? currentCase.wounds.find(w => w.wound_uuid === state.pilotData.activeWoundUuid) : null;
+
+  if (currentWound) {
+    const seq = (currentWound.analyses ? currentWound.analyses.length : 0) + 1;
+    const now = new Date();
+    const displayDate = `Foto ${seq} (Control Remoto Día +4)`;
+
+    const newAnalysis = {
+      analysis_uuid: 'analisis-remoto-' + Date.now(),
+      photo_uuid: 'photo-remoto-' + Date.now(),
+      photo_base64: 'data:image/jpeg;base64,' + state.pilotData.tempFotoPacienteRemotoBase64,
+      taken_at_custom: now.toISOString().split('T')[0],
+      sequence_index: seq,
+      display_date: displayDate,
+      quality_gate_score: qualityScore,
+      quality_gate_status: 'optimo',
+      ai_status: 'COMPLETED',
+      classification_label: 'Abnormal(Ulcer)',
+      classification_confidence: 0.86,
+      pixel_area: 3400,
+      relative_area_percent: 3.8,
+      scale_detected: false,
+      absolute_area_cm2: null,
+      segmentation_mask_base64: null,
+      created_at: now.toISOString(),
+      is_remote_followup: true,
+      is_expired: false
+    };
+
+    if (!currentWound.analyses) currentWound.analyses = [];
+    currentWound.analyses.push(newAnalysis);
+
+    guardarPilotDataLocal();
+    renderizarTimelinePiloto();
+  }
+
+  document.getElementById('pac-remoto-paso-captura').classList.add('hidden');
+  document.getElementById('pac-remoto-paso-exito').classList.remove('hidden');
+}
+

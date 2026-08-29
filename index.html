@@ -989,11 +989,14 @@
               <p id="txt-herida-activa-sub" class="text-xs text-slate-500">Seguimiento longitudinal con retención de 21 días.</p>
             </div>
             <div class="flex flex-wrap gap-2">
-              <button type="button" onclick="abrirModalAgregarFotoHerida()" class="btn-primary !py-2 !px-3.5 text-xs font-black bg-emerald-700 hover:bg-emerald-800 text-white shadow-xs flex items-center gap-1.5">
-                <span>+ Agregar Foto a esta Herida</span>
+              <button type="button" onclick="abrirModalAgregarFotoHerida()" class="btn-primary !py-2 !px-3.5 text-xs font-black bg-emerald-700 hover:bg-emerald-800 text-white shadow-xs flex items-center gap-1.5 min-h-[44px]">
+                <span>+ Agregar Foto</span>
               </button>
-              <button type="button" id="btn-abrir-comparador-piloto" onclick="abrirComparadorPilotoModal()" class="btn-sec !py-2 !px-3 text-xs font-bold bg-blue-50 text-blue-900 border border-blue-200 flex items-center gap-1">
+              <button type="button" id="btn-abrir-comparador-piloto" onclick="abrirComparadorPilotoModal()" class="btn-sec !py-2 !px-3 text-xs font-bold bg-blue-50 text-blue-900 border border-blue-200 flex items-center gap-1 min-h-[44px]">
                 <span>↔ Comparar Dos Fotos</span>
+              </button>
+              <button type="button" onclick="abrirModalSolicitarControlPiloto()" class="btn-sec !py-2 !px-3 text-xs font-bold bg-purple-50 text-purple-950 border border-purple-300 flex items-center gap-1 min-h-[44px]">
+                <span>📲 Solicitar Foto de Control (+4d)</span>
               </button>
             </div>
           </div>
@@ -1007,33 +1010,55 @@
 
       </div>
 
-      <!-- SUBVISTA 3: CALCULADORAS RÁPIDAS -->
+      <!-- SUBVISTA 3: CALCULADORAS PRIORITARIAS DEL PILOTO -->
       <div id="piloto-subview-calculadoras" class="hidden space-y-4">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          <div onclick="switchProfTab('sanelian-pro'); switchPortal('profesional')" class="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-purple-600 cursor-pointer shadow-xs transition-all space-y-1">
-            <h4 class="text-xs font-black text-slate-900 dark:text-white">🦶 Escala San Elián (SEWSS)</h4>
-            <p class="text-[11px] text-slate-500">10 factores y gravedad de úlcera.</p>
+        <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-2">
+          <h3 class="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">Calculadoras Clínicas Validadas (Piloto v0.1)</h3>
+          <span class="text-[10px] text-purple-900 dark:text-purple-300 font-bold bg-purple-100 dark:bg-purple-950 px-2 py-0.5 rounded-full">Consensos Internacionales</span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <!-- 1. IWGDF 2023 -->
+          <div onclick="switchProfTab('iwgdf-pro'); switchPortal('profesional')" class="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-purple-600 cursor-pointer shadow-xs transition-all space-y-1.5 min-h-[44px]">
+            <div class="flex items-center justify-between">
+              <h4 class="text-xs font-black text-slate-900 dark:text-white">🛡️ IWGDF 2023 Riesgo (0-3)</h4>
+              <span class="text-[10px] px-2 py-0.5 rounded-md bg-blue-50 text-blue-900 font-bold">Prevención</span>
+            </div>
+            <p class="text-[11px] text-slate-500">Estratificación del riesgo de úlcera y frecuencia de cribado.</p>
           </div>
-          <div onclick="switchProfTab('iwgdf-pro'); switchPortal('profesional')" class="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-purple-600 cursor-pointer shadow-xs transition-all space-y-1">
-            <h4 class="text-xs font-black text-slate-900 dark:text-white">🛡️ IWGDF 2023 Riesgo (0-3)</h4>
-            <p class="text-[11px] text-slate-500">Estratificación preventiva del pie diabético.</p>
+
+          <!-- 2. SVS WIfI -->
+          <div onclick="switchProfTab('wifi-pro'); switchPortal('profesional')" class="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-purple-600 cursor-pointer shadow-xs transition-all space-y-1.5 min-h-[44px]">
+            <div class="flex items-center justify-between">
+              <h4 class="text-xs font-black text-slate-900 dark:text-white">🩸 SVS WIfI (Amenaza de Extremidad)</h4>
+              <span class="text-[10px] px-2 py-0.5 rounded-md bg-rose-50 text-rose-900 font-bold">Vascular</span>
+            </div>
+            <p class="text-[11px] text-slate-500">Wound, Ischemia y foot Infection para riesgo de amputación.</p>
           </div>
-          <div onclick="switchProfTab('wifi-pro'); switchPortal('profesional')" class="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-purple-600 cursor-pointer shadow-xs transition-all space-y-1">
-            <h4 class="text-xs font-black text-slate-900 dark:text-white">🩸 SVS WIfI (Amenaza Extremidad)</h4>
-            <p class="text-[11px] text-slate-500">Wound, Ischemia y foot Infection.</p>
+
+          <!-- 3. San Elián -->
+          <div onclick="switchProfTab('sanelian-pro'); switchPortal('profesional')" class="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-purple-600 cursor-pointer shadow-xs transition-all space-y-1.5 min-h-[44px]">
+            <div class="flex items-center justify-between">
+              <h4 class="text-xs font-black text-slate-900 dark:text-white">🦶 Escala San Elián (SEWSS)</h4>
+              <span class="text-[10px] px-2 py-0.5 rounded-md bg-purple-50 text-purple-900 font-bold">Cirugía</span>
+            </div>
+            <p class="text-[11px] text-slate-500">Score de 10 factores anatómicos y biológicos de gravedad.</p>
           </div>
-          <div onclick="switchProfTab('timers-pro'); switchPortal('profesional')" class="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-purple-600 cursor-pointer shadow-xs transition-all space-y-1">
-            <h4 class="text-xs font-black text-slate-900 dark:text-white">🩹 TIMERS (Lecho de la Herida)</h4>
-            <p class="text-[11px] text-slate-500">Checklist estructurado de preparación tisular.</p>
+
+          <!-- 4. Sheehan 4 Semanas -->
+          <div onclick="switchProfTab('sheehan-pro'); switchPortal('profesional')" class="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-purple-600 cursor-pointer shadow-xs transition-all space-y-1.5 min-h-[44px]">
+            <div class="flex items-center justify-between">
+              <h4 class="text-xs font-black text-slate-900 dark:text-white">📉 Reducción de Área a 4 Semanas (Sheehan)</h4>
+              <span class="text-[10px] px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-900 font-bold">Predictor</span>
+            </div>
+            <p class="text-[11px] text-slate-500">Regla predictora de cicatrización a 12 semanas (umbral operativo ≥50%).</p>
           </div>
-          <div onclick="switchProfTab('offloading-pro'); switchPortal('profesional')" class="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-purple-600 cursor-pointer shadow-xs transition-all space-y-1">
-            <h4 class="text-xs font-black text-slate-900 dark:text-white">🦶 Descarga Biomecánica Off-loading</h4>
-            <p class="text-[11px] text-slate-500">IWGDF 2023 con valoración individual.</p>
-          </div>
-          <div onclick="switchProfTab('atb-pro'); switchPortal('profesional')" class="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-purple-600 cursor-pointer shadow-xs transition-all space-y-1">
-            <h4 class="text-xs font-black text-slate-900 dark:text-white">🧫 ATB IDSA & Cockcroft-Gault</h4>
-            <p class="text-[11px] text-slate-500">ClCr desacoplada y guía antimicrobiana.</p>
-          </div>
+        </div>
+
+        <div class="text-center pt-2">
+          <button type="button" onclick="switchPortal('profesional')" class="text-xs font-bold text-purple-900 dark:text-purple-300 hover:underline min-h-[44px] inline-flex items-center gap-1">
+            <span>Ver todas las 7 herramientas y calculadoras clínicas →</span>
+          </button>
         </div>
       </div>
 
@@ -4855,6 +4880,145 @@
         <button type="button" onclick="cerrarModalDetalleEventoPiloto()" class="btn-sec !py-2 !px-4 text-xs font-bold">Cerrar</button>
       </div>
     </div>
+  </div>
+
+  <!-- 5. MODAL SOLICITAR FOTO DE CONTROL (+4 DÍAS) -->
+  <div id="modal-solicitar-control-piloto" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 border-2 border-purple-800 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 animate-in zoom-in-95">
+      <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="w-8 h-8 rounded-xl bg-purple-100 text-purple-900 flex items-center justify-center font-bold text-sm">📲</span>
+          <h3 class="text-sm font-black text-slate-900 dark:text-white">Solicitud de Foto de Control</h3>
+        </div>
+        <button type="button" onclick="cerrarModalSolicitarControlPiloto()" class="text-slate-400 hover:text-slate-600 text-sm font-bold">✕</button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <p class="text-slate-600 dark:text-slate-300 leading-relaxed">
+          Se ha generado un enlace seguro de uso único para que el paciente envíe una fotografía de seguimiento en <strong>Día +4</strong>.
+        </p>
+
+        <div class="p-3 bg-purple-50 dark:bg-purple-950/60 rounded-xl border border-purple-200 dark:border-purple-800 space-y-1.5">
+          <span class="text-[10px] uppercase font-bold text-purple-900 dark:text-purple-300 block">Enlace Seguro Generado:</span>
+          <div class="flex items-center gap-1.5">
+            <input type="text" id="input-link-control-generado" readonly value="" class="med-input !py-1 text-xs w-full bg-white dark:bg-slate-800 font-mono text-[11px]">
+            <button type="button" onclick="copiarLinkControlGenerado()" class="btn-primary !py-1.5 !px-3 text-xs font-black bg-purple-900 text-white shrink-0">Copiar</button>
+          </div>
+        </div>
+
+        <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 text-[11px] text-slate-500 space-y-1">
+          <p>🔒 <strong>Cero PII:</strong> El enlace no revela IDs, nombre del médico ni datos del paciente.</p>
+          <p>⏱️ <strong>Vencimiento:</strong> Caduca a los 7 días y expira automáticamente tras el primer uso.</p>
+        </div>
+
+        <div class="pt-1">
+          <button type="button" onclick="probarVistaPacienteDesdeModal()" class="w-full py-2 rounded-xl text-xs font-bold bg-purple-100 hover:bg-purple-200 text-purple-950 border border-purple-300 transition-colors">
+            👉 Abrir Vista del Paciente (Simulación)
+          </button>
+        </div>
+      </div>
+
+      <div class="pt-2 flex justify-end border-t border-slate-100 dark:border-slate-800">
+        <button type="button" onclick="cerrarModalSolicitarControlPiloto()" class="btn-sec !py-2 !px-4 text-xs font-bold">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═════════════════════════════════════════════════════════════════ -->
+  <!-- PORTAL PACIENTE REMOTO /r/{token} (VISTA MÓVIL AISLADA)          -->
+  <!-- ═════════════════════════════════════════════════════════════════ -->
+  <div id="portal-paciente-remoto-view" class="hidden space-y-4 max-w-md mx-auto p-4 pb-16">
+    
+    <div class="text-center space-y-1 pt-2 pb-2">
+      <div class="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center text-2xl mx-auto shadow-md">🦶</div>
+      <h2 class="text-lg font-black text-slate-900 dark:text-white mt-1">Foto de Control</h2>
+      <p class="text-xs text-slate-600 dark:text-slate-300">Su profesional de salud solicitó una nueva fotografía de seguimiento de su herida.</p>
+    </div>
+
+    <!-- PASO 1: Privacy Gate 4 Checks -->
+    <div id="pac-remoto-paso-privacidad" class="med-card p-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl space-y-4 shadow-sm">
+      <div class="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
+        <span class="w-6 h-6 rounded-full bg-purple-100 text-purple-900 text-xs font-bold flex items-center justify-center">1</span>
+        <h3 class="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">Antes de continuar (Privacidad)</h3>
+      </div>
+
+      <p class="text-xs text-slate-600 dark:text-slate-300 font-medium">Por favor confirme que en la foto a enviar:</p>
+      
+      <div class="space-y-2.5 text-xs text-slate-700 dark:text-slate-300">
+        <label class="flex items-start gap-2.5 cursor-pointer p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+          <input type="checkbox" id="chk-remoto-p1" class="mt-0.5 rounded text-emerald-600">
+          <span><strong>No aparece un rostro</strong> ni personas de fondo.</span>
+        </label>
+        <label class="flex items-start gap-2.5 cursor-pointer p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+          <input type="checkbox" id="chk-remoto-p2" class="mt-0.5 rounded text-emerald-600">
+          <span><strong>No aparecen documentos</strong> (DNI, recetas, credenciales).</span>
+        </label>
+        <label class="flex items-start gap-2.5 cursor-pointer p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+          <input type="checkbox" id="chk-remoto-p3" class="mt-0.5 rounded text-emerald-600">
+          <span><strong>No aparecen pulseras identificatorias</strong> de hospital.</span>
+        </label>
+        <label class="flex items-start gap-2.5 cursor-pointer p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+          <input type="checkbox" id="chk-remoto-p4" class="mt-0.5 rounded text-emerald-600">
+          <span><strong>No aparecen etiquetas con datos personales</strong> o nombres.</span>
+        </label>
+      </div>
+
+      <button type="button" onclick="confirmarPrivacidadPacienteRemoto()" class="btn-primary w-full py-3 text-xs font-black bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl shadow-md min-h-[44px]">
+        Continuar a la Fotografía →
+      </button>
+    </div>
+
+    <!-- PASO 2: Captura / Selección de Foto -->
+    <div id="pac-remoto-paso-captura" class="hidden med-card p-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl space-y-4 shadow-sm">
+      <div class="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
+        <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-900 text-xs font-bold flex items-center justify-center">2</span>
+        <h3 class="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">Tomar o Elegir Fotografía</h3>
+      </div>
+
+      <input type="file" id="input-foto-paciente-remoto" accept="image/*" onchange="handleFotoPacienteRemoto(event)" class="hidden">
+      
+      <div id="dropzone-empty-pac-remoto" class="border-2 border-dashed border-emerald-300 dark:border-emerald-800 rounded-2xl p-6 text-center bg-emerald-50/20 space-y-3">
+        <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center text-2xl mx-auto shadow-xs">📷</div>
+        <div>
+          <p class="text-xs font-black text-slate-900 dark:text-white">Fotografía de la Herida</p>
+          <p class="text-[11px] text-slate-500">Encuadre nítido a 15–20 cm con buena luz.</p>
+        </div>
+        <div class="flex flex-col sm:flex-row gap-2 justify-center pt-1">
+          <button type="button" onclick="document.getElementById('input-foto-paciente-remoto').click()" class="btn-primary !py-2.5 !px-4 text-xs font-black bg-emerald-600 hover:bg-emerald-700 text-white min-h-[44px]">
+            📷 Tomar Foto / Elegir de Galería
+          </button>
+        </div>
+      </div>
+
+      <div id="dropzone-prev-pac-remoto" class="hidden space-y-3 text-center">
+        <img id="img-prev-pac-remoto" src="" class="max-h-56 mx-auto rounded-2xl object-cover border border-slate-200 shadow-md">
+        <div class="flex justify-center gap-2">
+          <button type="button" onclick="document.getElementById('input-foto-paciente-remoto').click()" class="btn-sec !py-2 !px-3 text-xs font-bold min-h-[44px]">Cambiar Foto</button>
+          <button type="button" onclick="enviarFotoPacienteRemoto()" class="btn-primary !py-2 !px-5 text-xs font-black bg-emerald-600 hover:bg-emerald-700 text-white min-h-[44px]">
+            ✓ Enviar Fotografía al Médico
+          </button>
+        </div>
+      </div>
+
+      <div id="alerta-qg-pac-remoto" class="hidden p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-semibold">
+        ⚠️ La fotografía no tiene suficiente calidad o nitidez. Por favor vuelva a tomarla con mejor iluminación y enfoque.
+      </div>
+    </div>
+
+    <!-- PASO 3: Éxito / Foto Recibida -->
+    <div id="pac-remoto-paso-exito" class="hidden med-card p-6 bg-white dark:bg-slate-900 border-2 border-emerald-500 rounded-3xl text-center space-y-4 shadow-lg">
+      <div class="w-16 h-16 rounded-3xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-3xl mx-auto shadow-md">✓</div>
+      <div class="space-y-1">
+        <h3 class="text-base font-black text-slate-900 dark:text-white">✓ FOTO RECIBIDA</h3>
+        <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
+          La fotografía fue enviada para revisión profesional. Su equipo de salud evaluará la evolución de la lesión en su próximo control.
+        </p>
+      </div>
+      <div class="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800 text-[11px] text-slate-500">
+        Este enlace ha cumplido su objetivo de uso único y ha quedado cerrado. Puede cerrar esta pestaña.
+      </div>
+    </div>
+
   </div>
 
 </body>

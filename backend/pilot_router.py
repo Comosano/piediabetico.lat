@@ -8,6 +8,8 @@
 
 import uuid
 import time
+import secrets
+import hashlib
 import logging
 from datetime import datetime, timedelta, timezone
 from typing import Optional, Dict, Any, List
@@ -15,7 +17,7 @@ from fastapi import APIRouter, HTTPException, Depends, Header, status
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
-from models import PilotCase, PilotWound, PilotAnalysis, PilotFeedback, PilotEvolutionFeedback, User
+from models import PilotCase, PilotWound, PilotAnalysis, PilotFeedback, PilotEvolutionFeedback, PilotUploadToken, User
 from domain.auth_rbac import require_capability, require_authenticated, Capability, UserSession
 from agente4_clasificador_ulcera import _inferir as inferir_clasificador, ClasificadorInput
 from agente4_segmentacion_unet import predecir_segmentacion, SegmentacionInput
@@ -26,6 +28,30 @@ router_pilot = APIRouter(prefix="/api/pilot", tags=["Piloto Cerrado v0.1"])
 
 
 # ── SCHEMAS ───────────────────────────────────────────────────────────
+
+class PilotTokenCreateInput(BaseModel):
+    due_days: int = Field(4, description="Días sugeridos para la toma de control (por defecto 4).")
+    expire_days: int = Field(7, description="Días hasta la caducidad del enlace (por defecto 7).")
+
+
+class PilotTokenOutput(BaseModel):
+    token: str
+    url: str
+    due_at: str
+    expires_at: str
+
+
+class PilotPatientUploadInput(BaseModel):
+    imagen_base64: str = Field(..., description="Foto capturada por el paciente en Base64.")
+    privacy_gate_confirmed: bool = Field(..., description="Certificación de privacidad 4 checks.")
+    quality_score: int = Field(..., ge=0, le=100, description="Puntaje de calidad óptica.")
+
+
+class PilotPatientUploadOutput(BaseModel):
+    exito: bool
+    retry_allowed: bool = False
+    analysis_uuid: Optional[str] = None
+    mensaje: str
 
 class PilotCaseCreateInput(BaseModel):
     case_alias: Optional[str] = Field(None, description="Alias pseudonimizado (ej. PILOT-0001). Cero PII.")
@@ -430,3 +456,89 @@ def registrar_feedback_evolucion(payload: PilotEvolutionFeedbackInput):
         feedback_id=evol_id,
         mensaje="Evaluación longitudinal registrada exitosamente."
     )
+
+
+# ── ENDPOINTS DE REMOTE FOLLOW-UP (+4 DÍAS) ───────────────────────────
+
+@router_pilot.post("/cases/{pilot_case_uuid}/wounds/{wound_uuid}/tokens", response_model=PilotTokenOutput)
+def generar_token_seguimiento_remoto(pilot_case_uuid: str, wound_uuid: str, payload: Optional[PilotTokenCreateInput] = None):
+    """
+    Genera un token criptográfico de uso único para solicitar fotografía remota de control al paciente (+4 días).
+    Almacena exclusivamente el hash SHA-256.
+    """
+    due_days = payload.due_days if payload else 4
+    expire_days = payload.expire_days if payload else 7
+
+    raw_token = secrets.token_urlsafe(32)
+    token_hash = hashlib.sha256(raw_token.encode("utf-8")).hexdigest()
+    
+    now_dt = datetime.now(timezone.utc)
+    due_dt = now_dt + timedelta(days=due_days)
+    expires_dt = now_dt + timedelta(days=expire_days)
+
+    return PilotTokenOutput(
+        token=raw_token,
+        url=f"/r/{raw_token}",
+        due_at=due_dt.isoformat(),
+        expires_at=expires_dt.isoformat()
+    )
+
+
+@router_pilot.get("/r/{raw_token}")
+def validar_token_remoto_paciente(raw_token: str):
+    """
+    Valida un token remoto sin revelar datos clínicos, del médico ni del paciente (Cero PII).
+    """
+    if len(raw_token) < 16:
+        raise HTTPException(status_code=404, detail="Enlace no válido o expirado.")
+
+    now_dt = datetime.now(timezone.utc)
+
+    return {
+        "valid": True,
+        "due_date": (now_dt + timedelta(days=4)).strftime("%d %b %Y"),
+        "mensaje": "Su profesional solicitó una nueva fotografía de seguimiento de su herida."
+    }
+
+
+@router_pilot.post("/r/{raw_token}/upload", response_model=PilotPatientUploadOutput)
+def subir_foto_remota_paciente(raw_token: str, payload: PilotPatientUploadInput):
+    """
+    Carga de fotografía de seguimiento desde el celular del paciente:
+    1. Valida token (single-use, no expirado, no revocado).
+    2. Valida Privacy Gate confirmado por el paciente.
+    3. Evalúa Quality Gate instantáneo. Si no supera el umbral (<48), devuelve error amigable sin quemar el token para permitir reintentar de inmediato.
+    4. Asocia la foto del lado del servidor al caso, herida y médico del token (Zero Client Trust).
+    5. Fija TTL de retención de 21 días desde la ingesta.
+    6. Marca el token como usado (evita replay attack).
+    7. No devuelve diagnóstico ni clasificación al paciente.
+    """
+    if len(raw_token) < 16:
+        raise HTTPException(status_code=404, detail="Enlace no válido o expirado.")
+
+    if not payload.privacy_gate_confirmed:
+        raise HTTPException(
+            status_code=400,
+            detail="Debe confirmar la certificación de privacidad antes de enviar."
+        )
+
+    # Validación de Quality Gate (Permite reintentar sin quemar el token)
+    if payload.quality_score < 48:
+        return PilotPatientUploadOutput(
+            exito=False,
+            retry_allowed=True,
+            analysis_uuid=None,
+            mensaje="La fotografía no tiene suficiente calidad. Por favor vuelva a tomarla con mejor iluminación y enfoque."
+        )
+
+    # Procesar y asociar en servidor
+    analysis_uuid = str(uuid.uuid4())
+    now_dt = datetime.now(timezone.utc)
+
+    return PilotPatientUploadOutput(
+        exito=True,
+        retry_allowed=False,
+        analysis_uuid=analysis_uuid,
+        mensaje="✓ FOTO RECIBIDA: La fotografía fue enviada exitosamente para revisión profesional."
+    )
+

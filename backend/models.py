@@ -779,6 +779,36 @@ class PilotEvolutionFeedback(Base):
     physician         : Mapped["User"]          = relationship("User")
 
 
+class PilotUploadToken(Base):
+    """
+    Token criptográfico de uso único para solicitud de fotografía remota de control (Día +4).
+    Almacena exclusivamente el hash SHA-256 (nunca el token en claro).
+    """
+    __tablename__ = "pilot_upload_tokens"
+
+    id             : Mapped[uuid.UUID]          = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    token_hash     : Mapped[str]                = mapped_column(String(64), unique=True, nullable=False) # SHA-256
+    pilot_case_id  : Mapped[uuid.UUID]          = mapped_column(UUID(as_uuid=True), ForeignKey("pilot_cases.id", ondelete="CASCADE"), nullable=False)
+    pilot_wound_id : Mapped[uuid.UUID]          = mapped_column(UUID(as_uuid=True), ForeignKey("pilot_wounds.id", ondelete="CASCADE"), nullable=False)
+    physician_id   : Mapped[uuid.UUID]          = mapped_column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    created_at     : Mapped[datetime]           = mapped_column(DateTime(timezone=True), server_default=func.now())
+    due_at         : Mapped[datetime]           = mapped_column(DateTime(timezone=True), nullable=False) # Fecha sugerida de control (ej. +4 días)
+    expires_at     : Mapped[datetime]           = mapped_column(DateTime(timezone=True), nullable=False) # Fecha de caducidad (ej. +7 días)
+    used_at        : Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)  # Momento en que se utilizó (single-use)
+    revoked_at     : Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)  # Momento de revocación si aplica
+
+    __table_args__ = (
+        Index("idx_pilot_tokens_hash", "token_hash"),
+        Index("idx_pilot_tokens_case", "pilot_case_id"),
+        Index("idx_pilot_tokens_wound", "pilot_wound_id"),
+        Index("idx_pilot_tokens_physician", "physician_id"),
+    )
+
+    pilot_case  : Mapped["PilotCase"]  = relationship("PilotCase")
+    pilot_wound : Mapped["PilotWound"] = relationship("PilotWound")
+    physician   : Mapped["User"]       = relationship("User")
+
+
 # ─────────────────────────────────────────────────────────────
 # HELPER: crear todas las tablas en desarrollo
 # ─────────────────────────────────────────────────────────────
