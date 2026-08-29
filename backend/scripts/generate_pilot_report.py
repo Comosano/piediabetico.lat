@@ -26,7 +26,8 @@ def compilar_metricas_piloto(
 ) -> Dict[str, Any]:
     """
     Compila todas las métricas operacionales, diagnósticas y de retroalimentación
-    del Piloto v0.1 garantizando CERO PII.
+    del Piloto v0.1. Diseñado para no recolectar PII del paciente (excluye comentarios libres
+    y datos identificatorios en la exportación).
     """
     total_analisis = len(analyses_data)
     medicos_activos = len(set(a.get("physician_id") for a in analyses_data))

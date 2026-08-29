@@ -122,7 +122,7 @@ test('8. Generador PILOT_REPORT: Exportación JSON/CSV con Cero PII y Cero Fotos
 
 // ── 9. TEST DE CASOS CONOCIDOS EN LAS 7 CALCULADORAS CLÍNICAS ────────
 test('9. Validación Individual de Casos Conocidos en las 7 Calculadoras Clínicas', () => {
-  // A. San Elián (SEWSS)
+  // A. San Elián (SEWSS) — 10 factores ordinales
   function calcSanElianMock(scores) {
     const total = scores.reduce((a, b) => a + b, 0);
     return { score: total, gravedad: total <= 16 ? 'Leve' : (total <= 20 ? 'Moderado' : 'Grave') };
@@ -143,69 +143,86 @@ test('9. Validación Individual de Casos Conocidos en las 7 Calculadoras Clínic
   assert.strictEqual(calcIWGDFMock(false, false, false, true, true, false), 2);
   assert.strictEqual(calcIWGDFMock(true, false, false, false, false, false), 3);
 
-  // C. SVS WIfI (Riesgo de Amputación)
+  // C. SVS WIfI (Estadificación multidimensional de amenaza de extremidad)
   function calcWIfIMock(w, i, fi) {
-    if (w === 3 || i === 3) return 'Estadio 4 (Riesgo Alto)';
+    // Estadio determinado por la combinación multidimensional de Wound, Ischemia y foot Infection en la matriz SVS
+    if (w === 3 || i === 3) return 'Estadio 4 (Amenaza Alta de Extremidad / Alto Riesgo de Amputación)';
     if (w === 0 && i === 0 && fi === 0) return 'Estadio 1 (Riesgo Muy Bajo)';
     return 'Estadio 2 o 3';
   }
-  assert.strictEqual(calcWIfIMock(0, 0, 0), 'Estadio 1 (Riesgo Muy Bajo)');
-  assert.strictEqual(calcWIfIMock(3, 1, 1), 'Estadio 4 (Riesgo Alto)');
+  assert(calcWIfIMock(0, 0, 0).includes('Estadio 1'));
+  assert(calcWIfIMock(3, 1, 1).includes('Estadio 4 (Amenaza Alta'));
 
-  // D. TIMERS (Preparación del Lecho)
-  function calcTIMERSMock(tejidoNoViable, infeccion, humedadAlta, bordesNoAvance) {
-    let conducta = 'Limpieza y control';
-    let aposito = 'Hidrocoloide / gasa';
-    if (tejidoNoViable) {
-      conducta = 'Desbridamiento cortante / enzimático';
-      aposito = 'Colagenasa / hidrogel';
-    }
-    if (infeccion) {
-      aposito = humedadAlta ? 'Espuma con plata' : 'Apósito con plata nanocristalina';
-    }
-    return { conducta, aposito };
+  // D. TIMERS (Checklist estructurado y áreas a considerar - No determinista)
+  function calcTIMERSMock(checklist) {
+    const areas = [];
+    if (checklist.t_tejido_no_viable) areas.push('Considerar desbridamiento activo y remoción de esfacelo');
+    if (checklist.i_infeccion_inflamacion) areas.push('Considerar control de biocarga / apósitos antimicrobianos');
+    if (checklist.m_humedad_exudado) areas.push('Considerar manejo de balance de humedad');
+    if (checklist.e_bordes_estancados) areas.push('Considerar preparación de bordes / modulación de metaloproteinasas');
+    return {
+      areas_a_considerar: areas,
+      lenguaje: 'Asistencia profesional a la decisión clínica'
+    };
   }
-  assert(calcTIMERSMock(true, false, false, false).conducta.includes('Desbridamiento'));
-  assert(calcTIMERSMock(false, true, true, false).aposito.includes('Espuma con plata'));
+  const t1 = calcTIMERSMock({ t_tejido_no_viable: true, i_infeccion_inflamacion: false, m_humedad_exudado: false, e_bordes_estancados: false });
+  assert(t1.areas_a_considerar[0].includes('desbridamiento'));
+  assert.strictEqual(t1.lenguaje, 'Asistencia profesional a la decisión clínica');
 
-  // E. Off-loading (Descarga Biomecánica - Lenguaje de Asistencia)
+  // E. Off-loading (IWGDF 2023: Infección/Isquemia no asigna dispositivo automático)
   function calcOffloadingMock(locPlantar, padSevera, infSevera) {
     if (padSevera || infSevera) {
-      return { dispositivo: 'Calzado terapéutico con alivio de presión', lenguaje: 'Sugerencia de referencia clínica' };
+      return { 
+        estado: 'REQUIERE VALORACIÓN CLÍNICA INDIVIDUAL',
+        dispositivo: null,
+        conducta: 'Requiere evaluación multidisciplinar previa de revascularización y control infeccioso antes de indicar inmovilización'
+      };
     }
     if (locPlantar) {
-      return { dispositivo: 'TCC (Total Contact Cast) o Walker no removible', lenguaje: 'Sugerencia de referencia clínica' };
+      return { 
+        estado: 'SUGERENCIA_REFERENCIA',
+        dispositivo: 'TCC (Total Contact Cast) o Walker no removible a la altura de la rodilla',
+        conducta: 'Dispositivo de primera línea según IWGDF 2023 para úlcera plantar no complicada'
+      };
     }
-    return { dispositivo: 'Calzado adaptado / órtesis', lenguaje: 'Sugerencia de referencia clínica' };
+    return { 
+      estado: 'SUGERENCIA_REFERENCIA',
+      dispositivo: 'Calzado adaptado / calzado post-quirúrgico con alivio de presión',
+      conducta: 'Manejo de lesión no plantar'
+    };
   }
-  assert(calcOffloadingMock(true, false, false).dispositivo.includes('TCC'));
-  assert(calcOffloadingMock(true, true, false).dispositivo.includes('Calzado terapéutico'));
+  assert.strictEqual(calcOffloadingMock(true, false, false).estado, 'SUGERENCIA_REFERENCIA');
+  assert.strictEqual(calcOffloadingMock(true, true, false).estado, 'REQUIERE VALORACIÓN CLÍNICA INDIVIDUAL');
+  assert.strictEqual(calcOffloadingMock(true, true, false).dispositivo, null);
 
-  // F. ATB & Cockcroft-Gault (Ajuste Renal - Lenguaje de Asistencia a la Decisión)
+  // F. ATB & Cockcroft-Gault (Desacoplado: ClCr calculada + Asistencia de referencia IDSA)
   function calcCockcroftGault(edad, peso, cr, esMujer) {
     let clcr = ((140 - edad) * peso) / (72 * cr);
     if (esMujer) clcr *= 0.85;
     return Math.round(clcr);
   }
   assert.strictEqual(calcCockcroftGault(60, 72, 1.0, false), 80); // 80 mL/min (Normal)
-  assert.strictEqual(calcCockcroftGault(70, 72, 2.0, false), 35); // 35 mL/min (Ajuste Renal)
+  assert.strictEqual(calcCockcroftGault(70, 72, 2.0, false), 35); // 35 mL/min (Ajuste individual según fármaco)
 
-  // G. Sheehan 50% Rule (Evaluación a las 4 semanas para predicción a 12-20 semanas)
+  // G. Sheehan 2003 (Evaluación a las 4 semanas para predicción a 12 semanas)
+  // Umbral operativo aproximado de ≥50% respaldado además por evidencia posterior
   function calcSheehanMock(areaBaseline, area4Semanas) {
     const reduccionPct = ((areaBaseline - area4Semanas) / areaBaseline) * 100;
     const enMeta = reduccionPct >= 50;
     return {
       reduccionPct: Math.round(reduccionPct),
       enMeta,
+      referencia: 'Sheehan 2003 (reducción de área a 4 semanas como predictor de cicatrización a 12 semanas) + evidencia posterior (umbral operativo ≥50%)',
       interpretacion: enMeta 
-        ? 'Reducción favorable a las 4 semanas (predice cicatrización completa a 12-20 semanas)' 
-        : 'Alerta clínica de estancamiento a las 4 semanas (indica reevaluación o terapia avanzada)'
+        ? 'Reducción favorable a las 4 semanas (fuerte predictor de cicatrización a 12 semanas)' 
+        : 'Alerta clínica de estancamiento a las 4 semanas (indica reevaluación clínica o terapia adyuvante)'
     };
   }
   const sOk = calcSheehanMock(10.0, 4.0); // 60% reduccion
   assert.strictEqual(sOk.reduccionPct, 60);
   assert.strictEqual(sOk.enMeta, true);
   assert(sOk.interpretacion.includes('Reducción favorable a las 4 semanas'));
+  assert(sOk.referencia.includes('Sheehan 2003'));
 
   const sAlerta = calcSheehanMock(10.0, 8.0); // 20% reduccion
   assert.strictEqual(sAlerta.reduccionPct, 20);
