@@ -1208,3 +1208,69 @@ img, video, canvas, svg {
     grid-template-columns: 1fr !important;
   }
 }
+
+
+/* ═══════════════════════════════════════════════════════════════════════
+   OPTIMIZACIONES MÓVILES EXTREMAS (GALAXY A23 / GAMA MEDIA / MOBILE-FIRST)
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Header Móvil Ultra Compacto (máx 56px de alto) */
+@media (max-width: 768px) {
+  header {
+    padding-top: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
+    min-height: 52px !important;
+  }
+  
+  header .text-xl, header .text-2xl {
+    font-size: 1.125rem !important;
+  }
+
+  .banner-clinico-prof {
+    padding: 1rem !important;
+  }
+
+  /* Ocultar footer gigante en modo móvil por defecto */
+  #footer-institucional-columnas {
+    display: none !important;
+  }
+  
+  #footer-institucional-compacto {
+    display: block !important;
+  }
+
+  /* Hero móvil compacto */
+  .hero-mobile-container {
+    padding-top: 0.5rem !important;
+    space-y: 1rem !important;
+  }
+
+  .hero-mobile-title {
+    font-size: 1.65rem !important;
+    line-height: 1.2 !important;
+  }
+
+  .btn-gateway-mobile {
+    min-height: 52px !important;
+    font-size: 0.95rem !important;
+  }
+}
+
+@media (min-width: 769px) {
+  #footer-institucional-columnas {
+    display: grid !important;
+  }
+  
+  #footer-institucional-compacto {
+    display: none !important;
+  }
+}
+
+/* Chips Táctiles de Tiempo de Evolución */
+.chip-tiempo-pac {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}

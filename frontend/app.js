@@ -8701,3 +8701,21 @@ function copiarResultadoWIfI() {
     }
   }).catch(() => alert(informe));
 }
+
+
+function setTiempoEvolucionPac(valor, index) {
+  const hiddenInput = document.getElementById('pac-tiempo');
+  if (hiddenInput) hiddenInput.value = valor;
+  state.patientSurvey.tiempo = valor;
+
+  for (let i = 0; i <= 2; i++) {
+    const btn = document.getElementById('btn-tiempo-' + i);
+    if (btn) {
+      if (i === index) {
+        btn.className = 'chip-tiempo-pac p-2.5 rounded-xl text-xs font-black transition-all bg-emerald-600 text-white shadow-xs';
+      } else {
+        btn.className = 'chip-tiempo-pac p-2.5 rounded-xl text-xs font-bold transition-all bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 shadow-2xs hover:bg-slate-50';
+      }
+    }
+  }
+}
