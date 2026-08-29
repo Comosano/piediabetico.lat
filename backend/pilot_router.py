@@ -22,8 +22,16 @@ from PIL import Image
 
 from models import PilotCase, PilotWound, PilotAnalysis, PilotFeedback, PilotEvolutionFeedback, PilotUploadToken, User
 from domain.auth_rbac import require_capability, require_authenticated, Capability, UserSession
-from agente4_clasificador_ulcera import _inferir as inferir_clasificador, ClasificadorInput
-from agente4_segmentacion_unet import predecir_segmentacion, SegmentacionInput
+from agente4_clasificador_ulcera import (
+    _inferir as inferir_clasificador,
+    ClasificadorInput,
+    check_classifier_readiness
+)
+from agente4_segmentacion_unet import (
+    predecir_segmentacion,
+    SegmentacionInput,
+    check_segmentation_readiness
+)
 
 logger = logging.getLogger(__name__)
 
@@ -62,19 +70,17 @@ def sanitizar_y_reencodear_imagen_servidor(
         raise HTTPException(status_code=413, detail="La imagen excede el tamaño máximo permitido (10MB).")
 
     try:
-        img_buffer = io.BytesIO(raw_bytes)
-        with Image.open(img_buffer) as img:
+        with Image.open(io.BytesIO(raw_bytes)) as img:
+            # Validar formato permitido
             if img.format not in ("JPEG", "PNG", "WEBP", "MPO"):
-                raise HTTPException(status_code=415, detail=f"Formato de imagen no permitido: {img.format}. Solo JPEG, PNG o WEBP.")
-            
+                raise HTTPException(status_code=415, detail=f"Formato de imagen no permitido: {img.format}")
+
+            # Validar dimensiones
             width, height = img.size
             if width > max_dimension or height > max_dimension:
-                raise HTTPException(
-                    status_code=400,
-                    detail=f"Dimensiones excesivas ({width}x{height}px). Máximo permitido: {max_dimension}x{max_dimension}px."
-                )
+                raise HTTPException(status_code=400, detail=f"Dimensiones de imagen ({width}x{height}) exceden el límite de {max_dimension}px.")
 
-            # Re-construir en RGB puro eliminando EXIF/GPS
+            # Convertir a RGB puro eliminando EXIF/GPS
             rgb_img = img.convert("RGB")
             output_buffer = io.BytesIO()
             rgb_img.save(output_buffer, format="JPEG", quality=85, optimize=True)
@@ -87,6 +93,19 @@ def sanitizar_y_reencodear_imagen_servidor(
 
 
 # ── SCHEMAS ───────────────────────────────────────────────────────────
+
+class PilotAIReadinessOutput(BaseModel):
+    classifier_artifact_path: str
+    classifier_artifact_exists: bool
+    classifier_loadable: bool
+    classifier_status: str # "READY", "MISSING_ARTIFACT", "LOAD_ERROR"
+    segmentation_artifact_path: str
+    segmentation_artifact_exists: bool
+    segmentation_loadable: bool
+    segmentation_status: str # "READY", "MISSING_ARTIFACT", "LOAD_ERROR"
+    overall_status: str # "ALL_MODELS_READY", "SEGMENTATION_ONLY", "CLASSIFIER_ONLY", "MODELS_UNAVAILABLE"
+    message: str
+
 
 class PilotTokenCreateInput(BaseModel):
     due_days: int = Field(4, description="Días sugeridos para la toma de control (por defecto 4).")
@@ -163,7 +182,9 @@ class PilotAnalisisOutput(BaseModel):
     pilot_case_uuid: str
     pilot_wound_uuid: Optional[str] = None
     photo_uuid: str
-    ai_status: str # "COMPLETED", "NO_EVALUABLE", "AI_FAILED", "PROVIDER_FAILED"
+    ai_status: str # "COMPLETED", "PARTIAL", "NO_EVALUABLE", "AI_UNAVAILABLE", "AI_FAILED"
+    classification_status: str = "SKIPPED" # "COMPLETED", "AI_UNAVAILABLE", "AI_FAILED", "SKIPPED"
+    segmentation_status: str = "SKIPPED" # "COMPLETED", "AI_UNAVAILABLE", "AI_FAILED", "SKIPPED"
     quality_gate_score: int
     quality_gate_status: str
     classification_label: Optional[str] = None
@@ -224,6 +245,8 @@ class TimelineEventItem(BaseModel):
     quality_gate_score: int
     quality_gate_status: str
     ai_status: str
+    classification_status: Optional[str] = None
+    segmentation_status: Optional[str] = None
     classification_label: Optional[str] = None
     classification_confidence: Optional[float] = None
     pixel_area: Optional[int] = None
@@ -245,6 +268,49 @@ class PilotCaseTimelineOutput(BaseModel):
     case_alias: str
     created_at: str
     wounds: List[PilotWoundTimelineGroup]
+
+
+# ── ENDPOINT DE READINESS CHECK REAL (DIAGNÓSTICO PRE-PILOTO) ─────────
+
+@router_pilot.get("/ai-readiness", response_model=PilotAIReadinessOutput)
+def verificar_readiness_ia_piloto():
+    """
+    Chequeo de diagnóstico real del estado de los artefactos y librerías de IA:
+    - Comprueba existencia física de los archivos de modelo.
+    - Intenta carga perezosa real en memoria.
+    - No ejecuta resultados clínicos simulados.
+    """
+    clf = check_classifier_readiness()
+    seg = check_segmentation_readiness()
+
+    clf_status = "READY" if (clf["exists"] and clf["loadable"]) else ("MISSING_ARTIFACT" if not clf["exists"] else "LOAD_ERROR")
+    seg_status = "READY" if (seg["exists"] and seg["loadable"]) else ("MISSING_ARTIFACT" if not seg["exists"] else "LOAD_ERROR")
+
+    if clf_status == "READY" and seg_status == "READY":
+        overall = "ALL_MODELS_READY"
+        msg = "Todos los modelos de IA están instalados y listos para inferencia real."
+    elif seg_status == "READY":
+        overall = "SEGMENTATION_ONLY"
+        msg = "Modelo U-Net de segmentación listo. Clasificador ONNX ausente (el piloto operará con clasificación honestamente no disponible)."
+    elif clf_status == "READY":
+        overall = "CLASSIFIER_ONLY"
+        msg = "Clasificador ONNX listo. Modelo U-Net de segmentación ausente."
+    else:
+        overall = "MODELS_UNAVAILABLE"
+        msg = "Modelos de IA locales no disponibles en el servidor. El sistema opera en modo fail-closed sin inventar diagnósticos."
+
+    return PilotAIReadinessOutput(
+        classifier_artifact_path=clf["path"],
+        classifier_artifact_exists=clf["exists"],
+        classifier_loadable=clf["loadable"],
+        classifier_status=clf_status,
+        segmentation_artifact_path=seg["path"],
+        segmentation_artifact_exists=seg["exists"],
+        segmentation_loadable=seg["loadable"],
+        segmentation_status=seg_status,
+        overall_status=overall,
+        message=msg
+    )
 
 
 # ── ENDPOINTS DE CASOS Y HERIDAS ──────────────────────────────────────
@@ -289,11 +355,10 @@ def procesar_analisis_piloto(payload: PilotAnalisisInput):
     Procesa un análisis fotográfico del piloto cerrado:
     1. Valida confirmación explícita de Privacy Gate por el médico.
     2. Evalúa Quality Gate (emite NO_EVALUABLE si score < 48).
-    3. Ejecuta inferencia técnica (Clasificador ONNX + Segmentador).
+    3. Ejecuta inferencia técnica FAIL-CLOSED (Clasificador ONNX + Segmentador U-Net).
+       En ausencia de modelos, retorna AI_UNAVAILABLE sin inventar números ni clases clínicas.
     4. Garantiza honestidad física (cero cm² arbitrarios sin calibrador).
-    5. Aplica política de retención dual:
-       - 72 horas para fotos aisladas.
-       - 21 días para fotos longitudinales vinculadas a PilotCase + PilotWound.
+    5. Aplica política de retención dual (72h aislado / 21d longitudinal).
     """
     t_inicio = time.time()
 
@@ -314,7 +379,7 @@ def procesar_analisis_piloto(payload: PilotAnalisisInput):
     ttl_delta = timedelta(days=21) if is_longitudinal else timedelta(hours=72)
     expires_dt = now_dt + ttl_delta
 
-    # Formateo de fecha de visualización (fecha real si se conoce, o secuencia ordinal)
+    # Formateo de fecha de visualización
     taken_at_display = "Foto"
     if payload.taken_at_custom:
         try:
@@ -337,13 +402,15 @@ def procesar_analisis_piloto(payload: PilotAnalisisInput):
             pilot_wound_uuid=payload.pilot_wound_uuid,
             photo_uuid=photo_uuid,
             ai_status="NO_EVALUABLE",
+            classification_status="SKIPPED",
+            segmentation_status="SKIPPED",
             quality_gate_score=payload.quality_score,
             quality_gate_status="insuficiente",
-            classification_label="NO_EVALUABLE",
-            classification_confidence=0.0,
+            classification_label=None,
+            classification_confidence=None,
             scale_detected=payload.scale_detected,
-            pixel_area=0,
-            relative_area_percent=0.0,
+            pixel_area=None,
+            relative_area_percent=None,
             absolute_area_cm2=None,
             segmentation_mask_base64=None,
             shadow_mode_recorded=payload.shadow_mode is not None,
@@ -357,27 +424,58 @@ def procesar_analisis_piloto(payload: PilotAnalisisInput):
             mensaje="NO EVALUABLE: Calidad óptica insuficiente. Sugerimos mejorar la iluminación y reenfocar."
         )
 
-    # 3. Inferencia de Clasificación (EfficientNet ONNX)
-    clasif_label = "Abnormal(Ulcer)"
-    clasif_conf = 0.8500
+    # 3. Inferencia de Clasificación (EfficientNet ONNX) — FAIL CLOSED
+    clasif_label = None
+    clasif_conf = None
+    clasif_status = "AI_UNAVAILABLE"
     try:
         clasif_res = inferir_clasificador(payload.imagen_base64)
-        clasif_label = clasif_res.get("prediccion", "Abnormal(Ulcer)")
-        clasif_conf = round(float(clasif_res.get("probabilidad_ulcera", 0.85)), 4)
+        if clasif_res and "es_ulcera" in clasif_res:
+            clasif_label = "Abnormal(Ulcer)" if clasif_res["es_ulcera"] else "Normal(Healthy skin)"
+            clasif_conf = round(float(clasif_res.get("confianza", 0.0)), 4)
+            clasif_status = "COMPLETED"
+    except FileNotFoundError:
+        logger.warning("Clasificador ONNX no encontrado en disco: clasificación omitida honestamente.")
+        clasif_status = "AI_UNAVAILABLE"
     except Exception as e:
-        logger.warning(f"Clasificador ONNX en modo fallback: {e}")
+        logger.warning(f"Error en inferencia del clasificador ONNX: {e}")
+        clasif_status = "AI_FAILED"
 
-    # 4. Inferencia de Segmentación Técnica (Área en píxeles)
-    seg_payload = SegmentacionInput(
-        imagen_base64=payload.imagen_base64,
-        scale_detected=payload.scale_detected,
-        px_per_cm=payload.px_per_cm
-    )
-    seg_res = predecir_segmentacion(seg_payload)
+    # 4. Inferencia de Segmentación Técnica (U-Net Keras) — FAIL CLOSED
+    seg_status = "AI_UNAVAILABLE"
+    seg_px_area = None
+    seg_rel_pct = None
+    seg_abs_cm2 = None
+    seg_mask_b64 = None
+    try:
+        seg_payload = SegmentacionInput(
+            imagen_base64=payload.imagen_base64,
+            scale_detected=payload.scale_detected,
+            px_per_cm=payload.px_per_cm
+        )
+        seg_res = predecir_segmentacion(seg_payload)
+        seg_status = seg_res.ai_status
+        seg_px_area = seg_res.pixel_area
+        seg_rel_pct = seg_res.relative_area_percent
+        seg_abs_cm2 = seg_res.absolute_area_cm2
+        seg_mask_b64 = seg_res.mascara_base64
+    except Exception as e:
+        logger.warning(f"Error en inferencia de segmentación U-Net: {e}")
+        seg_status = "AI_FAILED"
 
-    # 5. Shadow Mode: Cálculo de concordancia preliminar
+    # 5. Derivación de estado global honesto (Sin ocultar fallos parciales)
+    if clasif_status == "COMPLETED" and seg_status == "COMPLETED":
+        overall_ai_status = "COMPLETED"
+    elif clasif_status == "COMPLETED" or seg_status == "COMPLETED":
+        overall_ai_status = "PARTIAL"
+    elif clasif_status == "AI_FAILED" or seg_status == "AI_FAILED":
+        overall_ai_status = "AI_FAILED"
+    else:
+        overall_ai_status = "AI_UNAVAILABLE"
+
+    # 6. Shadow Mode: Cálculo de concordancia preliminar (sólo si hubo clasificación real)
     concordance = None
-    if payload.shadow_mode:
+    if payload.shadow_mode and clasif_label is not None:
         pre_c = payload.shadow_mode.pre_classification
         concordance = (pre_c == clasif_label)
 
@@ -389,16 +487,18 @@ def procesar_analisis_piloto(payload: PilotAnalisisInput):
         pilot_case_uuid=pilot_case_uuid,
         pilot_wound_uuid=payload.pilot_wound_uuid,
         photo_uuid=photo_uuid,
-        ai_status="COMPLETED",
+        ai_status=overall_ai_status,
+        classification_status=clasif_status,
+        segmentation_status=seg_status,
         quality_gate_score=payload.quality_score,
         quality_gate_status=payload.quality_status,
         classification_label=clasif_label,
         classification_confidence=clasif_conf,
         scale_detected=payload.scale_detected,
-        pixel_area=seg_res.pixel_area,
-        relative_area_percent=seg_res.relative_area_percent,
-        absolute_area_cm2=seg_res.absolute_area_cm2, # estrictamente None si scale_detected=False
-        segmentation_mask_base64=seg_res.mascara_base64,
+        pixel_area=seg_px_area,
+        relative_area_percent=seg_rel_pct,
+        absolute_area_cm2=seg_abs_cm2, # estrictamente None si scale_detected=False
+        segmentation_mask_base64=seg_mask_b64,
         shadow_mode_recorded=payload.shadow_mode is not None,
         concordance_pre_ai=concordance,
         processing_duration_ms=duration_ms,

@@ -1,0 +1,142 @@
+# ╔══════════════════════════════════════════════════════════════════════╗
+# ║  PIEDIABETICO.LAT — DOCKER COMPOSE LOCAL PILOT (ROOT REPO)          ║
+# ║  Ejecución directa desde la raíz del repositorio en Windows / Mac    ║
+# ║  Comando: docker compose -f docker-compose.pilot-local.yml up -d     ║
+# ╚══════════════════════════════════════════════════════════════════════╝
+
+services:
+
+  # ── 1. POSTGRESQL ───────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: piediabetico_local_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-piediadbetico}
+      POSTGRES_USER: ${POSTGRES_USER:-adminpd}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-local_dev_password_pd_2026}
+    volumes:
+      - postgres_local_data:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-adminpd} -d ${POSTGRES_DB:-piediadbetico}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - pilot_local_net
+
+  # ── 2. REDIS ────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: piediabetico_local_redis
+    restart: unless-stopped
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_local_data:/data
+    ports:
+      - "127.0.0.1:6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - pilot_local_net
+
+  # ── 3. MINIO (Object Storage S3) ─────────────────────────────────────
+  minio:
+    image: minio/minio:latest
+    container_name: piediabetico_local_minio
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-adminminio}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-local_minio_secret_password_2026}
+    command: server /data --console-address ':9001'
+    volumes:
+      - minio_local_data:/data
+    ports:
+      - "127.0.0.1:9000:9000"
+      - "127.0.0.1:9001:9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    networks:
+      - pilot_local_net
+
+  # ── 4. API FASTAPI ───────────────────────────────────────────────────
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: piediabetico_local_api
+    restart: unless-stopped
+    environment:
+      ENVIRONMENT: development
+      SECRET_KEY: ${SECRET_KEY:-local_pilot_dev_secret_key_64_characters_min_length_abcdef123456}
+      ADMIN_API_KEY: ${ADMIN_API_KEY:-local_pilot_admin_key_super_secret_64_characters_abcdef123456}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-adminpd}:${POSTGRES_PASSWORD:-local_dev_password_pd_2026}@postgres:5432/${POSTGRES_DB:-piediadbetico}
+      REDIS_URL: redis://redis:6379/0
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-adminminio}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-local_minio_secret_password_2026}
+      MINIO_SECURE: "false"
+      ALLOWED_ORIGINS: "http://localhost:3000,http://localhost:8000,http://127.0.0.1:8000"
+      CLASIFICADOR_ONNX_PATH: /app/modelos/dfu_efficientnet_b0.onnx
+      UNET_MODELO_PATH: /app/modelos/unet_wound_segmentation_model.keras
+    volumes:
+      - ./backend:/app
+      - ./modelos:/app/modelos:ro
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    networks:
+      - pilot_local_net
+
+  # ── 5. CELERY WORKER ─────────────────────────────────────────────────
+  celery_worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: piediabetico_local_worker
+    restart: unless-stopped
+    command: celery -A celery_app.celery worker --loglevel=info --concurrency=2
+    environment:
+      ENVIRONMENT: development
+      SECRET_KEY: ${SECRET_KEY:-local_pilot_dev_secret_key_64_characters_min_length_abcdef123456}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-adminpd}:${POSTGRES_PASSWORD:-local_dev_password_pd_2026}@postgres:5432/${POSTGRES_DB:-piediadbetico}
+      REDIS_URL: redis://redis:6379/0
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-adminminio}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-local_minio_secret_password_2026}
+      MINIO_SECURE: "false"
+      CLASIFICADOR_ONNX_PATH: /app/modelos/dfu_efficientnet_b0.onnx
+      UNET_MODELO_PATH: /app/modelos/unet_wound_segmentation_model.keras
+    volumes:
+      - ./backend:/app
+      - ./modelos:/app/modelos:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - pilot_local_net
+
+networks:
+  pilot_local_net:
+    driver: bridge
+
+volumes:
+  postgres_local_data:
+  redis_local_data:
+  minio_local_data:

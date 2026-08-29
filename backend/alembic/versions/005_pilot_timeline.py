@@ -43,6 +43,8 @@ def upgrade() -> None:
     op.add_column('pilot_analyses', sa.Column('pilot_wound_id', postgresql.UUID(as_uuid=True), sa.ForeignKey('pilot_wounds.id', ondelete='SET NULL'), nullable=True))
     op.add_column('pilot_analyses', sa.Column('taken_at_custom', sa.DateTime(timezone=True), nullable=True))
     op.add_column('pilot_analyses', sa.Column('sequence_index', sa.Integer(), nullable=True))
+    op.add_column('pilot_analyses', sa.Column('classification_status', sa.String(50), nullable=True, server_default='SKIPPED'))
+    op.add_column('pilot_analyses', sa.Column('segmentation_status', sa.String(50), nullable=True, server_default='SKIPPED'))
     op.create_index('idx_pilot_analysis_wound', 'pilot_analyses', ['pilot_wound_id'])
 
     # ── 4. Crear tabla pilot_evolution_feedbacks ──────────────────────

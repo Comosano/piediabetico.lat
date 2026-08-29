@@ -28,10 +28,32 @@ router_segmentacion = APIRouter(prefix="/agentes/segmentacion", tags=["Agente 4B
 
 MODELO_KERAS_PATH = os.getenv(
     "UNET_MODELO_PATH",
-    os.path.join(os.path.dirname(__file__), "..", "modelos", "unet_wound_segmentation_model.keras")
+    os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "modelos", "unet_wound_segmentation_model.keras"))
 )
 
 _unet_model = None
+
+
+def check_segmentation_readiness() -> dict:
+    """Verifica la existencia física y cargabilidad del modelo U-Net sin generar inferencias falsas."""
+    exists = os.path.exists(MODELO_KERAS_PATH)
+    loadable = False
+    error_msg = None
+    if exists:
+        try:
+            m = _get_unet_model()
+            loadable = m is not None
+        except Exception as e:
+            error_msg = str(e)
+            loadable = False
+    else:
+        error_msg = f"Archivo de modelo no encontrado en {MODELO_KERAS_PATH}"
+    return {
+        "path": MODELO_KERAS_PATH,
+        "exists": exists,
+        "loadable": loadable,
+        "error": error_msg
+    }
 
 
 def dice_coef(y_true, y_pred):
@@ -109,9 +131,9 @@ class SegmentacionInput(BaseModel):
 
 class SegmentacionOutput(BaseModel):
     exito: bool
-    ai_status: str = Field("COMPLETED", description="COMPLETED, NO_EVALUABLE, AI_FAILED")
-    pixel_area: int = Field(..., description="Área en píxeles detectada de la lesión.")
-    relative_area_percent: float = Field(..., description="Porcentaje relativo del encuadre ocupado por la lesión.")
+    ai_status: str = Field("COMPLETED", description="COMPLETED, AI_UNAVAILABLE, AI_FAILED, NO_EVALUABLE")
+    pixel_area: Optional[int] = Field(None, description="Área en píxeles detectada de la lesión (null si no evaluable o IA no disponible).")
+    relative_area_percent: Optional[float] = Field(None, description="Porcentaje relativo del encuadre ocupado por la lesión (null si no evaluable o IA no disponible).")
     scale_detected: bool = Field(False, description="Falso si no hay calibrador físico en la toma.")
     absolute_area_cm2: Optional[float] = Field(None, description="Estrictamente null si scale_detected es False. No se infieren cm² arbitrarios.")
     mascara_base64: Optional[str] = None
@@ -122,7 +144,7 @@ class SegmentacionOutput(BaseModel):
 def predecir_segmentacion(payload: SegmentacionInput):
     """
     Ejecuta la inferencia U-Net para delimitar la herida y computar área técnica en píxeles y %.
-    Cumple con la directiva de honestidad física: NO calcula cm² sin calibrador físico milimétrico.
+    Cumple con la directiva de honestidad física y fail-closed: NO inventa métricas sintéticas si el modelo no existe.
     """
     try:
         image_data = base64.b64decode(payload.imagen_base64.split(",")[-1])
@@ -132,16 +154,15 @@ def predecir_segmentacion(payload: SegmentacionInput):
 
     model = _get_unet_model()
     if model is None:
-        # En ausencia de pesos Keras locales, respuesta técnica sin cm2 falso
         return SegmentacionOutput(
-            exito=True,
-            ai_status="COMPLETED",
-            pixel_area=3450,
-            relative_area_percent=3.80,
+            exito=False,
+            ai_status="AI_UNAVAILABLE",
+            pixel_area=None,
+            relative_area_percent=None,
             scale_detected=payload.scale_detected or False,
-            absolute_area_cm2=round(3450 / (payload.px_per_cm ** 2), 2) if (payload.scale_detected and payload.px_per_cm) else None,
+            absolute_area_cm2=None,
             mascara_base64=None,
-            mensaje="Segmentación técnica estimada (Sin escala física calibrada)."
+            mensaje="Modelo U-Net de segmentación no disponible en el servidor."
         )
 
     try:
@@ -179,8 +200,8 @@ def predecir_segmentacion(payload: SegmentacionInput):
         return SegmentacionOutput(
             exito=False,
             ai_status="AI_FAILED",
-            pixel_area=0,
-            relative_area_percent=0.0,
+            pixel_area=None,
+            relative_area_percent=None,
             scale_detected=False,
             absolute_area_cm2=None,
             mascara_base64=None,

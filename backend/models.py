@@ -688,8 +688,9 @@ class PilotAnalysis(Base):
     photo_mime_type            : Mapped[str]              = mapped_column(String(50), default="image/jpeg")
     privacy_gate_confirmed     : Mapped[bool]             = mapped_column(Boolean, nullable=False, default=False)
     quality_gate_score         : Mapped[Optional[int]]    = mapped_column(Integer, nullable=True)
-    quality_gate_status        : Mapped[Optional[str]]    = mapped_column(String(50), nullable=True) # "optimo", "advertencia", "insuficiente"
-    ai_status                  : Mapped[str]              = mapped_column(String(50), nullable=False, default="PENDING") # "COMPLETED", "NO_EVALUABLE", "AI_FAILED", "PROVIDER_FAILED", "UPLOAD_FAILED"
+    ai_status                  : Mapped[str]              = mapped_column(String(50), nullable=False, default="PENDING") # "COMPLETED", "PARTIAL", "NO_EVALUABLE", "AI_UNAVAILABLE", "AI_FAILED"
+    classification_status      : Mapped[Optional[str]]    = mapped_column(String(50), nullable=True, default="SKIPPED") # "COMPLETED", "AI_UNAVAILABLE", "AI_FAILED", "SKIPPED"
+    segmentation_status        : Mapped[Optional[str]]    = mapped_column(String(50), nullable=True, default="SKIPPED") # "COMPLETED", "AI_UNAVAILABLE", "AI_FAILED", "SKIPPED"
     model_name                 : Mapped[str]              = mapped_column(String(100), default="EfficientNet-B0 + U-Net")
     model_version              : Mapped[str]              = mapped_column(String(50), default="1.0.0")
     classification_label       : Mapped[Optional[str]]    = mapped_column(String(100), nullable=True)

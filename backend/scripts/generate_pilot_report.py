@@ -37,6 +37,8 @@ def compilar_metricas_piloto(
     no_evaluable_count = sum(1 for a in analyses_data if a.get("ai_status") == "NO_EVALUABLE")
     ai_failed_count = sum(1 for a in analyses_data if a.get("ai_status") == "AI_FAILED")
     completed_count = sum(1 for a in analyses_data if a.get("ai_status") == "COMPLETED")
+    partial_count = sum(1 for a in analyses_data if a.get("ai_status") == "PARTIAL")
+    ai_unavailable_count = sum(1 for a in analyses_data if a.get("ai_status") == "AI_UNAVAILABLE")
 
     # Métricas longitudinales
     cases_set = set(a.get("pilot_case_uuid") for a in analyses_data if a.get("pilot_case_uuid"))
