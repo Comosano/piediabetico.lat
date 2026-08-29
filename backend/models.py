@@ -586,6 +586,37 @@ class AuditEvent(Base):
 
 
 # ─────────────────────────────────────────────────────────────
+# DOMINIO 11: RELACIONES DE CUIDADO CLÍNICO (RBAC PERSISTENTE)
+# ─────────────────────────────────────────────────────────────
+
+class CareRelationship(Base):
+    """
+    Relación de atención clínica activa entre un profesional o cuidador y un paciente.
+    Base de la autorización tridimensional en PostgreSQL: ROLE + CARE_RELATIONSHIP + RESOURCE_OWNERSHIP.
+    """
+    __tablename__ = "care_relationships"
+
+    id               : Mapped[uuid.UUID]          = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    organization_id  : Mapped[uuid.UUID]          = mapped_column(UUID(as_uuid=True), ForeignKey("organizations.id", ondelete="RESTRICT"), nullable=False)
+    patient_id       : Mapped[uuid.UUID]          = mapped_column(UUID(as_uuid=True), ForeignKey("patients.id", ondelete="CASCADE"), nullable=False)
+    user_id          : Mapped[uuid.UUID]          = mapped_column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    relationship_type: Mapped[str]                = mapped_column(String(30), nullable=False, default='medico_tratante')
+    is_active        : Mapped[bool]               = mapped_column(Boolean, nullable=False, default=True)
+    created_at       : Mapped[datetime]           = mapped_column(DateTime(timezone=True), server_default=func.now())
+    revoked_at       : Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True))
+
+    __table_args__ = (
+        CheckConstraint("relationship_type IN ('medico_tratante','cuidador','interconsultor','familiar')", name="ck_care_rel_type"),
+        Index("idx_care_rel_patient", "patient_id"),
+        Index("idx_care_rel_user", "user_id"),
+        UniqueConstraint("patient_id", "user_id", name="uq_patient_user_rel")
+    )
+
+    patient : Mapped["Patient"] = relationship("Patient")
+    user    : Mapped["User"]    = relationship("User")
+
+
+# ─────────────────────────────────────────────────────────────
 # HELPER: crear todas las tablas en desarrollo
 # ─────────────────────────────────────────────────────────────
 
