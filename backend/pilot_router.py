@@ -270,12 +270,17 @@ class PilotCaseTimelineOutput(BaseModel):
     wounds: List[PilotWoundTimelineGroup]
 
 
-# ── ENDPOINT DE READINESS CHECK REAL (DIAGNÓSTICO PRE-PILOTO) ─────────
+# ── ENDPOINT DE READINESS CHECK REAL (DIAGNÓSTICO PRE-PILOTO PROTEGIDO) ─
 
-@router_pilot.get("/ai-readiness", response_model=PilotAIReadinessOutput)
+@router_pilot.get(
+    "/ai-readiness",
+    response_model=PilotAIReadinessOutput,
+    dependencies=[Depends(require_authenticated)]
+)
 def verificar_readiness_ia_piloto():
     """
     Chequeo de diagnóstico real del estado de los artefactos y librerías de IA:
+    - Protegido: Requiere sesión profesional o administrativa válida.
     - Comprueba existencia física de los archivos de modelo.
     - Intenta carga perezosa real en memoria.
     - No ejecuta resultados clínicos simulados.

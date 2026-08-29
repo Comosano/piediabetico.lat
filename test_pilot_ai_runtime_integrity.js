@@ -127,7 +127,7 @@ test('4. [ESTADOS GRANULARES] Distinción entre classification_status, segmentat
 test('5. [AI READINESS] Endpoint GET /api/pilot/ai-readiness expone rutas físicas y estado de carga sin mocks', () => {
   const router = fs.readFileSync(path.join(__dirname, 'backend', 'pilot_router.py'), 'utf8');
 
-  assert(router.includes('@router_pilot.get("/ai-readiness"'), 'Debe existir endpoint /ai-readiness');
+  assert(router.includes('"/ai-readiness"') || router.includes("'/ai-readiness'"), 'Debe existir endpoint /ai-readiness');
   assert(router.includes('check_classifier_readiness()'), 'Debe chequear clasificador');
   assert(router.includes('check_segmentation_readiness()'), 'Debe chequear segmentador');
   assert(router.includes('PilotAIReadinessOutput'), 'Debe retornar schema estructurado');
@@ -185,6 +185,32 @@ test('9. [SMOKE TEST] Auditoría física de artefactos: U-Net encontrado (23.4 M
   const onnxExists = fs.existsSync(onnxPath);
   // Clasificador no existe físicamente en el clon: el sistema debe reportarlo honestamente
   assert.strictEqual(onnxExists, false, 'dfu_efficientnet_b0.onnx no existe físicamente: fail-closed exigido');
+});
+
+// ── 10. MIGRACIÓN ALEMBIC 005 RESTAURADA Y 007 CREADA COMO ÚNICO HEAD ─
+test('10. [ALEMBIC CHAIN] 005 restaurada sin cambios retroactivos y 007 creada como único head', () => {
+  const mig005 = fs.readFileSync(path.join(__dirname, 'backend', 'alembic', 'versions', '005_pilot_timeline.py'), 'utf8');
+  const mig006 = fs.readFileSync(path.join(__dirname, 'backend', 'alembic', 'versions', '006_pilot_remote_followup.py'), 'utf8');
+  const mig007 = fs.readFileSync(path.join(__dirname, 'backend', 'alembic', 'versions', '007_pilot_ai_runtime_integrity.py'), 'utf8');
+
+  // 005 no debe contener classification_status
+  assert(!mig005.includes('classification_status'), '005_pilot_timeline.py no debe modificarse retrospectivamente');
+
+  // 006 debe revisar 005
+  assert(mig006.includes("down_revision = '005_pilot_timeline'"), '006 debe revisar 005');
+
+  // 007 debe revisar 006 y definir classification_status y segmentation_status
+  assert(mig007.includes("revision = '007_pilot_ai_runtime_integrity'"), '007 revision ID correcta');
+  assert(mig007.includes("down_revision = '006_pilot_remote_followup'"), '007 debe revisar 006');
+  assert(mig007.includes('classification_status'), '007 debe agregar classification_status');
+  assert(mig007.includes('segmentation_status'), '007 debe agregar segmentation_status');
+});
+
+// ── 11. AI READINESS PROTEGIDO CON AUTENTICACIÓN / CAPACIDAD ─────────
+test('11. [AI READINESS PROTEGIDO] GET /api/pilot/ai-readiness requiere require_authenticated (no público)', () => {
+  const router = fs.readFileSync(path.join(__dirname, 'backend', 'pilot_router.py'), 'utf8');
+
+  assert(router.includes('dependencies=[Depends(require_authenticated)]'), '/ai-readiness debe requerir autenticación');
 });
 
 console.log('\n═══════════════════════════════════════════════════════════════════════');
