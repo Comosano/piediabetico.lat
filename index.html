@@ -247,6 +247,17 @@
             </div>
             <i data-lucide="chevron-right" class="w-4 h-4 text-blue-600"></i>
           </button>
+
+          <button onclick="irAPortalDesdeDrawer('piloto')" class="w-full text-left p-3 rounded-2xl bg-purple-50 hover:bg-purple-100 border border-purple-200/80 transition-all flex items-center justify-between group">
+            <div class="flex items-center gap-2.5">
+              <span class="w-8 h-8 rounded-xl bg-purple-900 text-white flex items-center justify-center text-sm shadow-sm">🔬</span>
+              <div>
+                <h4 class="text-xs font-black text-slate-900 group-hover:text-purple-900">Modo Piloto Cerrado v0.1</h4>
+                <p class="text-[10px] text-slate-500">Timeline retrospectivo y 5 médicos</p>
+              </div>
+            </div>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-purple-600"></i>
+          </button>
         </div>
 
         <!-- Secciones de la Plataforma -->
@@ -870,6 +881,160 @@
         </div>
 
         <p class="text-[11px] text-slate-400 text-center">Esta es una orientación asistida por IA. Ante cualquier duda, consultá siempre con tu médico de cabecera.</p>
+      </div>
+
+    </div>
+
+    <!-- ═════════════════════════════════════════════════════════════════ -->
+    <!-- PORTAL PILOTO CERRADO v0.1 (5 MÉDICOS · RETROSPECTIVO & TIMELINE)   -->
+    <!-- ═════════════════════════════════════════════════════════════════ -->
+    <div id="portal-piloto-view" class="hidden space-y-6 max-w-4xl mx-auto pb-16">
+      
+      <!-- Banner Piloto v0.1 -->
+      <div class="med-card p-5 bg-gradient-to-r from-purple-950 via-slate-900 to-indigo-950 text-white rounded-3xl shadow-lg border-2 border-purple-800/60">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-purple-500/20 text-purple-300 border border-purple-400/40">Modo Piloto Cerrado v0.1</span>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/40">Zero PII</span>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/20 text-blue-300 border border-blue-400/40">TTL 72h / 21d</span>
+            </div>
+            <h2 class="text-xl sm:text-2xl font-black">Estación Clínica de Pruebas del Piloto</h2>
+            <p class="text-xs text-slate-300">Fotografías retrospectivas, timeline cronológico y validación de concordancia con IA.</p>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <span class="text-xs px-3 py-1.5 rounded-xl bg-white/10 font-bold border border-white/20">5 Médicos Habilitados</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Barra de Navegación 3 Pestañas del Piloto -->
+      <div class="flex rounded-2xl bg-slate-100 dark:bg-slate-800 p-1.5 border border-slate-200 dark:border-slate-700 shadow-xs">
+        <button type="button" id="btn-piloto-tab-analisis" onclick="switchPilotoTab('analisis')" class="flex-1 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 bg-white dark:bg-slate-900 text-purple-900 dark:text-purple-300 shadow-sm">
+          <span>📷</span>
+          <span>Analizar Foto Aislada</span>
+        </button>
+        <button type="button" id="btn-piloto-tab-casos" onclick="switchPilotoTab('casos')" class="flex-1 py-2.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 transition-all flex items-center justify-center gap-1.5">
+          <span>👤</span>
+          <span>Casos en Seguimiento</span>
+        </button>
+        <button type="button" id="btn-piloto-tab-calculadoras" onclick="switchPilotoTab('calculadoras')" class="flex-1 py-2.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 transition-all flex items-center justify-center gap-1.5">
+          <span>🧮</span>
+          <span>Calculadoras</span>
+        </button>
+      </div>
+
+      <!-- SUBVISTA 1: ANALIZAR FOTO AISLADA (TTL 72h) -->
+      <div id="piloto-subview-analisis" class="space-y-4">
+        <div class="med-card p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl space-y-5 shadow-sm">
+          <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+            <div>
+              <h3 class="text-sm font-black text-slate-900 dark:text-white">Análisis Fotográfico Rápido (Aislado)</h3>
+              <p class="text-xs text-slate-500">Prueba individual con retención temporal de 72 horas.</p>
+            </div>
+            <span class="text-[10px] font-bold text-amber-700 bg-amber-50 dark:bg-amber-950/60 px-2 py-0.5 rounded-full border border-amber-200">TTL = 72h</span>
+          </div>
+
+          <div class="border-2 border-dashed border-purple-300 dark:border-purple-800 hover:border-purple-500 rounded-2xl p-6 text-center transition-colors bg-purple-50/20 dark:bg-purple-950/20">
+            <input type="file" id="input-foto-piloto-aislada" accept="image/*" onchange="handleFotoPilotoAislada(event)" class="hidden">
+            <div id="dropzone-empty-piloto-aislada" onclick="document.getElementById('input-foto-piloto-aislada').click()" class="cursor-pointer space-y-2">
+              <div class="w-12 h-12 rounded-2xl bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300 flex items-center justify-center text-2xl mx-auto shadow-sm">📸</div>
+              <p class="text-xs font-black text-slate-800 dark:text-slate-200">Tocar para Elegir de Galería o Tomar Foto</p>
+              <p class="text-[11px] text-slate-500">Sanitización EXIF/GPS en vivo y Quality Gate instantáneo.</p>
+            </div>
+            <div id="dropzone-preview-piloto-aislada" class="hidden space-y-3">
+              <img id="img-preview-piloto-aislada" src="" class="max-h-56 mx-auto rounded-xl shadow-md object-contain border border-slate-200">
+              <div class="flex justify-center gap-2">
+                <button type="button" onclick="document.getElementById('input-foto-piloto-aislada').click()" class="btn-sec !py-1.5 !px-3 text-xs font-bold bg-white border border-slate-300">Cambiar Foto</button>
+                <button type="button" onclick="ejecutarAnalisisPilotoAislado()" class="btn-primary !py-1.5 !px-4 text-xs font-black bg-purple-900 hover:bg-purple-950 text-white shadow-sm">Ejecutar Análisis IA</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="res-piloto-aislado-container" class="hidden p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 space-y-3 text-xs"></div>
+        </div>
+      </div>
+
+      <!-- SUBVISTA 2: CASOS EN SEGUIMIENTO (LONGITUDINAL, TIMELINE & COMPARACIÓN) -->
+      <div id="piloto-subview-casos" class="hidden space-y-5">
+        
+        <div class="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          <div class="flex items-center gap-2.5">
+            <span class="w-9 h-9 rounded-xl bg-purple-100 dark:bg-purple-900 text-purple-900 dark:text-purple-200 flex items-center justify-center font-bold text-sm">👤</span>
+            <div>
+              <span class="text-[10px] uppercase font-bold text-slate-500 block">Caso Pseudonimizado Activo:</span>
+              <select id="select-caso-piloto" onchange="cambiarCasoPilotoActivo(this.value)" class="med-input !py-1 !text-xs font-black text-purple-950 dark:text-purple-300 bg-slate-50 dark:bg-slate-800 border-slate-300">
+              </select>
+            </div>
+          </div>
+          <button type="button" onclick="crearNuevoCasoPilotoPrompt()" class="btn-primary !py-2 !px-3.5 text-xs font-black bg-purple-900 hover:bg-purple-950 text-white shadow-xs flex items-center justify-center gap-1.5">
+            <span>+ Nuevo Caso (PILOT-XXXX)</span>
+          </button>
+        </div>
+
+        <div id="heridas-bar-piloto" class="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
+            <span class="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">Heridas Clínicas del Caso</span>
+            <button type="button" onclick="abrirModalNuevaHeridaPiloto()" class="text-xs font-bold text-purple-800 dark:text-purple-300 hover:underline">
+              + Agregar Otra Herida
+            </button>
+          </div>
+          <div id="tabs-heridas-piloto-container" class="flex flex-wrap gap-2"></div>
+        </div>
+
+        <div id="panel-herida-activa-piloto" class="med-card p-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl space-y-5 shadow-sm">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
+            <div>
+              <span id="txt-herida-activa-label" class="text-sm font-black text-slate-900 dark:text-white">Herida 1 — Talón</span>
+              <p id="txt-herida-activa-sub" class="text-xs text-slate-500">Seguimiento longitudinal con retención de 21 días.</p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <button type="button" onclick="abrirModalAgregarFotoHerida()" class="btn-primary !py-2 !px-3.5 text-xs font-black bg-emerald-700 hover:bg-emerald-800 text-white shadow-xs flex items-center gap-1.5">
+                <span>+ Agregar Foto a esta Herida</span>
+              </button>
+              <button type="button" id="btn-abrir-comparador-piloto" onclick="abrirComparadorPilotoModal()" class="btn-sec !py-2 !px-3 text-xs font-bold bg-blue-50 text-blue-900 border border-blue-200 flex items-center gap-1">
+                <span>↔ Comparar Dos Fotos</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="space-y-3">
+            <h4 class="text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-300">Línea de Tiempo Clínica (Timeline)</h4>
+            <div id="piloto-timeline-events-list" class="space-y-4 relative before:absolute before:inset-0 before:left-4 before:w-0.5 before:bg-slate-200 dark:before:bg-slate-800">
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- SUBVISTA 3: CALCULADORAS RÁPIDAS -->
+      <div id="piloto-subview-calculadoras" class="hidden space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div onclick="switchProfTab('sanelian-pro'); switchPortal('profesional')" class="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-purple-600 cursor-pointer shadow-xs transition-all space-y-1">
+            <h4 class="text-xs font-black text-slate-900 dark:text-white">🦶 Escala San Elián (SEWSS)</h4>
+            <p class="text-[11px] text-slate-500">10 factores y gravedad de úlcera.</p>
+          </div>
+          <div onclick="switchProfTab('iwgdf-pro'); switchPortal('profesional')" class="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-purple-600 cursor-pointer shadow-xs transition-all space-y-1">
+            <h4 class="text-xs font-black text-slate-900 dark:text-white">🛡️ IWGDF 2023 Riesgo (0-3)</h4>
+            <p class="text-[11px] text-slate-500">Estratificación preventiva del pie diabético.</p>
+          </div>
+          <div onclick="switchProfTab('wifi-pro'); switchPortal('profesional')" class="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-purple-600 cursor-pointer shadow-xs transition-all space-y-1">
+            <h4 class="text-xs font-black text-slate-900 dark:text-white">🩸 SVS WIfI (Amenaza Extremidad)</h4>
+            <p class="text-[11px] text-slate-500">Wound, Ischemia y foot Infection.</p>
+          </div>
+          <div onclick="switchProfTab('timers-pro'); switchPortal('profesional')" class="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-purple-600 cursor-pointer shadow-xs transition-all space-y-1">
+            <h4 class="text-xs font-black text-slate-900 dark:text-white">🩹 TIMERS (Lecho de la Herida)</h4>
+            <p class="text-[11px] text-slate-500">Checklist estructurado de preparación tisular.</p>
+          </div>
+          <div onclick="switchProfTab('offloading-pro'); switchPortal('profesional')" class="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-purple-600 cursor-pointer shadow-xs transition-all space-y-1">
+            <h4 class="text-xs font-black text-slate-900 dark:text-white">🦶 Descarga Biomecánica Off-loading</h4>
+            <p class="text-[11px] text-slate-500">IWGDF 2023 con valoración individual.</p>
+          </div>
+          <div onclick="switchProfTab('atb-pro'); switchPortal('profesional')" class="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-purple-600 cursor-pointer shadow-xs transition-all space-y-1">
+            <h4 class="text-xs font-black text-slate-900 dark:text-white">🧫 ATB IDSA & Cockcroft-Gault</h4>
+            <p class="text-[11px] text-slate-500">ClCr desacoplada y guía antimicrobiana.</p>
+          </div>
+        </div>
       </div>
 
     </div>
@@ -4492,7 +4657,205 @@
         </button>
       </div>
 
+  <!-- ═════════════════════════════════════════════════════════════════ -->
+  <!-- MODALES DEL PILOTO CERRADO v0.1 (HERIDAS, TIMELINE, COMPARADOR)     -->
+  <!-- ═════════════════════════════════════════════════════════════════ -->
+
+  <!-- 1. MODAL NUEVA HERIDA PILOTO -->
+  <div id="modal-nueva-herida-piloto" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 border-2 border-purple-800 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 animate-in zoom-in-95">
+      <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="w-8 h-8 rounded-xl bg-purple-100 text-purple-900 flex items-center justify-center font-bold text-sm">🦶</span>
+          <h3 class="text-sm font-black text-slate-900 dark:text-white">Nueva Herida Clínica</h3>
+        </div>
+        <button type="button" onclick="cerrarModalNuevaHeridaPiloto()" class="text-slate-400 hover:text-slate-600 text-sm font-bold">✕</button>
+      </div>
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="font-bold text-slate-700 dark:text-slate-300 block mb-1">Identificador Ordinal:</label>
+          <input type="text" id="input-piloto-herida-label" value="Herida 1" class="med-input w-full bg-slate-50 dark:bg-slate-800">
+        </div>
+        <div>
+          <label class="font-bold text-slate-700 dark:text-slate-300 block mb-1">Localización Anatómica Controlada:</label>
+          <select id="select-piloto-herida-location" class="med-input w-full bg-slate-50 dark:bg-slate-800">
+            <option value="Talón">Talón</option>
+            <option value="Antepié plantar">Antepié plantar</option>
+            <option value="Mediopié plantar">Mediopié plantar</option>
+            <option value="Hallux">Hallux</option>
+            <option value="Dedos">Dedos</option>
+            <option value="Dorsal">Dorsal</option>
+            <option value="Lateral">Lateral</option>
+            <option value="Otra / no especificada">Otra / no especificada</option>
+          </select>
+        </div>
+      </div>
+      <div class="pt-2 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
+        <button type="button" onclick="cerrarModalNuevaHeridaPiloto()" class="btn-sec !py-2 !px-3 text-xs font-bold">Cancelar</button>
+        <button type="button" onclick="guardarNuevaHeridaPiloto()" class="btn-primary !py-2 !px-4 text-xs font-black bg-purple-900 text-white">Crear Herida</button>
+      </div>
     </div>
   </div>
+
+  <!-- 2. MODAL AGREGAR FOTO A HERIDA PILOTO -->
+  <div id="modal-agregar-foto-herida-piloto" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 border-2 border-purple-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4 animate-in zoom-in-95 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="w-8 h-8 rounded-xl bg-purple-100 text-purple-900 flex items-center justify-center font-bold text-sm">📸</span>
+          <h3 class="text-sm font-black text-slate-900 dark:text-white">Cargar Foto de Seguimiento</h3>
+        </div>
+        <button type="button" onclick="cerrarModalAgregarFotoHerida()" class="text-slate-400 hover:text-slate-600 text-sm font-bold">✕</button>
+      </div>
+
+      <div class="border-2 border-dashed border-purple-300 dark:border-purple-800 rounded-2xl p-4 text-center bg-purple-50/20">
+        <input type="file" id="input-foto-herida-piloto-file" accept="image/*" onchange="handleFotoHeridaPilotoSeleccionada(event)" class="hidden">
+        <div id="dropzone-empty-foto-herida-piloto" onclick="document.getElementById('input-foto-herida-piloto-file').click()" class="cursor-pointer space-y-2">
+          <div class="w-10 h-10 rounded-xl bg-purple-100 text-purple-900 flex items-center justify-center text-xl mx-auto">📁</div>
+          <p class="text-xs font-black text-slate-800 dark:text-slate-200">Elegir de Galería o Tomar Foto</p>
+          <p class="text-[10px] text-slate-500">EXIF y GPS eliminados automáticamente por Canvas.</p>
+        </div>
+        <div id="dropzone-prev-foto-herida-piloto" class="hidden space-y-2">
+          <img id="img-prev-foto-herida-piloto" src="" class="max-h-40 mx-auto rounded-lg shadow-xs object-contain">
+          <button type="button" onclick="document.getElementById('input-foto-herida-piloto-file').click()" class="btn-sec !py-1 !px-2.5 text-[11px] font-bold bg-white">Cambiar Imagen</button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+        <div>
+          <label class="font-bold text-slate-700 dark:text-slate-300 block mb-1">Fecha Real de la Toma (opcional):</label>
+          <input type="date" id="input-piloto-fecha-historica" class="med-input w-full bg-slate-50 dark:bg-slate-800">
+          <span class="text-[10px] text-slate-400 block mt-0.5">Dejar vacío si no se conoce con exactitud.</span>
+        </div>
+        <div>
+          <label class="font-bold text-slate-700 dark:text-slate-300 block mb-1">Orden Secuencial:</label>
+          <input type="number" id="input-piloto-sequence-idx" min="1" max="99" value="1" class="med-input w-full bg-slate-50 dark:bg-slate-800">
+          <span class="text-[10px] text-slate-400 block mt-0.5">Ej: Foto 1, Foto 2, Foto 3.</span>
+        </div>
+      </div>
+
+      <div class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2 text-[11px]">
+        <span class="font-bold text-slate-800 dark:text-slate-200 uppercase block">Certificación de Privacidad (Cero PII):</span>
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input type="checkbox" id="chk-piloto-p1" checked class="rounded text-purple-900">
+          <span>Solo encuadra el pie o la lesión.</span>
+        </label>
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input type="checkbox" id="chk-piloto-p2" checked class="rounded text-purple-900">
+          <span>Sin rostros ni personas de fondo.</span>
+        </label>
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input type="checkbox" id="chk-piloto-p3" checked class="rounded text-purple-900">
+          <span>Sin pulseras, DNI, nombres ni datos identificatorios.</span>
+        </label>
+      </div>
+
+      <div class="pt-2 flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
+        <button type="button" onclick="cerrarModalAgregarFotoHerida()" class="btn-sec !py-2 !px-3 text-xs font-bold">Cancelar</button>
+        <button type="button" id="btn-ejecutar-analisis-herida-piloto" onclick="ejecutarAnalisisHeridaPiloto()" class="btn-primary !py-2 !px-4 text-xs font-black bg-purple-900 text-white">Analizar y Guardar en Timeline</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. MODAL COMPARADOR PILOTO LADO A LADO -->
+  <div id="modal-comparador-piloto" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 border-2 border-blue-600 rounded-3xl max-w-2xl w-full p-6 shadow-2xl space-y-4 animate-in zoom-in-95 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="w-8 h-8 rounded-xl bg-blue-100 text-blue-900 flex items-center justify-center font-bold text-sm">↔</span>
+          <h3 class="text-sm font-black text-slate-900 dark:text-white">Comparación Longitudinal de Cicatrización</h3>
+        </div>
+        <button type="button" onclick="cerrarComparadorPilotoModal()" class="text-slate-400 hover:text-slate-600 text-sm font-bold">✕</button>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+        <div>
+          <label class="font-bold text-slate-700 dark:text-slate-300 block mb-1">Foto Anterior / Baseline:</label>
+          <select id="select-comp-foto-a" onchange="actualizarVistaComparadorPiloto()" class="med-input w-full bg-slate-50 dark:bg-slate-800">
+          </select>
+        </div>
+        <div>
+          <label class="font-bold text-slate-700 dark:text-slate-300 block mb-1">Foto Posterior / Actual:</label>
+          <select id="select-comp-foto-b" onchange="actualizarVistaComparadorPiloto()" class="med-input w-full bg-slate-50 dark:bg-slate-800">
+          </select>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+        <div class="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 space-y-2 text-center text-xs">
+          <span id="comp-label-foto-a" class="font-black text-slate-800 dark:text-slate-200 block">Foto Anterior</span>
+          <img id="comp-img-a" src="" class="h-36 mx-auto rounded-xl object-cover border border-slate-200 shadow-xs">
+          <div id="comp-mask-container-a" class="hidden">
+            <span class="text-[10px] text-slate-500 block">Máscara de Segmentación:</span>
+            <img id="comp-mask-a" src="" class="h-20 mx-auto rounded-lg object-contain">
+          </div>
+        </div>
+        <div class="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 space-y-2 text-center text-xs">
+          <span id="comp-label-foto-b" class="font-black text-emerald-800 dark:text-emerald-300 block">Foto Posterior</span>
+          <img id="comp-img-b" src="" class="h-36 mx-auto rounded-xl object-cover border border-emerald-300 shadow-xs">
+          <div id="comp-mask-container-b" class="hidden">
+            <span class="text-[10px] text-slate-500 block">Máscara de Segmentación:</span>
+            <img id="comp-mask-b" src="" class="h-20 mx-auto rounded-lg object-contain">
+          </div>
+        </div>
+      </div>
+
+      <div class="p-2.5 rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 text-[11px] text-blue-900 dark:text-blue-200 text-center">
+        ℹ️ <strong>Evaluación Visual Cualitativa:</strong> Sin tarjeta métrica calibrada, la plataforma no calcula porcentajes de reducción cuantitativa en cm².
+      </div>
+
+      <div class="p-4 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 space-y-3 text-xs">
+        <h4 class="font-black text-slate-900 dark:text-white uppercase tracking-wider">Evaluación Clínica del Profesional:</h4>
+        
+        <div>
+          <label class="font-bold text-slate-700 dark:text-slate-300 block mb-1.5">1. Evolución clínica observada:</label>
+          <div class="flex gap-2">
+            <button type="button" onclick="setEvolucionClinicaVal('MEJOR')" id="btn-evol-mejor" class="flex-1 py-2 rounded-xl font-black text-xs border border-emerald-300 bg-white text-emerald-800">MEJOR</button>
+            <button type="button" onclick="setEvolucionClinicaVal('SIMILAR')" id="btn-evol-similar" class="flex-1 py-2 rounded-xl font-black text-xs border border-slate-300 bg-white text-slate-800">SIMILAR</button>
+            <button type="button" onclick="setEvolucionClinicaVal('PEOR')" id="btn-evol-peor" class="flex-1 py-2 rounded-xl font-black text-xs border border-rose-300 bg-white text-rose-800">PEOR</button>
+          </div>
+        </div>
+
+        <div>
+          <label class="font-bold text-slate-700 dark:text-slate-300 block mb-1.5">2. ¿La segmentación e inferencia del sistema representan razonablemente la evolución?:</label>
+          <div class="flex gap-2">
+            <button type="button" onclick="setAcuerdoIaVal('SI')" id="btn-agree-si" class="flex-1 py-1.5 rounded-xl font-bold text-xs border border-blue-300 bg-white text-blue-900">SÍ</button>
+            <button type="button" onclick="setAcuerdoIaVal('PARCIAL')" id="btn-agree-parcial" class="flex-1 py-1.5 rounded-xl font-bold text-xs border border-slate-300 bg-white text-slate-800">PARCIAL</button>
+            <button type="button" onclick="setAcuerdoIaVal('NO')" id="btn-agree-no" class="flex-1 py-1.5 rounded-xl font-bold text-xs border border-slate-300 bg-white text-slate-800">NO</button>
+          </div>
+        </div>
+
+        <div>
+          <label class="font-bold text-slate-700 dark:text-slate-300 block mb-1">Comentario opcional (máx. 250 caracteres):</label>
+          <textarea id="input-evol-comentario" rows="2" maxlength="250" placeholder="Apreciación clínica o evolución de tejido..." class="med-input w-full bg-white dark:bg-slate-800 text-xs"></textarea>
+          <span class="text-[10px] text-amber-700 dark:text-amber-400 block mt-0.5">⚠️ AVISO: No incluya nombres ni otros datos identificatorios del paciente.</span>
+        </div>
+
+        <div class="pt-2 flex justify-end gap-2 border-t border-slate-200 dark:border-slate-700">
+          <button type="button" onclick="cerrarComparadorPilotoModal()" class="btn-sec !py-2 !px-3 text-xs font-bold">Cerrar</button>
+          <button type="button" onclick="guardarEvaluacionEvolucionPiloto()" class="btn-primary !py-2 !px-4 text-xs font-black bg-blue-900 text-white">Guardar Evaluación</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 4. MODAL DETALLE EVENTO TIMELINE PILOTO -->
+  <div id="modal-detalle-evento-piloto" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 border-2 border-purple-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4 animate-in zoom-in-95">
+      <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+        <div>
+          <h3 id="det-evento-titulo" class="text-sm font-black text-slate-900 dark:text-white">Foto 1 — 03 Ago 2026</h3>
+          <span id="det-evento-sub" class="text-[11px] text-slate-500">Herida 1 (Talón)</span>
+        </div>
+        <button type="button" onclick="cerrarModalDetalleEventoPiloto()" class="text-slate-400 hover:text-slate-600 text-sm font-bold">✕</button>
+      </div>
+      <div id="det-evento-body" class="space-y-3 text-xs"></div>
+      <div class="pt-2 flex justify-end border-t border-slate-100 dark:border-slate-800">
+        <button type="button" onclick="cerrarModalDetalleEventoPiloto()" class="btn-sec !py-2 !px-4 text-xs font-bold">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>
