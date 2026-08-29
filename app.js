@@ -8788,3 +8788,139 @@ function handleImageSlotUpload(slotNum, event) {
     alert(`✓ Foto ${slotNum} adicional agregada (${res.sizeKB} KB)`);
   });
 }
+
+
+// ═══════════════════════════════════════════════════════════════════════
+// MOTOR DE SIMULACIÓN Y CASOS CLÍNICOS PRE-CARGADOS (DEMO PACIENTE)
+// ═══════════════════════════════════════════════════════════════════════
+
+const CASOS_DEMO_PACIENTE = {
+  verde: {
+    color: 'verde',
+    fotoSvg: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400"><rect width="400" height="400" fill="%23dcfce7"/><circle cx="200" cy="200" r="70" fill="%2386efac" stroke="%2316a34a" stroke-width="4"/><circle cx="200" cy="200" r="35" fill="%23fca5a5"/><text x="200" y="320" font-family="sans-serif" font-size="14" font-weight="bold" fill="%2314532d" text-anchor="middle">Foto Demo: Lesión Grado 1 (Favorable)</text></svg>',
+    fiebre: false,
+    olor: false,
+    tiempo: 'Menos de 1 semana (Reciente)',
+    tiempoIdx: 0,
+    semIcon: '🟢',
+    semBadge: 'Podés esperar · Sin Urgencia Inmediata',
+    semBadgeClass: 'bg-emerald-200 text-emerald-900',
+    cardBgClass: 'bg-emerald-50 border-2 border-emerald-400 text-emerald-950',
+    semTitle: 'Sin Signos de Urgencia Inmediata',
+    semDesc: 'La lesión no muestra signos de infección bacteriana activa ni compromiso sistémico. Podés continuar tu cuidado habitual y consultar en tu turno programado.',
+    dictamen: `### 🟢 Dictamen Asistido por IA (Consenso IWGDF 2023)
+* **Clasificación**: Lesión superficial localizada (Estadio IWGDF 1 / Texas Grado 0-I).
+* **Tejido Dominante**: Granulación favorable en evolución sin eritema perilesional significativo.
+* **Conducta**: No requiere concurrir a guardia.
+* **Cuidados sugeridos**: Lavar con solución fisiológica, aplicar apósito protector hidrocoloide o de espuma y realizar control fotográfico en 72–96 hs.`
+  },
+  amarillo: {
+    color: 'amarillo',
+    fotoSvg: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400"><rect width="400" height="400" fill="%23fef9c3"/><circle cx="200" cy="200" r="85" fill="%23fde047" stroke="%23d97706" stroke-width="4"/><circle cx="200" cy="200" r="45" fill="%23f87171"/><text x="200" y="320" font-family="sans-serif" font-size="14" font-weight="bold" fill="%23713f12" text-anchor="middle">Foto Demo: Úlcera con Fibrina (Atención 48-72h)</text></svg>',
+    fiebre: false,
+    olor: true,
+    tiempo: 'Entre 1 y 4 semanas (En evolución)',
+    tiempoIdx: 1,
+    semIcon: '🟡',
+    semBadge: 'Consultá esta semana · Atención Pronto',
+    semBadgeClass: 'bg-amber-200 text-amber-900',
+    cardBgClass: 'bg-amber-50 border-2 border-amber-400 text-amber-950',
+    semTitle: 'Atención Médica Necesaria en 2–4 Días',
+    semDesc: 'Se detecta secreción u olor sugestivo de estancamiento tisular o colonización bacteriana moderada. Requiere turno médico pronto para curación especializada.',
+    dictamen: `### 🟡 Dictamen Asistido por IA (Consenso IWGDF 2023)
+* **Clasificación**: Úlcera en evolución con retraso cicatrizal (IWGDF Grado 2 Leve-Moderado).
+* **Tejido Dominante**: Fibrina y esfacelo con olor presente.
+* **Conducta**: Solicitar turno médico / teleconsulta en los próximos 2 a 4 días hábiles.
+* **Cuidados sugeridos**: Mantener pie en descarga (evitar apoyar la zona), curación antiséptica con polihexanida o plata y no sumergir en agua.`
+  },
+  rojo: {
+    color: 'rojo',
+    fotoSvg: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400"><rect width="400" height="400" fill="%23fee2e2"/><circle cx="200" cy="200" r="100" fill="%23f87171" stroke="%23dc2626" stroke-width="5"/><circle cx="200" cy="200" r="50" fill="%237f1d1d"/><text x="200" y="320" font-family="sans-serif" font-size="14" font-weight="bold" fill="%237f1d1d" text-anchor="middle">Foto Demo: Infección Severa (Guardia Inmediata)</text></svg>',
+    fiebre: true,
+    olor: true,
+    tiempo: 'Más de 1 mes (Crónica / No cicatriza)',
+    tiempoIdx: 2,
+    semIcon: '🚨',
+    semBadge: 'URGENCIA MÉDICA · CONCURRIR A GUARDIA',
+    semBadgeClass: 'bg-rose-200 text-rose-950 font-black',
+    cardBgClass: 'bg-rose-50 border-2 border-rose-500 text-rose-950',
+    semTitle: 'Signos de Infección Severa / Alarma',
+    semDesc: 'Fiebre combinada con mal olor o dolor intenso son signos de celulitis o infección profunda que no pueden esperar. Concurrir a un centro de urgencias de inmediato.',
+    dictamen: `### 🚨 ALERTA CLÍNICA INMEDIATA (IDSA / IWGDF 2023)
+* **Clasificación**: Infección moderada-severa con compromiso sistémico (IWGDF Grado 3-4 / SIRS).
+* **Signos detectados**: Fiebre/escalofríos + fetidez + tiempo prolongado de evolución.
+* **Conducta OBLIGATORIA**: Concurrir a guardia médica o centro hospitalario de inmediato.
+* **Riesgo**: Progresión rápida a flemón profundo o sepsis si no se inicia antibiótico parenteral y drenaje quirúrgico.`
+  }
+};
+
+function cargarCasoEjemploPaciente(color = 'amarillo') {
+  const caso = CASOS_DEMO_PACIENTE[color] || CASOS_DEMO_PACIENTE.amarillo;
+
+  // 1. Cargar imagen en estado y previsualización
+  state.patientImageBase64 = caso.fotoSvg;
+  const imgPreview = document.getElementById('img-preview-p');
+  if (imgPreview) imgPreview.src = caso.fotoSvg;
+  
+  document.getElementById('pac-upload-area')?.classList.add('hidden');
+  document.getElementById('pac-slots-area')?.classList.remove('hidden');
+  const btnNext = document.getElementById('pac-btn-s0-next');
+  if (btnNext) btnNext.disabled = false;
+
+  // 2. Cargar respuestas del cuestionario
+  setSurveyAnswer('fiebre', caso.fiebre);
+  setSurveyAnswer('olor', caso.olor);
+  setTiempoEvolucionPac(caso.tiempo, caso.tiempoIdx);
+
+  // 3. Pintar semáforo y dictamen estructurado en Paso 4
+  const semCard = document.getElementById('pac-semaforo-card');
+  if (semCard) {
+    semCard.className = `p-6 rounded-3xl text-center space-y-3 shadow-md ${caso.cardBgClass}`;
+  }
+  const semIcon = document.getElementById('pac-sem-icon');
+  if (semIcon) semIcon.innerText = caso.semIcon;
+
+  const semBadge = document.getElementById('pac-sem-badge');
+  if (semBadge) {
+    semBadge.innerText = caso.semBadge;
+    semBadge.className = `px-3 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${caso.semBadgeClass}`;
+  }
+
+  const semTitle = document.getElementById('pac-sem-title');
+  if (semTitle) semTitle.innerText = caso.semTitle;
+
+  const semDesc = document.getElementById('pac-sem-desc');
+  if (semDesc) semDesc.innerText = caso.semDesc;
+
+  const textoRes = document.getElementById('pac-texto-resultado');
+  if (textoRes) {
+    if (typeof marked !== 'undefined' && marked.parse) {
+      textoRes.innerHTML = marked.parse(caso.dictamen);
+    } else {
+      textoRes.innerText = caso.dictamen;
+    }
+  }
+
+  // 4. Ir directo a la pantalla de resultados del wizard
+  if (typeof goPacStep === 'function') {
+    goPacStep(3);
+  }
+
+  if (window.lucide) lucide.createIcons();
+}
+
+function simularPerfilEquipoPaciente(tipo) {
+  const txt = document.getElementById('pac-equipo-salud-txt');
+  const btnWa = document.getElementById('pac-btn-wa-referente');
+
+  if (tipo === 'enfermera') {
+    if (txt) txt.innerText = 'Lic. Rossi (Enfermería de Heridas) · Vinculada';
+    if (btnWa) btnWa.href = 'https://wa.me/5491100000000?text=Hola%20Lic.%20Rossi,%20realic%C3%A9%20una%20consulta%20en%20piediabetico.lat';
+  } else if (tipo === 'medico') {
+    if (txt) txt.innerText = 'Dr. Gómez (Infectología) · Vinculado';
+    if (btnWa) btnWa.href = 'https://wa.me/5491112345678?text=Hola%20Dr.%20G%C3%B3mez,%20realic%C3%A9%20una%20consulta%20en%20piediabetico.lat';
+  } else {
+    if (txt) txt.innerText = 'Sin equipo asignado · Telemedicina disponible';
+    if (btnWa) btnWa.href = 'https://wa.me/5491112345678?text=Hola,%20necesito%20orientaci%C3%B3n%20para%20pie%20diab%C3%A9tico';
+  }
+}
