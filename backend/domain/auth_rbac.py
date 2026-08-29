@@ -13,8 +13,8 @@ Reutiliza el modelo persistente de PostgreSQL:
 import os
 import uuid
 import secrets
-from typing import Optional, List, Dict, Set, Callable
-from datetime import datetime, timezone
+from typing import Optional, List, Dict, Set, Callable, Any
+from datetime import datetime, timezone, timedelta
 from pydantic import BaseModel, EmailStr, Field
 from fastapi import HTTPException, Header, Depends, Path, Query
 from enum import Enum
@@ -124,24 +124,31 @@ def user_has_capability(user_role: str, capability: Capability) -> bool:
 # ── Modelos Pydantic para Payload y Sesión ──────────────────────────
 class UserSession(BaseModel):
     user_id: str
-    email: EmailStr
+    email: str
     nombre: str
     role: str
     patient_id: Optional[str] = None
     is_active: bool = True
+    pilot_enabled: bool = False
+    organization_id: Optional[str] = None
     matricula: Optional[str] = None
     especialidad: Optional[str] = None
+    expires_at: Optional[datetime] = None
 
 
-# ── Registro de Sesiones Activas ─────────────────────────────────────
-_SESSIONS_REGISTRY: Dict[str, UserSession] = {
+# ── Registro de Sesiones Activas Dinámicas ────────────────────────────
+_ACTIVE_SESSIONS: Dict[str, UserSession] = {}
+
+# ── Registro de Sesiones Legacy / Demo (Aislado para tests) ───────────
+_LEGACY_DEMO_SESSIONS: Dict[str, UserSession] = {
     "token_dr_perez": UserSession(
         user_id="usr_med_001",
         email="dr.perez@hospital.com",
         nombre="Dr. Fernando Pérez",
         role="cirujano_vascular",
         matricula="MN 142.850",
-        especialidad="Cirugía Vascular & Pie Diabético"
+        especialidad="Cirugía Vascular & Pie Diabético",
+        pilot_enabled=False
     ),
     "token_dr_gomez": UserSession(
         user_id="usr_med_002",
@@ -149,7 +156,8 @@ _SESSIONS_REGISTRY: Dict[str, UserSession] = {
         nombre="Dr. Gómez",
         role="infectologo",
         matricula="MN 118.940",
-        especialidad="Infectología"
+        especialidad="Infectología",
+        pilot_enabled=False
     ),
     "token_lic_podologa": UserSession(
         user_id="usr_pod_001",
@@ -157,54 +165,107 @@ _SESSIONS_REGISTRY: Dict[str, UserSession] = {
         nombre="Lic. Laura Podóloga",
         role="podologo",
         matricula="MP 88.210",
-        especialidad="Podología Clínica & Biomecánica"
+        especialidad="Podología Clínica & Biomecánica",
+        pilot_enabled=False
     ),
     "token_profesional_generico": UserSession(
         user_id="usr_gen_001",
         email="profesional.legacy@clinica.com",
         nombre="Dr. Onboarding Genérico",
         role="profesional",
-        matricula="MN 99.000"
+        matricula="MN 99.000",
+        pilot_enabled=False
     ),
     "token_juan_paciente": UserSession(
         user_id="usr_pac_001",
         email="juan.paciente@email.com",
         nombre="Juan Carlos Pérez",
         role="paciente",
-        patient_id="pac_001"
+        patient_id="pac_001",
+        pilot_enabled=False
     ),
     "token_carlos_paciente": UserSession(
         user_id="usr_pac_002",
         email="carlos.paciente@email.com",
         nombre="Carlos Gómez",
         role="paciente",
-        patient_id="pac_002"
+        patient_id="pac_002",
+        pilot_enabled=False
     ),
     "token_maria_cuidadora": UserSession(
         user_id="usr_cui_001",
         email="maria.cuidadora@email.com",
         nombre="María Pérez",
-        role="cuidador"
+        role="cuidador",
+        pilot_enabled=False
     ),
     "token_investigador": UserSession(
         user_id="usr_inv_001",
         email="investigador@universidad.edu",
         nombre="Dra. Lucía Soria",
-        role="investigador"
+        role="investigador",
+        pilot_enabled=False
     ),
     "token_universitario": UserSession(
         user_id="usr_uni_001",
         email="alumno@universidad.edu",
         nombre="Estudiante Medicina",
-        role="universitario"
+        role="universitario",
+        pilot_enabled=False
     ),
     "token_admin": UserSession(
         user_id="usr_adm_001",
         email="admin@piediabetico.lat",
         nombre="Administrador Sistema",
-        role="admin"
+        role="admin",
+        pilot_enabled=True
     )
 }
+
+# Alias legacy para compatibilidad
+_SESSIONS_REGISTRY = _LEGACY_DEMO_SESSIONS
+
+
+def create_user_session(user_obj: Any, expires_in_seconds: int = 86400) -> str:
+    """
+    Crea una sesión de usuario criptográficamente segura e inmutable en memoria.
+    Asigna un token opaco tipo 'pd_sess_<32 bytes urlsafe>'.
+    """
+    token = f"pd_sess_{secrets.token_urlsafe(32)}"
+    expires_at = datetime.now(timezone.utc) + timedelta(seconds=expires_in_seconds)
+
+    user_id_str = str(getattr(user_obj, "id", getattr(user_obj, "user_id", str(uuid.uuid4()))))
+    org_id_str = str(getattr(user_obj, "organization_id", "")) if getattr(user_obj, "organization_id", None) else None
+
+    session = UserSession(
+        user_id=user_id_str,
+        email=getattr(user_obj, "email", "usuario@piediabetico.lat"),
+        nombre=getattr(user_obj, "full_name", getattr(user_obj, "nombre", "Profesional")),
+        role=getattr(user_obj, "role", "medico_general"),
+        is_active=getattr(user_obj, "is_active", True),
+        pilot_enabled=getattr(user_obj, "pilot_enabled", False),
+        organization_id=org_id_str,
+        expires_at=expires_at
+    )
+    _ACTIVE_SESSIONS[token] = session
+    return token
+
+
+# Importar módulos de base de datos y almacenamiento de sesiones
+try:
+    from database import get_db
+except ImportError:
+    def get_db():
+        yield None
+
+try:
+    from domain.session_store import get_session, create_session, RedisSessionUnavailableError, hash_session_token
+    REDIS_STORE_AVAILABLE = True
+except ImportError:
+    REDIS_STORE_AVAILABLE = False
+    get_session = create_session = hash_session_token = None
+    RedisSessionUnavailableError = Exception
+
 
 # ── Relaciones Persistentes Mock/State para Runtime ──────────────────
 _PERSISTENT_CARE_RELATIONSHIPS: List[Dict] = [
@@ -258,18 +319,27 @@ def extract_auth_token(
     return None
 
 def register_active_session(token: str, session: UserSession):
-    """Registra una sesión activa tras el 2FA exitoso."""
-    _SESSIONS_REGISTRY[token] = session
+    """Registra una sesión activa para compatibilidad de tests."""
+    _ACTIVE_SESSIONS[token] = session
 
 
 # ── DEPENDENCIAS REUTILIZABLES FASTAPI ────────────────────────────────
 
 def get_current_user(
-    token: Optional[str] = Depends(extract_auth_token)
+    token: Optional[str] = Depends(extract_auth_token),
+    db: Optional[Any] = Depends(get_db)
 ) -> Optional[UserSession]:
     """
-    Obtiene el usuario actual autenticado resolviendo identidad y estado activo en la DB.
-    En producción, un token manipulado o con usuario inactivo se rechaza con 401.
+    Obtiene el usuario actual autenticado resolviendo identidad y estado activo en PostgreSQL.
+    Multi-worker & Fail-Closed:
+    1. Si no hay token, retorna None.
+    2. Tokens de prueba sintéticos 'expired_', 'tampered_' o 'invalid_' emiten 401.
+    3. Tokens demo legacy (token_dr_perez, token_admin) SOLO funcionan si ALLOW_DEMO_TOKENS=true
+       está explícitamente configurado. Por defecto (false) son rechazados estrictamente con 401.
+    4. Resuelve la sesión desde Redis mediante clave SHA-256 (pilot_session:<sha256>).
+       Si Redis está caído, APLICA FAIL-CLOSED ESTRICTO (401).
+    5. Consulta PostgreSQL models.User por user_id y verifica is_active=True y pilot_enabled=True.
+    6. Retorna UserSession con datos frescos de la base de datos.
     """
     if not token:
         return None
@@ -279,10 +349,76 @@ def get_current_user(
     if token.startswith("tampered_") or token.startswith("invalid_"):
         raise HTTPException(status_code=401, detail="Firma de token inválida o sesión manipulada.")
 
-    user = _SESSIONS_REGISTRY.get(token)
-    if not user or not user.is_active:
-        return None
-    return user
+    # 1. Verificar tokens demo bajo aislamiento explícito estricto
+    allow_demo = os.getenv("ALLOW_DEMO_TOKENS", "false").strip().lower() in ("true", "1")
+    if token in _LEGACY_DEMO_SESSIONS:
+        if allow_demo:
+            demo_user = _LEGACY_DEMO_SESSIONS[token]
+            if not demo_user.is_active:
+                return None
+            return demo_user
+        else:
+            raise HTTPException(status_code=401, detail="Token de sesión no reconocido o inválido.")
+
+    # 2. Resolución en Redis + PostgreSQL (Multi-worker Fail-Closed)
+    if get_session is not None:
+        try:
+            session_data = get_session(token)
+        except RedisSessionUnavailableError as e:
+            raise HTTPException(status_code=401, detail="Servicio de autenticación no disponible (Redis Fail-Closed).")
+        except Exception:
+            raise HTTPException(status_code=401, detail="Error en verificación de sesión.")
+
+        if session_data is None:
+            # Fallback en memoria local solo si está explícitamente en _ACTIVE_SESSIONS y permitido
+            if token in _ACTIVE_SESSIONS and allow_demo:
+                return _ACTIVE_SESSIONS[token]
+            raise HTTPException(status_code=401, detail="Token de sesión no reconocido, inválido o expirado.")
+
+        user_id = session_data.get("user_id")
+        if not user_id:
+            raise HTTPException(status_code=401, detail="Sesión corrupta o sin identificador de usuario.")
+
+        # Verificar usuario en PostgreSQL en tiempo real
+        if db is not None and DBUser is not None:
+            try:
+                try:
+                    user_obj = db.query(DBUser).filter(DBUser.id == uuid.UUID(str(user_id))).first()
+                except Exception:
+                    user_obj = db.query(DBUser).filter(str(DBUser.id) == str(user_id)).first()
+            except Exception:
+                raise HTTPException(status_code=401, detail="Error verificando estado del usuario.")
+
+            if not user_obj:
+                raise HTTPException(status_code=401, detail="Usuario no encontrado en base de datos.")
+            if not user_obj.is_active:
+                raise HTTPException(status_code=401, detail="Cuenta de usuario inactiva.")
+            if not user_obj.pilot_enabled:
+                raise HTTPException(status_code=401, detail="Usuario no habilitado para el piloto.")
+
+            return UserSession(
+                user_id=str(user_obj.id),
+                email=user_obj.email,
+                nombre=user_obj.full_name,
+                role=user_obj.role,
+                is_active=user_obj.is_active,
+                pilot_enabled=user_obj.pilot_enabled,
+                organization_id=str(user_obj.organization_id) if user_obj.organization_id else None
+            )
+        else:
+            # En test context donde db is None pero hay sesión válida
+            if allow_demo:
+                return UserSession(
+                    user_id=str(user_id),
+                    email=session_data.get("email", "usuario@piediabetico.lat"),
+                    nombre=session_data.get("nombre", "Profesional"),
+                    role=session_data.get("role", "medico_general"),
+                    is_active=True,
+                    pilot_enabled=True
+                )
+            raise HTTPException(status_code=401, detail="Base de datos no disponible para verificar sesión.")
+
+    raise HTTPException(status_code=401, detail="Token de sesión no reconocido o inválido.")
 
 def require_authenticated(
     current_user: Optional[UserSession] = Depends(get_current_user)

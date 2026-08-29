@@ -1,0 +1,19 @@
+# Auto-detect text files and normalize line endings
+* text=auto
+
+# Shell scripts must always use LF line endings (required for Linux/Docker execution)
+*.sh text eol=lf
+entrypoint.sh text eol=lf
+backend/entrypoint.sh text eol=lf
+
+# Explicit LF for source files across platforms
+*.py text eol=lf
+*.js text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.sql text eol=lf
+*.ini text eol=lf
+Dockerfile text eol=lf
+backend/Dockerfile text eol=lf

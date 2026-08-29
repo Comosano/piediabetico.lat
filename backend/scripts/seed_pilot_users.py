@@ -14,6 +14,9 @@ import secrets
 import logging
 from typing import List, Dict, Any
 
+# Agregar directorio backend al path para resolución de módulos
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 logger = logging.getLogger("seed_pilot_users")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
@@ -54,9 +57,9 @@ def generar_usuarios_piloto(simulated: bool = False) -> List[Dict[str, Any]]:
             from sqlalchemy import create_engine
             from sqlalchemy.orm import sessionmaker
             from models import Organization, User
-            from agente14_auth import get_password_hash
+            from domain.password_security import hash_password
 
-            db_url = os.getenv("DATABASE_URL", "postgresql://adminpd:password@localhost:5432/piediadbetico")
+            db_url = os.getenv("DATABASE_URL", "postgresql://adminpd:local_dev_password_pd_2026@localhost:5432/piediadbetico")
             engine = create_engine(db_url)
             SessionLocal = sessionmaker(bind=engine)
             db = SessionLocal()
@@ -80,16 +83,25 @@ def generar_usuarios_piloto(simulated: bool = False) -> List[Dict[str, Any]]:
                     user_obj = User(
                         organization_id=org.id,
                         email=c["email"],
-                        password_hash=get_password_hash(c["password_temporal"]),
+                        password_hash=hash_password(c["password_temporal"]),
                         full_name=c["full_name"],
                         role=c["role"],
                         pilot_enabled=True,
                         is_active=True
                     )
                     db.add(user_obj)
+                    c["status"] = "CREADO_NUEVO"
+                else:
+                    # Idempotente: asegurar que pilot_enabled esté activo pero no sobreescribir password ni reportar password falso
+                    existing.pilot_enabled = True
+                    existing.is_active = True
+                    existing.organization_id = org.id
+                    c["status"] = "YA_EXISTE_CONSERVADO"
+                    c["password_temporal"] = "[PREVIAMENTE ESTABLECIDA - NO MODIFICADA]"
+
             db.commit()
             db.close()
-            logger.info("✓ 5 usuarios de piloto persistidos en PostgreSQL con pilot_enabled=True.")
+            logger.info("✓ 5 usuarios de piloto sincronizados en PostgreSQL con pilot_enabled=True.")
         except Exception as e:
             logger.warning(f"Seeding ejecutado en modo standalone / sin conexión DB directa: {e}")
 
