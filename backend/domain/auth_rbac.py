@@ -42,9 +42,8 @@ class SystemRole(str, Enum):
     PACIENTE = "paciente"
     CUIDADOR = "cuidador"
 
-# Solo roles sanitarios asistenciales habilitados (Excluye 'universitario' e 'investigador')
+# Solo roles sanitarios asistenciales habilitados (Excluye 'admin', 'universitario' e 'investigador')
 CLINICAL_PROFESSIONAL_ROLES: Set[str] = {
-    SystemRole.ADMIN.value,
     SystemRole.MEDICO_GENERAL.value,
     SystemRole.INFECTOLOGO.value,
     SystemRole.DIABETOLOGO.value,

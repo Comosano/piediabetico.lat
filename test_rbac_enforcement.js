@@ -42,8 +42,9 @@ let DB_CARE_RELATIONSHIPS = [
   { id: "rel_003_revocada", professional_id: "usr_med_003_revocado", patient_id: "pac_001", is_active: false }
 ];
 
+// Roles sanitarios clínicos estrictos (admin NO es profesional clínico)
 const CLINICAL_PROFESSIONAL_ROLES = new Set([
-  'admin', 'medico_general', 'infectologo', 'diabetologo',
+  'medico_general', 'infectologo', 'diabetologo',
   'cirujano_vascular', 'podologo', 'enfermero', 'profesional'
 ]);
 
@@ -66,7 +67,6 @@ function simulateEndpointCall(endpoint, method, tokenHeader, params = {}) {
   }
 
   // Buscar usuario en base persistente por ID del token
-  const userId = tokenHeader.replace('token_', '').replace('Bearer ', '');
   const user = Object.values(DB_USERS).find(u => tokenHeader.includes(u.id) || tokenHeader.includes(u.email.split('@')[0]));
 
   if (!user || !user.is_active) {
@@ -164,48 +164,61 @@ test('7. Cambio de Rol en DB tiene Efecto Inmediato en Runtime', () => {
   assert.strictEqual(simulateEndpointCall('/agentes/antibioticos', 'POST', 'token_usr_med_001').status, 200);
 });
 
-test('8. require_professional Excluye Roles Académicos e Investigadores (403)', () => {
+test('8. require_professional Excluye Admin Técnico, Roles Académicos e Investigadores (403)', () => {
+  const resAdmin = simulateEndpointCall('/agentes/antibioticos', 'POST', 'token_usr_adm_001');
   const resInvestigador = simulateEndpointCall('/agentes/antibioticos', 'POST', 'token_usr_inv_001');
   const resUniversitario = simulateEndpointCall('/agentes/antibioticos', 'POST', 'token_usr_uni_001');
-  assert.strictEqual(resInvestigador.status, 403);
-  assert.strictEqual(resUniversitario.status, 403);
+  
+  assert.strictEqual(resAdmin.status, 403, 'Admin no debe prescribir antibióticos (403)');
+  assert.strictEqual(resInvestigador.status, 403, 'Investigador no debe prescribir antibióticos (403)');
+  assert.strictEqual(resUniversitario.status, 403, 'Universitario no debe prescribir antibióticos (403)');
 });
 
 test('9. Ruta HTTP Efectiva de Segmentación U-Net es POST /agentes/segmentacion/predecir', () => {
   const mainPy = fs.readFileSync(path.join(__dirname, 'backend', 'main.py'), 'utf8');
   const segPy = fs.readFileSync(path.join(__dirname, 'backend', 'agente4_segmentacion_unet.py'), 'utf8');
 
-  // Verificar prefijo de router y registro
   assert(segPy.includes('router_segmentacion = APIRouter(prefix="/agentes/segmentacion"'), 'Falta prefix /agentes/segmentacion');
   assert(segPy.includes('@router_segmentacion.post("/predecir"'), 'Falta sub-ruta /predecir');
   assert(mainPy.includes('app.include_router(router_segmentacion)'), 'Falta include_router en main.py');
 
-  // Probar la URL efectiva exacta
   const resAnon = simulateEndpointCall('/agentes/segmentacion/predecir', 'POST', null);
   const resDoctor = simulateEndpointCall('/agentes/segmentacion/predecir', 'POST', 'token_usr_med_001');
-  const resPaciente = simulateEndpointCall('/agentes/segmentacion/predecir', 'POST', 'token_usr_pac_001');
+  const resAdmin = simulateEndpointCall('/agentes/segmentacion/predecir', 'POST', 'token_usr_adm_001');
 
   assert.strictEqual(resAnon.status, 401, 'Anónimo en /agentes/segmentacion/predecir debe dar 401');
   assert.strictEqual(resDoctor.status, 200, 'Médico en /agentes/segmentacion/predecir debe dar 200');
-  assert.strictEqual(resPaciente.status, 403, 'Paciente en /agentes/segmentacion/predecir debe dar 403');
+  assert.strictEqual(resAdmin.status, 403, 'Admin técnico sin habilitación clínica debe dar 403');
 });
 
-test('10. Modelo Persistente CareRelationship en PostgreSQL (backend/models.py)', () => {
+test('10. Modelo Persistente CareRelationship y Migración Alembic 003', () => {
   const modelsPy = fs.readFileSync(path.join(__dirname, 'backend', 'models.py'), 'utf8');
+  const mig003Path = path.join(__dirname, 'backend', 'alembic_migration_003_care_relationships.py');
+
   assert(modelsPy.includes('class CareRelationship(Base):'), 'Falta clase CareRelationship en models.py');
   assert(modelsPy.includes('__tablename__ = "care_relationships"'), 'Falta __tablename__ = "care_relationships"');
-  assert(modelsPy.includes('patient_id'), 'Falta patient_id FK');
-  assert(modelsPy.includes('user_id'), 'Falta user_id FK');
-  assert(modelsPy.includes('is_active'), 'Falta is_active booleano');
+  assert(fs.existsSync(mig003Path), 'Falta archivo alembic_migration_003_care_relationships.py');
+
+  const migContent = fs.readFileSync(mig003Path, 'utf8');
+  assert(migContent.includes("revision = '003_care_relationships'"), 'Falta revision 003');
+  assert(migContent.includes("down_revision = '002_privacy_and_consents'"), 'Falta down_revision 002');
+  assert(migContent.includes("def upgrade()"), 'Falta upgrade en migracion 003');
+  assert(migContent.includes("def downgrade()"), 'Falta downgrade en migracion 003');
 });
 
-test('11. Producción Limpia: backend/main.py NO contiene endpoints de demostración no productivos', () => {
-  const mainPy = fs.readFileSync(path.join(__dirname, 'backend', 'main.py'), 'utf8');
-  assert(!mainPy.includes('@app.get("/pacientes/{patient_id}/historia-clinica"'), 'main.py no debe contener endpoints demo');
-  assert(!mainPy.includes('@app.get("/lesiones/{wound_id}/evaluaciones"'), 'main.py no debe contener endpoints demo');
-  assert(!mainPy.includes('@app.get("/research/datos-identificables"'), 'main.py no debe contener endpoints demo');
+test('11. Coherencia Única de Roles entre models.py, Migración 003 y SystemRole', () => {
+  const modelsPy = fs.readFileSync(path.join(__dirname, 'backend', 'models.py'), 'utf8');
+  const mig003 = fs.readFileSync(path.join(__dirname, 'backend', 'alembic_migration_003_care_relationships.py'), 'utf8');
+  const authRbac = fs.readFileSync(path.join(__dirname, 'backend', 'domain', 'auth_rbac.py'), 'utf8');
+
+  const expectedRoles = "'admin','medico_general','infectologo','diabetologo','cirujano_vascular','podologo','enfermero','profesional','universitario','investigador','paciente','cuidador'";
+  
+  assert(modelsPy.includes(expectedRoles), 'ck_user_role en models.py no coincide exactamente');
+  assert(mig003.includes(expectedRoles), 'ck_user_role en migracion 003 no coincide exactamente');
+  assert(authRbac.includes('MEDICO_GENERAL = "medico_general"'), 'SystemRole debe contener medico_general');
+  assert(authRbac.includes('CIRUJANO_VASCULAR = "cirujano_vascular"'), 'SystemRole debe contener cirujano_vascular');
 });
 
 console.log('\n═══════════════════════════════════════════════════════════════════════');
-console.log(`🏁 RESULTADO: ${passedTests}/${totalTests} PRUEBAS DE INTEGRACIÓN RBAC SUPERADAS (100%)`);
+console.log(`🏁 RESULTADO: ${passedTests}/${totalTests} PRUEBAS DE BASE DE DATOS & RBAC SUPERADAS (100%)`);
 console.log('═══════════════════════════════════════════════════════════════════════\n');

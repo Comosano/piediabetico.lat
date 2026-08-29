@@ -93,7 +93,7 @@ class User(Base):
 
     __table_args__ = (
         CheckConstraint(
-            "role IN ('admin','podologo','enfermero','infectologo','diabetologo','medico_general','universitario')",
+            "role IN ('admin','medico_general','infectologo','diabetologo','cirujano_vascular','podologo','enfermero','profesional','universitario','investigador','paciente','cuidador')",
             name="ck_user_role"
         ),
         Index("idx_users_org", "organization_id"),
