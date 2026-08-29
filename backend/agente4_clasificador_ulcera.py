@@ -43,7 +43,7 @@ logger = logging.getLogger(__name__)
 
 MODELO_PATH = os.getenv(
     "CLASIFICADOR_ONNX_PATH",
-    "/opt/piediadbetico/modelos/dfu_efficientnet_b0.onnx"
+    os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "modelos", "dfu_efficientnet_b0.onnx"))
 )
 
 # Normalización ImageNet (igual que en el entrenamiento)
@@ -57,6 +57,28 @@ CLASES = ["Normal(Healthy skin)", "Abnormal(Ulcer)"]
 _session = None  # Se carga una vez al primer uso (lazy loading)
 
 
+def check_classifier_readiness() -> dict:
+    """Verifica la existencia física y cargabilidad del modelo ONNX sin generar inferencias falsas."""
+    exists = os.path.exists(MODELO_PATH)
+    loadable = False
+    error_msg = None
+    if exists:
+        try:
+            sess = _get_session()
+            loadable = sess is not None
+        except Exception as e:
+            error_msg = str(e)
+            loadable = False
+    else:
+        error_msg = f"Archivo de modelo no encontrado en {MODELO_PATH}"
+    return {
+        "path": MODELO_PATH,
+        "exists": exists,
+        "loadable": loadable,
+        "error": error_msg
+    }
+
+
 def _get_session():
     """Carga el modelo ONNX una sola vez y lo reutiliza."""
     global _session
@@ -66,7 +88,7 @@ def _get_session():
             if not os.path.exists(MODELO_PATH):
                 raise FileNotFoundError(
                     f"Modelo ONNX no encontrado en: {MODELO_PATH}\n"
-                    f"Subí el archivo dfu_efficientnet_b0.onnx al VPS en esa ruta."
+                    f"Subí el archivo dfu_efficientnet_b0.onnx al servidor en esa ruta."
                 )
             _session = ort.InferenceSession(
                 MODELO_PATH,
@@ -76,7 +98,7 @@ def _get_session():
         except ImportError:
             raise ImportError(
                 "onnxruntime no está instalado. "
-                "Agregá 'onnxruntime==1.19.0' al requirements.txt"
+                "Agregá 'onnxruntime>=1.19.0' al requirements.txt"
             )
     return _session
 

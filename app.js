@@ -9664,6 +9664,14 @@ function renderizarTimelinePiloto() {
       ? `<div class="p-3 bg-amber-50 dark:bg-amber-950/60 rounded-xl text-[11px] text-amber-800 dark:text-amber-300 font-semibold">⚠️ Imagen expirada según política del piloto (TTL vencido). Metadata técnica conservada.</div>`
       : `<img src="${a.photo_base64}" class="w-16 h-16 rounded-xl object-cover border border-slate-200 shadow-xs cursor-pointer" onclick="abrirDetalleEventoPiloto('${a.analysis_uuid}')">`;
 
+    const iaLabel = a.classification_label
+      ? `${a.classification_label} (${Math.round((a.classification_confidence||0)*100)}%)`
+      : 'Clasificación IA no disponible';
+
+    const areaLabel = a.relative_area_percent !== null && a.relative_area_percent !== undefined
+      ? `Área relativa: ${a.relative_area_percent}% de la foto · Área absoluta: — (Sin escala física calibrada)`
+      : `Área: Segmentación no disponible · Sin escala física calibrada`;
+
     card.innerHTML = `
       ${nodeCircle}
       <div class="p-3.5 rounded-2xl bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 shadow-xs flex items-center justify-between gap-3">
@@ -9674,8 +9682,8 @@ function renderizarTimelinePiloto() {
               <span class="font-black text-slate-900 dark:text-white">${a.display_date}</span>
               <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-900">Score QG: ${a.quality_gate_score}/100</span>
             </div>
-            <p class="text-[11px] text-slate-600 dark:text-slate-300 font-semibold">IA: ${a.classification_label} (${Math.round((a.classification_confidence||0)*100)}%)</p>
-            <p class="text-[10px] text-slate-400">Área relativa: ${a.relative_area_percent || 0}% de la foto · Área absoluta: — (Sin escala física calibrada)</p>
+            <p class="text-[11px] text-slate-600 dark:text-slate-300 font-semibold">IA: ${iaLabel}</p>
+            <p class="text-[10px] text-slate-400">${areaLabel}</p>
           </div>
         </div>
         <button type="button" onclick="abrirDetalleEventoPiloto('${a.analysis_uuid}')" class="btn-sec !py-1.5 !px-2.5 text-xs font-bold bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-300">
@@ -9699,6 +9707,14 @@ function abrirDetalleEventoPiloto(analysisUuid) {
   document.getElementById('det-evento-titulo').textContent = `${analysis.display_date} — ${currentCase.case_alias}`;
   document.getElementById('det-evento-sub').textContent = `${currentWound.wound_label} (${currentWound.wound_location})`;
 
+  const iaVal = analysis.classification_label
+    ? `${analysis.classification_label} (${Math.round((analysis.classification_confidence||0)*100)}%)`
+    : `<span class="text-slate-500 font-normal">Clasificación IA no disponible</span>`;
+
+  const relAreaVal = analysis.relative_area_percent !== null && analysis.relative_area_percent !== undefined
+    ? `${analysis.relative_area_percent}% de la foto`
+    : `<span class="text-slate-500 font-normal">No disponible</span>`;
+
   const body = document.getElementById('det-evento-body');
   body.innerHTML = `
     <div class="text-center">
@@ -9707,7 +9723,7 @@ function abrirDetalleEventoPiloto(analysisUuid) {
     <div class="grid grid-cols-2 gap-2 text-xs pt-1">
       <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200">
         <span class="text-[10px] text-slate-500 font-bold block">Inferencia IA:</span>
-        <strong class="text-purple-900 dark:text-purple-300">${analysis.classification_label}</strong>
+        <strong class="text-purple-900 dark:text-purple-300">${iaVal}</strong>
       </div>
       <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200">
         <span class="text-[10px] text-slate-500 font-bold block">Quality Gate:</span>
@@ -9715,11 +9731,11 @@ function abrirDetalleEventoPiloto(analysisUuid) {
       </div>
       <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200">
         <span class="text-[10px] text-slate-500 font-bold block">Área Relativa:</span>
-        <strong class="text-slate-800 dark:text-slate-200">${analysis.relative_area_percent || 0}% de la foto</strong>
+        <strong class="text-slate-800 dark:text-slate-200">${relAreaVal}</strong>
       </div>
       <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200">
         <span class="text-[10px] text-slate-500 font-bold block">Área Absoluta:</span>
-        <strong class="text-slate-600 dark:text-slate-400 font-medium">${analysis.absolute_area_cm2 !== null ? analysis.absolute_area_cm2 + ' cm²' : '— (Sin escala física calibrada)'}</strong>
+        <strong class="text-slate-600 dark:text-slate-400 font-medium">${analysis.absolute_area_cm2 !== null && analysis.absolute_area_cm2 !== undefined ? analysis.absolute_area_cm2 + ' cm²' : '— (Sin escala física calibrada)'}</strong>
       </div>
     </div>
     <p class="text-[11px] text-slate-500 text-center">Registrado bajo retención temporal del piloto de 21 días.</p>
