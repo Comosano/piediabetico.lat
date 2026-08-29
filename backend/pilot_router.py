@@ -33,10 +33,10 @@ class PilotShadowModeInput(BaseModel):
 
 class PilotAnalisisInput(BaseModel):
     imagen_base64: str = Field(..., description="Foto de la lesión sanitizada en Base64.")
-    privacy_gate_confirmed: bool = Field(..., description="Confirmación explícita de ausencia de rostro, pulsera o PII.")
-    quality_score: int = Field(..., ge=0, le=100, description="Puntuación óptica del Quality Gate (0-100).")
+    privacy_gate_confirmed: bool = Field(..., description="Confirmación explícita del profesional de que la toma no contiene rostro, pulsera, documentos ni PII visible.")
+    quality_score: int = Field(..., ge=0, le=100, description="Puntuación óptica del Quality Gate (0-100, umbral técnico heurístico del piloto = 48).")
     quality_status: str = Field("optimo", description="'optimo', 'advertencia' o 'insuficiente'")
-    shadow_mode: Optional[PilotShadowModeInput] = Field(None, description="Impresión diagnóstica previa del médico.")
+    shadow_mode: Optional[PilotShadowModeInput] = Field(None, description="Evaluación clínica previa cegada al resultado de la IA.")
     scale_detected: bool = Field(False, description="Indica si existe marcador métrico físico calibrado.")
     px_per_cm: Optional[float] = Field(None, description="Píxeles/cm si scale_detected es True.")
 
@@ -71,7 +71,7 @@ class PilotFeedbackInput(BaseModel):
     concordance_rating: str = Field(..., description="'Sí', 'Parcial' o 'No'")
     would_modify_classification: bool = Field(..., description="¿Modificarías la clasificación? (True/False)")
     utility_score: int = Field(..., ge=1, le=5, description="Utilidad percibida (1 a 5).")
-    comment: Optional[str] = Field(None, max_length=250, description="Comentario libre opcional (máx. 250 caracteres, CERO PII).")
+    comment: Optional[str] = Field(None, max_length=250, description="Comentario libre opcional (máx. 250 caracteres). AVISO: No incluya nombres ni otros datos identificatorios del paciente.")
 
 
 class PilotFeedbackOutput(BaseModel):
@@ -87,11 +87,11 @@ class PilotFeedbackOutput(BaseModel):
 def procesar_analisis_piloto(payload: PilotAnalisisInput):
     """
     Procesa un análisis fotográfico del piloto cerrado:
-    1. Valida confirmación estricta de Privacy Gate.
-    2. Evalúa Quality Gate (emite NO_EVALUABLE si la calidad es insuficiente).
+    1. Valida confirmación explícita de Privacy Gate por el médico.
+    2. Evalúa Quality Gate (emite NO_EVALUABLE si la calidad es inferior al umbral técnico del piloto: score < 48).
     3. Ejecuta inferencia técnica (Clasificador ONNX + Segmentador).
     4. Garantiza honestidad física (cero cm² arbitrarios sin calibrador).
-    5. Registra Shadow Mode previo y programa TTL de 72 horas.
+    5. Registra evaluación previa cegada (Shadow Mode) y programa TTL de 72 horas.
     """
     t_inicio = time.time()
 
@@ -99,7 +99,7 @@ def procesar_analisis_piloto(payload: PilotAnalisisInput):
     if not payload.privacy_gate_confirmed:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Privacy Gate no confirmado: El médico debe certificar que la toma no contiene PII visible ni rostros."
+            detail="Privacy Gate no confirmado: El profesional debe certificar expresamente que la toma no contiene rostro, pulsera, documentos ni PII visible."
         )
 
     analysis_uuid = str(uuid.uuid4())
@@ -108,7 +108,7 @@ def procesar_analisis_piloto(payload: PilotAnalisisInput):
     now_dt = datetime.now(timezone.utc)
     expires_dt = now_dt + timedelta(hours=72)
 
-    # 2. Quality Gate & Abstención (NO_EVALUABLE)
+    # 2. Quality Gate & Abstención (NO_EVALUABLE) — Umbral técnico heurístico del piloto
     if payload.quality_score < 48 or payload.quality_status == "insuficiente":
         duration_ms = int((time.time() - t_inicio) * 1000)
         return PilotAnalisisOutput(

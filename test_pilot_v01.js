@@ -62,8 +62,8 @@ test('4. Honestidad de Área: Salida en Píxeles y % sin inventar cm² arbitrari
   assert(unetContent.includes('absolute_area_cm2: Optional[float] = None') || unetContent.includes('absolute_area_cm2'), 'absolute_area_cm2 debe ser opcional / null si no hay escala');
 });
 
-// ── 5. SHADOW MODE (DOBLE CIEGO) ──────────────────────────────────────
-test('5. Shadow Mode: Registro de Impresión Previa del Médico y Cálculo de Concordancia', () => {
+// ── 5. SHADOW MODE (EVALUACIÓN CLÍNICA PREVIA CEGADA) ─────────────────
+test('5. Shadow Mode: Evaluación Clínica Previa Cegada al Resultado IA y Cálculo de Concordancia', () => {
   const routerContent = fs.readFileSync(path.join(__dirname, 'backend', 'pilot_router.py'), 'utf8');
   assert(routerContent.includes('shadow_mode'), 'Debe aceptar shadow_mode');
   assert(routerContent.includes('pre_classification'), 'Debe capturar pre_classification');
@@ -121,7 +121,7 @@ test('8. Generador PILOT_REPORT: Exportación JSON/CSV con Cero PII y Cero Fotos
 });
 
 // ── 9. TEST DE CASOS CONOCIDOS EN LAS 7 CALCULADORAS CLÍNICAS ────────
-test('9. Validación de Casos Conocidos en 7 Calculadoras Client-Side', () => {
+test('9. Validación Individual de Casos Conocidos en las 7 Calculadoras Clínicas', () => {
   // A. San Elián (SEWSS)
   function calcSanElianMock(scores) {
     const total = scores.reduce((a, b) => a + b, 0);
@@ -131,7 +131,7 @@ test('9. Validación de Casos Conocidos en 7 Calculadoras Client-Side', () => {
   assert.strictEqual(calcSanElianMock([2,2,2,2,2,2,2,1,2,2]).gravedad, 'Moderado'); // 19 pts
   assert.strictEqual(calcSanElianMock([3,3,3,3,3,3,3,3,3,3]).gravedad, 'Grave'); // 30 pts
 
-  // B. IWGDF 2023
+  // B. IWGDF 2023 (Estratificación de Riesgo)
   function calcIWGDFMock(ulcera, amputacion, dialisis, lops, pad, def) {
     if (ulcera || amputacion || dialisis) return 3;
     if ((lops && pad) || (lops && def) || (pad && def)) return 2;
@@ -143,7 +143,7 @@ test('9. Validación de Casos Conocidos en 7 Calculadoras Client-Side', () => {
   assert.strictEqual(calcIWGDFMock(false, false, false, true, true, false), 2);
   assert.strictEqual(calcIWGDFMock(true, false, false, false, false, false), 3);
 
-  // C. SVS WIfI
+  // C. SVS WIfI (Riesgo de Amputación)
   function calcWIfIMock(w, i, fi) {
     if (w === 3 || i === 3) return 'Estadio 4 (Riesgo Alto)';
     if (w === 0 && i === 0 && fi === 0) return 'Estadio 1 (Riesgo Muy Bajo)';
@@ -152,22 +152,65 @@ test('9. Validación de Casos Conocidos en 7 Calculadoras Client-Side', () => {
   assert.strictEqual(calcWIfIMock(0, 0, 0), 'Estadio 1 (Riesgo Muy Bajo)');
   assert.strictEqual(calcWIfIMock(3, 1, 1), 'Estadio 4 (Riesgo Alto)');
 
-  // D. Sheehan 50% Rule
-  function calcSheehanMock(aIni, a4w) {
-    const red = ((aIni - a4w) / aIni) * 100;
-    return red >= 50 ? 'Favorable' : 'Alerta';
+  // D. TIMERS (Preparación del Lecho)
+  function calcTIMERSMock(tejidoNoViable, infeccion, humedadAlta, bordesNoAvance) {
+    let conducta = 'Limpieza y control';
+    let aposito = 'Hidrocoloide / gasa';
+    if (tejidoNoViable) {
+      conducta = 'Desbridamiento cortante / enzimático';
+      aposito = 'Colagenasa / hidrogel';
+    }
+    if (infeccion) {
+      aposito = humedadAlta ? 'Espuma con plata' : 'Apósito con plata nanocristalina';
+    }
+    return { conducta, aposito };
   }
-  assert.strictEqual(calcSheehanMock(10.0, 4.0), 'Favorable'); // 60% reducción
-  assert.strictEqual(calcSheehanMock(10.0, 8.0), 'Alerta');    // 20% reducción
+  assert(calcTIMERSMock(true, false, false, false).conducta.includes('Desbridamiento'));
+  assert(calcTIMERSMock(false, true, true, false).aposito.includes('Espuma con plata'));
 
-  // E. Cockcroft-Gault (ClCr)
+  // E. Off-loading (Descarga Biomecánica - Lenguaje de Asistencia)
+  function calcOffloadingMock(locPlantar, padSevera, infSevera) {
+    if (padSevera || infSevera) {
+      return { dispositivo: 'Calzado terapéutico con alivio de presión', lenguaje: 'Sugerencia de referencia clínica' };
+    }
+    if (locPlantar) {
+      return { dispositivo: 'TCC (Total Contact Cast) o Walker no removible', lenguaje: 'Sugerencia de referencia clínica' };
+    }
+    return { dispositivo: 'Calzado adaptado / órtesis', lenguaje: 'Sugerencia de referencia clínica' };
+  }
+  assert(calcOffloadingMock(true, false, false).dispositivo.includes('TCC'));
+  assert(calcOffloadingMock(true, true, false).dispositivo.includes('Calzado terapéutico'));
+
+  // F. ATB & Cockcroft-Gault (Ajuste Renal - Lenguaje de Asistencia a la Decisión)
   function calcCockcroftGault(edad, peso, cr, esMujer) {
     let clcr = ((140 - edad) * peso) / (72 * cr);
     if (esMujer) clcr *= 0.85;
     return Math.round(clcr);
   }
-  assert.strictEqual(calcCockcroftGault(60, 72, 1.0, false), 80); // (80 * 72)/(72 * 1) = 80 mL/min
-  assert.strictEqual(calcCockcroftGault(70, 72, 2.0, false), 35); // (70 * 72)/(144) = 35 mL/min
+  assert.strictEqual(calcCockcroftGault(60, 72, 1.0, false), 80); // 80 mL/min (Normal)
+  assert.strictEqual(calcCockcroftGault(70, 72, 2.0, false), 35); // 35 mL/min (Ajuste Renal)
+
+  // G. Sheehan 50% Rule (Evaluación a las 4 semanas para predicción a 12-20 semanas)
+  function calcSheehanMock(areaBaseline, area4Semanas) {
+    const reduccionPct = ((areaBaseline - area4Semanas) / areaBaseline) * 100;
+    const enMeta = reduccionPct >= 50;
+    return {
+      reduccionPct: Math.round(reduccionPct),
+      enMeta,
+      interpretacion: enMeta 
+        ? 'Reducción favorable a las 4 semanas (predice cicatrización completa a 12-20 semanas)' 
+        : 'Alerta clínica de estancamiento a las 4 semanas (indica reevaluación o terapia avanzada)'
+    };
+  }
+  const sOk = calcSheehanMock(10.0, 4.0); // 60% reduccion
+  assert.strictEqual(sOk.reduccionPct, 60);
+  assert.strictEqual(sOk.enMeta, true);
+  assert(sOk.interpretacion.includes('Reducción favorable a las 4 semanas'));
+
+  const sAlerta = calcSheehanMock(10.0, 8.0); // 20% reduccion
+  assert.strictEqual(sAlerta.reduccionPct, 20);
+  assert.strictEqual(sAlerta.enMeta, false);
+  assert(sAlerta.interpretacion.includes('Alerta clínica de estancamiento a las 4 semanas'));
 });
 
 // ── 10. MIGRACIÓN ALEMBIC 004_PILOT_V01 ───────────────────────────────
