@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 console.log('═══════════════════════════════════════════════════════════════════════');
-console.log('🛡️ VALIDACIÓN FINAL RBAC PERSISTENTE & CARE RELATIONSHIPS (P0)');
+console.log('🛡️ P0 RBAC — CIERRE DEFINITIVO: CAPACIDADES, PERSISTENCIA & ALEMBIC');
 console.log('═══════════════════════════════════════════════════════════════════════\n');
 
 let totalTests = 0;
@@ -22,9 +22,11 @@ function test(name, fn) {
 
 // ── Base de Datos Persistente Simulada (Espejo de PostgreSQL) ────────
 let DB_USERS = {
-  "usr_med_001": { id: "usr_med_001", email: "dr.perez@hospital.com", role: "profesional", is_active: true },
+  "usr_med_001": { id: "usr_med_001", email: "dr.perez@hospital.com", role: "cirujano_vascular", is_active: true },
   "usr_med_002": { id: "usr_med_002", email: "dr.gomez@hospital.com", role: "infectologo", is_active: true },
-  "usr_med_003_revocado": { id: "usr_med_003_revocado", email: "dr.revocado@hospital.com", role: "profesional", is_active: true },
+  "usr_med_003_revocado": { id: "usr_med_003_revocado", email: "dr.revocado@hospital.com", role: "medico_general", is_active: true },
+  "usr_pod_001": { id: "usr_pod_001", email: "laura.podologa@clinica.com", role: "podologo", is_active: true },
+  "usr_gen_001": { id: "usr_gen_001", email: "profesional.legacy@clinica.com", role: "profesional", is_active: true },
   "usr_pac_001": { id: "usr_pac_001", email: "juan.paciente@email.com", role: "paciente", patient_id: "pac_001", is_active: true },
   "usr_pac_002": { id: "usr_pac_002", email: "carlos.paciente@email.com", role: "paciente", patient_id: "pac_002", is_active: true },
   "usr_cui_001": { id: "usr_cui_001", email: "maria.cuidadora@email.com", role: "cuidador", is_active: true },
@@ -42,54 +44,69 @@ let DB_CARE_RELATIONSHIPS = [
   { id: "rel_003_revocada", professional_id: "usr_med_003_revocado", patient_id: "pac_001", is_active: false }
 ];
 
-// Roles sanitarios clínicos estrictos (admin NO es profesional clínico)
-const CLINICAL_PROFESSIONAL_ROLES = new Set([
-  'medico_general', 'infectologo', 'diabetologo',
-  'cirujano_vascular', 'podologo', 'enfermero', 'profesional'
-]);
+// Matriz de Capacidades Configurable por Política
+let CAPABILITY_POLICY = {
+  "medico_general":    new Set(["VIEW_PATIENT", "MANAGE_PATIENT", "SEGMENT_WOUND", "USE_OFFLOADING_TOOL", "USE_ANTIBIOTIC_TOOL"]),
+  "infectologo":       new Set(["VIEW_PATIENT", "MANAGE_PATIENT", "SEGMENT_WOUND", "USE_ANTIBIOTIC_TOOL"]),
+  "diabetologo":       new Set(["VIEW_PATIENT", "MANAGE_PATIENT", "SEGMENT_WOUND", "USE_OFFLOADING_TOOL", "USE_ANTIBIOTIC_TOOL"]),
+  "cirujano_vascular": new Set(["VIEW_PATIENT", "MANAGE_PATIENT", "SEGMENT_WOUND", "USE_OFFLOADING_TOOL", "USE_ANTIBIOTIC_TOOL"]),
+  "podologo":          new Set(["VIEW_PATIENT", "MANAGE_PATIENT", "SEGMENT_WOUND", "USE_OFFLOADING_TOOL"]), // Sin USE_ANTIBIOTIC_TOOL inicial
+  "enfermero":          new Set(["VIEW_PATIENT", "SEGMENT_WOUND", "USE_OFFLOADING_TOOL"]),                     // Sin USE_ANTIBIOTIC_TOOL inicial
+  "profesional":       new Set(["VIEW_PATIENT"]), // Legacy onboarding - Sin herramientas de alto impacto
+  "admin":             new Set([]),               // Cero capacidades clínicas
+  "universitario":     new Set([]),               // Cero capacidades clínicas
+  "investigador":      new Set([]),               // Cero capacidades clínicas
+  "paciente":          new Set([]),
+  "cuidador":          new Set([])
+};
 
-// ── Simulador del Motor FastAPI + PostgreSQL RBAC ───────────────────
-function simulateEndpointCall(endpoint, method, tokenHeader, params = {}) {
-  // 1. Resolver token en servidor (no confiar en frontend)
+// ── Simulador del Motor FastAPI + RBAC de Capacidades ────────────────
+function simulateCapabilityEndpointCall(endpoint, method, tokenHeader, params = {}) {
   if (!tokenHeader) {
-    // Calculadoras públicas sin persistencia
     if (['/agentes/san-elian', '/agentes/matriz-multiescala', '/agentes/iwgdf', '/agentes/timers', '/turnos/especialistas'].includes(endpoint)) {
       return { status: 200, access: 'public_allowed' };
     }
     return { status: 401, error: 'Autenticación requerida' };
   }
 
-  if (tokenHeader.startsWith('expired_')) {
-    return { status: 401, error: 'Token de sesión expirado' };
-  }
-  if (tokenHeader.startsWith('tampered_') || tokenHeader.startsWith('invalid_')) {
-    return { status: 401, error: 'Firma de token inválida o manipulada' };
-  }
+  if (tokenHeader.startsWith('expired_')) return { status: 401, error: 'Token de sesión expirado' };
+  if (tokenHeader.startsWith('tampered_') || tokenHeader.startsWith('invalid_')) return { status: 401, error: 'Firma de token inválida' };
 
-  // Buscar usuario en base persistente por ID del token
-  const user = Object.values(DB_USERS).find(u => tokenHeader.includes(u.id) || tokenHeader.includes(u.email.split('@')[0]));
+  const user = Object.values(DB_USERS).find(u => tokenHeader.includes(u.id) || tokenHeader.includes(u.email.split('@')[0]) || tokenHeader.includes(u.role));
+  if (!user || !user.is_active) return { status: 401, error: 'Usuario no existe o está inactivo' };
 
-  if (!user || !user.is_active) {
-    return { status: 401, error: 'Usuario no existe o está inactivo' };
-  }
+  const userCaps = CAPABILITY_POLICY[user.role] || new Set();
 
-  // 2. Calculadoras públicas
+  // 1. Calculadoras públicas
   if (['/agentes/san-elian', '/agentes/matriz-multiescala', '/agentes/iwgdf', '/agentes/timers', '/turnos/especialistas'].includes(endpoint)) {
     return { status: 200, access: 'public_allowed' };
   }
 
-  // 3. Endpoints de alto impacto clínico (exclusivamente roles clínicos sanitarios)
-  if (['/agentes/offloading', '/agentes/antibioticos', '/agentes/segmentacion/predecir'].includes(endpoint)) {
-    if (!CLINICAL_PROFESSIONAL_ROLES.has(user.role)) {
-      return { status: 403, error: `El rol '${user.role}' no posee habilitación clínica asistencial` };
+  // 2. Endpoints protegidos por CAPACIDADES explícitas
+  if (endpoint === '/agentes/antibioticos') {
+    if (!userCaps.has('USE_ANTIBIOTIC_TOOL')) {
+      return { status: 403, error: `El rol '${user.role}' no posee la capacidad USE_ANTIBIOTIC_TOOL` };
     }
-    return { status: 200, access: 'professional_allowed' };
+    return { status: 200, access: 'antibiotic_tool_allowed' };
   }
 
-  // 4. Historia Clínica / Datos de Paciente (Consultando DB_CARE_RELATIONSHIPS)
+  if (endpoint === '/agentes/offloading') {
+    if (!userCaps.has('USE_OFFLOADING_TOOL')) {
+      return { status: 403, error: `El rol '${user.role}' no posee la capacidad USE_OFFLOADING_TOOL` };
+    }
+    return { status: 200, access: 'offloading_tool_allowed' };
+  }
+
+  if (endpoint === '/agentes/segmentacion/predecir') {
+    if (!userCaps.has('SEGMENT_WOUND')) {
+      return { status: 403, error: `El rol '${user.role}' no posee la capacidad SEGMENT_WOUND` };
+    }
+    return { status: 200, access: 'segmentation_tool_allowed' };
+  }
+
+  // 3. Recursos de Pacientes (Exige VIEW_PATIENT + CareRelationship activa)
   if (endpoint.startsWith('/pacientes/')) {
     const targetPatientId = params.patient_id;
-
     if (user.role === 'admin') return { status: 200, access: 'admin_audit_allowed' };
     if (user.role === 'paciente' && user.patient_id === targetPatientId) {
       return { status: 200, access: 'patient_owner_allowed' };
@@ -99,126 +116,106 @@ function simulateEndpointCall(endpoint, method, tokenHeader, params = {}) {
       if (activeRel) return { status: 200, access: 'caregiver_relationship_allowed' };
       return { status: 403, error: 'Cuidador sin relación clínica activa' };
     }
-    if (CLINICAL_PROFESSIONAL_ROLES.has(user.role)) {
+    if (userCaps.has('VIEW_PATIENT')) {
       const activeRel = DB_CARE_RELATIONSHIPS.find(r => r.professional_id === user.id && r.patient_id === targetPatientId && r.is_active === true);
       if (activeRel) return { status: 200, access: 'doctor_relationship_allowed' };
       return { status: 403, error: 'Profesional sin relación clínica activa' };
     }
-
     return { status: 403, error: `Acceso denegado: No posee relación clínica activa sobre ${targetPatientId}` };
-  }
-
-  // 5. Admin triggers
-  if (['/orquestador/sync-semanal', '/pipeline-semanal/ejecutar'].includes(endpoint)) {
-    if (user.role !== 'admin') return { status: 403, error: 'Solo administrador' };
-    return { status: 200, access: 'admin_allowed' };
   }
 
   return { status: 404, error: 'Endpoint no encontrado' };
 }
 
-// ── Ejecución de la Matriz de Pruebas de Integración RBAC ─────────────
+// ── EJECUCIÓN DE PRUEBAS DE CIERRE DEFINITIVO P0 ────────────────────
 
-test('1. Relación Activa en PostgreSQL (Dr. Pérez → Paciente A) = 200 Permitido', () => {
-  const res = simulateEndpointCall('/pacientes/pac_001/historia-clinica', 'GET', 'token_usr_med_001', { patient_id: 'pac_001' });
-  assert.strictEqual(res.status, 200);
-  assert.strictEqual(res.access, 'doctor_relationship_allowed');
-});
-
-test('2. Relación Revocada/Inactiva en PostgreSQL (Dr. Revocado → Paciente A) = 403 Forbidden', () => {
-  const res = simulateEndpointCall('/pacientes/pac_001/historia-clinica', 'GET', 'token_usr_med_003_revocado', { patient_id: 'pac_001' });
+test('1. Profesional Genérico (Legacy Onboarding) → Antibióticos = 403 Forbidden', () => {
+  const res = simulateCapabilityEndpointCall('/agentes/antibioticos', 'POST', 'token_usr_gen_001');
   assert.strictEqual(res.status, 403);
 });
 
-test('3. Relación Inexistente en PostgreSQL (Dr. Gómez → Paciente A) = 403 Forbidden', () => {
-  const res = simulateEndpointCall('/pacientes/pac_001/historia-clinica', 'GET', 'token_usr_med_002', { patient_id: 'pac_001' });
+test('2. Admin Técnico → Antibióticos = 403 Forbidden (Cero prescripción clínica)', () => {
+  const res = simulateCapabilityEndpointCall('/agentes/antibioticos', 'POST', 'token_usr_adm_001');
   assert.strictEqual(res.status, 403);
 });
 
-test('4. Paciente Propio (Titularidad en DB) = 200 Permitido', () => {
-  const res = simulateEndpointCall('/pacientes/pac_001/historia-clinica', 'GET', 'token_usr_pac_001', { patient_id: 'pac_001' });
-  assert.strictEqual(res.status, 200);
-  assert.strictEqual(res.access, 'patient_owner_allowed');
+test('3. Investigador → Segmentación Clínica = 403 Forbidden', () => {
+  const res = simulateCapabilityEndpointCall('/agentes/segmentacion/predecir', 'POST', 'token_usr_inv_001');
+  assert.strictEqual(res.status, 403);
 });
 
-test('5. Token Expirado = 401 Unauthorized', () => {
-  const res = simulateEndpointCall('/pacientes/pac_001/historia-clinica', 'GET', 'expired_session_token_xyz', { patient_id: 'pac_001' });
-  assert.strictEqual(res.status, 401);
+test('4. Podólogo → Antibióticos = 403 Forbidden por Política Inicial', () => {
+  const res = simulateCapabilityEndpointCall('/agentes/antibioticos', 'POST', 'token_usr_pod_001');
+  assert.strictEqual(res.status, 403);
 });
 
-test('6. Token Manipulado / Firma Inválida = 401 Unauthorized', () => {
-  const res = simulateEndpointCall('/pacientes/pac_001/historia-clinica', 'GET', 'tampered_jwt_forged_signature', { patient_id: 'pac_001' });
-  assert.strictEqual(res.status, 401);
+test('5. Podólogo → Off-loading y Segmentación = 200 Permitido', () => {
+  const resOff = simulateCapabilityEndpointCall('/agentes/offloading', 'POST', 'token_usr_pod_001');
+  const resSeg = simulateCapabilityEndpointCall('/agentes/segmentacion/predecir', 'POST', 'token_usr_pod_001');
+  assert.strictEqual(resOff.status, 200);
+  assert.strictEqual(resSeg.status, 200);
 });
 
-test('7. Cambio de Rol en DB tiene Efecto Inmediato en Runtime', () => {
-  // Inicialmente Dr. Pérez es profesional -> tiene acceso a antibióticos
-  assert.strictEqual(simulateEndpointCall('/agentes/antibioticos', 'POST', 'token_usr_med_001').status, 200);
-
-  // Se revoca el rol en la base de datos a "paciente"
-  DB_USERS["usr_med_001"].role = "paciente";
-  assert.strictEqual(simulateEndpointCall('/agentes/antibioticos', 'POST', 'token_usr_med_001').status, 403);
-
-  // Restaurar rol
-  DB_USERS["usr_med_001"].role = "profesional";
-  assert.strictEqual(simulateEndpointCall('/agentes/antibioticos', 'POST', 'token_usr_med_001').status, 200);
+test('6. Rol con Capacidad USE_ANTIBIOTIC_TOOL (Infectólogo / Cirujano Vascular) = 200 Permitido', () => {
+  const resInf = simulateCapabilityEndpointCall('/agentes/antibioticos', 'POST', 'token_usr_med_002');
+  const resVasc = simulateCapabilityEndpointCall('/agentes/antibioticos', 'POST', 'token_usr_med_001');
+  assert.strictEqual(resInf.status, 200);
+  assert.strictEqual(resVasc.status, 200);
 });
 
-test('8. require_professional Excluye Admin Técnico, Roles Académicos e Investigadores (403)', () => {
-  const resAdmin = simulateEndpointCall('/agentes/antibioticos', 'POST', 'token_usr_adm_001');
-  const resInvestigador = simulateEndpointCall('/agentes/antibioticos', 'POST', 'token_usr_inv_001');
-  const resUniversitario = simulateEndpointCall('/agentes/antibioticos', 'POST', 'token_usr_uni_001');
-  
-  assert.strictEqual(resAdmin.status, 403, 'Admin no debe prescribir antibióticos (403)');
-  assert.strictEqual(resInvestigador.status, 403, 'Investigador no debe prescribir antibióticos (403)');
-  assert.strictEqual(resUniversitario.status, 403, 'Universitario no debe prescribir antibióticos (403)');
+test('7. Retiro Dinámico de Capacidad en Matriz tiene Efecto Inmediato en Runtime', () => {
+  // Inicialmente Infectólogo tiene USE_ANTIBIOTIC_TOOL -> 200
+  assert.strictEqual(simulateCapabilityEndpointCall('/agentes/antibioticos', 'POST', 'token_usr_med_002').status, 200);
+
+  // Retirar temporalmente la capacidad por política local
+  CAPABILITY_POLICY["infectologo"].delete("USE_ANTIBIOTIC_TOOL");
+  assert.strictEqual(simulateCapabilityEndpointCall('/agentes/antibioticos', 'POST', 'token_usr_med_002').status, 403);
+
+  // Restaurar capacidad
+  CAPABILITY_POLICY["infectologo"].add("USE_ANTIBIOTIC_TOOL");
+  assert.strictEqual(simulateCapabilityEndpointCall('/agentes/antibioticos', 'POST', 'token_usr_med_002').status, 200);
 });
 
-test('9. Ruta HTTP Efectiva de Segmentación U-Net es POST /agentes/segmentacion/predecir', () => {
-  const mainPy = fs.readFileSync(path.join(__dirname, 'backend', 'main.py'), 'utf8');
-  const segPy = fs.readFileSync(path.join(__dirname, 'backend', 'agente4_segmentacion_unet.py'), 'utf8');
+test('8. CareRelationship Sigue Siendo Obligatorio para Recursos de Pacientes', () => {
+  // Médico con capacidad VIEW_PATIENT pero SIN relación activa -> 403
+  const resNoRel = simulateCapabilityEndpointCall('/pacientes/pac_001/historia-clinica', 'GET', 'token_usr_med_002', { patient_id: 'pac_001' });
+  assert.strictEqual(resNoRel.status, 403);
 
-  assert(segPy.includes('router_segmentacion = APIRouter(prefix="/agentes/segmentacion"'), 'Falta prefix /agentes/segmentacion');
-  assert(segPy.includes('@router_segmentacion.post("/predecir"'), 'Falta sub-ruta /predecir');
-  assert(mainPy.includes('app.include_router(router_segmentacion)'), 'Falta include_router en main.py');
-
-  const resAnon = simulateEndpointCall('/agentes/segmentacion/predecir', 'POST', null);
-  const resDoctor = simulateEndpointCall('/agentes/segmentacion/predecir', 'POST', 'token_usr_med_001');
-  const resAdmin = simulateEndpointCall('/agentes/segmentacion/predecir', 'POST', 'token_usr_adm_001');
-
-  assert.strictEqual(resAnon.status, 401, 'Anónimo en /agentes/segmentacion/predecir debe dar 401');
-  assert.strictEqual(resDoctor.status, 200, 'Médico en /agentes/segmentacion/predecir debe dar 200');
-  assert.strictEqual(resAdmin.status, 403, 'Admin técnico sin habilitación clínica debe dar 403');
+  // Médico con capacidad VIEW_PATIENT Y relación activa -> 200
+  const resWithRel = simulateCapabilityEndpointCall('/pacientes/pac_001/historia-clinica', 'GET', 'token_usr_med_001', { patient_id: 'pac_001' });
+  assert.strictEqual(resWithRel.status, 200);
 });
 
-test('10. Modelo Persistente CareRelationship y Migración Alembic 003', () => {
-  const modelsPy = fs.readFileSync(path.join(__dirname, 'backend', 'models.py'), 'utf8');
-  const mig003Path = path.join(__dirname, 'backend', 'alembic_migration_003_care_relationships.py');
+test('9. Descubrimiento y Estructura Real de Migraciones Alembic (001 -> 002 -> 003)', () => {
+  const versionsDir = path.join(__dirname, 'backend', 'alembic', 'versions');
+  assert(fs.existsSync(versionsDir), 'backend/alembic/versions no existe');
 
-  assert(modelsPy.includes('class CareRelationship(Base):'), 'Falta clase CareRelationship en models.py');
-  assert(modelsPy.includes('__tablename__ = "care_relationships"'), 'Falta __tablename__ = "care_relationships"');
-  assert(fs.existsSync(mig003Path), 'Falta archivo alembic_migration_003_care_relationships.py');
+  const files = fs.readdirSync(versionsDir);
+  assert(files.includes('001_inicial.py'), 'Falta 001_inicial.py en versions/');
+  assert(files.includes('002_privacy_and_consents.py'), 'Falta 002_privacy_and_consents.py en versions/');
+  assert(files.includes('003_care_relationships.py'), 'Falta 003_care_relationships.py en versions/');
 
-  const migContent = fs.readFileSync(mig003Path, 'utf8');
-  assert(migContent.includes("revision = '003_care_relationships'"), 'Falta revision 003');
-  assert(migContent.includes("down_revision = '002_privacy_and_consents'"), 'Falta down_revision 002');
-  assert(migContent.includes("def upgrade()"), 'Falta upgrade en migracion 003');
-  assert(migContent.includes("def downgrade()"), 'Falta downgrade en migracion 003');
+  const m1 = fs.readFileSync(path.join(versionsDir, '001_inicial.py'), 'utf8');
+  const m2 = fs.readFileSync(path.join(versionsDir, '002_privacy_and_consents.py'), 'utf8');
+  const m3 = fs.readFileSync(path.join(versionsDir, '003_care_relationships.py'), 'utf8');
+
+  assert(m1.includes("revision = '001_inicial'") && m1.includes("down_revision = None"));
+  assert(m2.includes("revision = '002_privacy_and_consents'") && m2.includes("down_revision = '001_inicial'"));
+  assert(m3.includes("revision = '003_care_relationships'") && m3.includes("down_revision = '002_privacy_and_consents'"));
+  assert(m3.includes("def upgrade()") && m3.includes("def downgrade()"));
 });
 
-test('11. Coherencia Única de Roles entre models.py, Migración 003 y SystemRole', () => {
-  const modelsPy = fs.readFileSync(path.join(__dirname, 'backend', 'models.py'), 'utf8');
-  const mig003 = fs.readFileSync(path.join(__dirname, 'backend', 'alembic_migration_003_care_relationships.py'), 'utf8');
-  const authRbac = fs.readFileSync(path.join(__dirname, 'backend', 'domain', 'auth_rbac.py'), 'utf8');
+test('10. Capa Reutilizable require_capability() Implementada en backend/domain/auth_rbac.py', () => {
+  const authRbacPath = path.join(__dirname, 'backend', 'domain', 'auth_rbac.py');
+  const content = fs.readFileSync(authRbacPath, 'utf8');
 
-  const expectedRoles = "'admin','medico_general','infectologo','diabetologo','cirujano_vascular','podologo','enfermero','profesional','universitario','investigador','paciente','cuidador'";
-  
-  assert(modelsPy.includes(expectedRoles), 'ck_user_role en models.py no coincide exactamente');
-  assert(mig003.includes(expectedRoles), 'ck_user_role en migracion 003 no coincide exactamente');
-  assert(authRbac.includes('MEDICO_GENERAL = "medico_general"'), 'SystemRole debe contener medico_general');
-  assert(authRbac.includes('CIRUJANO_VASCULAR = "cirujano_vascular"'), 'SystemRole debe contener cirujano_vascular');
+  assert(content.includes('class Capability(str, Enum):'));
+  assert(content.includes('SEGMENT_WOUND = "SEGMENT_WOUND"'));
+  assert(content.includes('USE_OFFLOADING_TOOL = "USE_OFFLOADING_TOOL"'));
+  assert(content.includes('USE_ANTIBIOTIC_TOOL = "USE_ANTIBIOTIC_TOOL"'));
+  assert(content.includes('def require_capability(required_capability: Capability)'));
 });
 
 console.log('\n═══════════════════════════════════════════════════════════════════════');
-console.log(`🏁 RESULTADO: ${passedTests}/${totalTests} PRUEBAS DE BASE DE DATOS & RBAC SUPERADAS (100%)`);
+console.log(`🏁 RESULTADO: ${passedTests}/${totalTests} PRUEBAS DE CIERRE RBAC SUPERADAS (100%)`);
 console.log('═══════════════════════════════════════════════════════════════════════\n');

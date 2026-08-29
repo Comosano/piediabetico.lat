@@ -30,10 +30,11 @@ from pydantic import BaseModel, Field
 # ── Importación de RBAC y Dominio ─────────────────────────────────────
 from domain.auth_rbac import (
     require_authenticated,
-    require_professional,
+    require_capability,
     require_admin,
     check_patient_authorization,
     check_wound_authorization,
+    Capability,
     UserSession
 )
 
@@ -323,7 +324,7 @@ class OffloadingOutput(BaseModel):
     motivos_contraindicacion:          List[str]
     disclaimer:                        str
 
-@app.post("/agentes/offloading", response_model=OffloadingOutput, tags=["Calculadoras Clínicas"], dependencies=[Depends(require_professional)])
+@app.post("/agentes/offloading", response_model=OffloadingOutput, tags=["Calculadoras Clínicas"], dependencies=[Depends(require_capability(Capability.USE_OFFLOADING_TOOL))])
 def api_agente_offloading(datos: OffloadingInput):
     """Agente 10 — Prescripción de Descarga Biomecánica según Guías IWGDF 2023."""
     motivos_contra = []
@@ -406,7 +407,7 @@ class AntibioticOutput(BaseModel):
     advertencias_nefrotoxicidad: str
     disclaimer:                  str
 
-@app.post("/agentes/antibioticos", response_model=AntibioticOutput, tags=["Calculadoras Clínicas"], dependencies=[Depends(require_professional)])
+@app.post("/agentes/antibioticos", response_model=AntibioticOutput, tags=["Calculadoras Clínicas"], dependencies=[Depends(require_capability(Capability.USE_ANTIBIOTIC_TOOL))])
 def api_agente_antibioticos(datos: AntibioticInput):
     """Agente 11 — Esquemas empíricos según guías IDSA + Ajuste por eGFR (Cockcroft-Gault)."""
     factor = 0.85 if datos.sexo == "F" else 1.0

@@ -20,7 +20,7 @@ from typing import Optional, Dict, Any
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, Field
 
-from domain.auth_rbac import require_professional
+from domain.auth_rbac import require_capability, Capability
 
 logger = logging.getLogger(__name__)
 
@@ -115,7 +115,7 @@ class SegmentacionOutput(BaseModel):
     mensaje: str
 
 
-@router_segmentacion.post("/predecir", response_model=SegmentacionOutput, dependencies=[Depends(require_professional)])
+@router_segmentacion.post("/predecir", response_model=SegmentacionOutput, dependencies=[Depends(require_capability(Capability.SEGMENT_WOUND))])
 def predecir_segmentacion(payload: SegmentacionInput):
     """Ejecuta la inferencia U-Net para delimitar la herida y computar área en cm²."""
     try:
