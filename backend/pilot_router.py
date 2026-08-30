@@ -15,7 +15,7 @@ import io
 import logging
 from datetime import datetime, timedelta, timezone
 from typing import Optional, Dict, Any, List
-from fastapi import APIRouter, HTTPException, Depends, Header, status
+from fastapi import APIRouter, HTTPException, Depends, Header, status, Response
 from pydantic import BaseModel, Field, EmailStr
 from sqlalchemy.orm import Session
 from PIL import Image
@@ -172,6 +172,23 @@ class PilotCaseOutput(BaseModel):
     case_alias: str
     is_active: bool
     created_at: str
+
+
+class PilotWoundSummary(BaseModel):
+    id: str
+    wound_uuid: str
+    wound_label: str
+    wound_location: str
+    created_at: str
+
+
+class PilotCaseWithWoundsOutput(BaseModel):
+    id: str
+    pilot_case_uuid: str
+    case_alias: str
+    is_active: bool
+    created_at: str
+    wounds: List[PilotWoundSummary] = []
 
 
 class PilotWoundCreateInput(BaseModel):
@@ -442,6 +459,53 @@ def verificar_readiness_ia_piloto():
 
 
 # ── ENDPOINTS DE CASOS Y HERIDAS ──────────────────────────────────────
+
+@router_pilot.get("/cases", response_model=List[PilotCaseWithWoundsOutput])
+def listar_casos_piloto(
+    current_user: UserSession = Depends(require_authenticated),
+    db: Optional[Session] = Depends(get_db)
+):
+    """
+    Retorna la lista de casos pseudonimizados pertenecientes exclusivamente al médico autenticado.
+    Anti-IDOR: No permite listar casos de otros profesionales.
+    """
+    if db is not None:
+        try:
+            physician_id = uuid.UUID(str(current_user.user_id))
+            cases = db.query(PilotCase).filter(
+                PilotCase.physician_id == physician_id,
+                PilotCase.is_active == True
+            ).order_by(PilotCase.created_at.desc()).all()
+
+            results = []
+            for c in cases:
+                wounds = db.query(PilotWound).filter(
+                    PilotWound.pilot_case_id == c.id
+                ).order_by(PilotWound.created_at.asc()).all()
+
+                results.append(PilotCaseWithWoundsOutput(
+                    id=str(c.id),
+                    pilot_case_uuid=str(c.pilot_case_uuid),
+                    case_alias=c.case_alias,
+                    is_active=c.is_active,
+                    created_at=c.created_at.isoformat() if c.created_at else datetime.now(timezone.utc).isoformat(),
+                    wounds=[
+                        PilotWoundSummary(
+                            id=str(w.id),
+                            wound_uuid=str(w.wound_uuid),
+                            wound_label=w.wound_label,
+                            wound_location=w.wound_location or "No especificada",
+                            created_at=w.created_at.isoformat() if w.created_at else datetime.now(timezone.utc).isoformat()
+                        ) for w in wounds
+                    ]
+                ))
+            return results
+        except Exception as e:
+            logger.error(f"Error listando casos del médico: {e}")
+            raise HTTPException(status_code=500, detail="Error recuperando los casos.")
+
+    return []
+
 
 @router_pilot.post("/cases", response_model=PilotCaseOutput)
 def crear_caso_piloto(
@@ -987,6 +1051,53 @@ def obtener_timeline_caso_piloto(
     )
 
 
+@router_pilot.get("/photos/{photo_uuid}")
+def obtener_foto_clinica_piloto(
+    photo_uuid: str,
+    current_user: UserSession = Depends(require_authenticated),
+    db: Optional[Session] = Depends(get_db)
+):
+    """
+    Recupera los bytes de una fotografía clínica desde MinIO previa validación de propiedad (Anti-IDOR).
+    Solo accesible para el profesional autenticado dueño del caso.
+    """
+    now_dt = datetime.now(timezone.utc)
+    if db is not None:
+        try:
+            physician_id = uuid.UUID(str(current_user.user_id))
+            try:
+                p_uuid = uuid.UUID(photo_uuid)
+            except ValueError:
+                raise HTTPException(status_code=404, detail="Identificador de fotografía inválido.")
+
+            analysis = db.query(PilotAnalysis).filter(
+                PilotAnalysis.photo_uuid == p_uuid,
+                PilotAnalysis.physician_id == physician_id
+            ).first()
+
+            if not analysis:
+                raise HTTPException(status_code=404, detail="Fotografía no encontrada o no autorizada.")
+
+            if analysis.deleted_at is not None or (analysis.expires_at and analysis.expires_at < now_dt):
+                raise HTTPException(status_code=410, detail="La fotografía ha expirado o ha sido purgada según la política de retención.")
+
+            if not analysis.photo_storage_key:
+                raise HTTPException(status_code=404, detail="Clave de almacenamiento no disponible.")
+
+            image_bytes = get_image_bytes(analysis.photo_storage_key)
+            if not image_bytes:
+                raise HTTPException(status_code=404, detail="Objeto no encontrado en almacenamiento.")
+
+            return Response(content=image_bytes, media_type=analysis.photo_mime_type or "image/jpeg")
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Error obteniendo fotografía clínica: {e}")
+            raise HTTPException(status_code=500, detail="Error recuperando la imagen.")
+
+    raise HTTPException(status_code=404, detail="Fotografía no disponible.")
+
+
 @router_pilot.post("/feedback", response_model=PilotFeedbackOutput)
 def registrar_feedback_piloto(
     payload: PilotFeedbackInput,
@@ -1161,7 +1272,7 @@ def generar_token_seguimiento_remoto(
     db: Optional[Session] = Depends(get_db)
 ):
     """
-    Genera un token criptográfico de uso único para solicitar fotografía remota de control al paciente (+4 días).
+    Genera un token criptográfico Single-Use (de uso único) para solicitar fotografía remota de control al paciente (+4 días).
     Anti-IDOR: Valida que el caso y la herida pertenezcan al médico autenticado.
     Persiste ÚNICAMENTE el hash SHA-256 (nunca el token en claro).
     """

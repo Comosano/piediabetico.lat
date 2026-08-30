@@ -890,23 +890,87 @@
     <!-- ═════════════════════════════════════════════════════════════════ -->
     <div id="portal-piloto-view" class="hidden space-y-6 max-w-4xl mx-auto pb-16">
       
-      <!-- Banner Piloto v0.1 -->
-      <div class="med-card p-5 bg-gradient-to-r from-purple-950 via-slate-900 to-indigo-950 text-white rounded-3xl shadow-lg border-2 border-purple-800/60">
-        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div class="space-y-1">
-            <div class="flex items-center gap-2">
-              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-purple-500/20 text-purple-300 border border-purple-400/40">Modo Piloto Cerrado v0.1</span>
-              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/40">Sin datos identificatorios</span>
-              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/20 text-blue-300 border border-blue-400/40">TTL 72h / 21d</span>
-            </div>
-            <h2 class="text-xl sm:text-2xl font-black">Estación Clínica de Pruebas del Piloto</h2>
-            <p class="text-xs text-slate-300">Fotografías retrospectivas, timeline cronológico y validación de concordancia con IA.</p>
+      <!-- SUBVISTA 0: LOGIN DEL PILOTO (Token Bearer en memoria) -->
+      <div id="piloto-login-view" class="space-y-6 max-w-md mx-auto py-8">
+        <div class="med-card p-6 bg-white dark:bg-slate-900 border-2 border-purple-800/40 rounded-3xl shadow-xl space-y-5">
+          <div class="text-center space-y-2">
+            <div class="w-14 h-14 rounded-2xl bg-purple-100 dark:bg-purple-900/60 text-purple-900 dark:text-purple-200 flex items-center justify-center text-3xl mx-auto shadow-sm">🔐</div>
+            <h2 class="text-lg font-black text-slate-900 dark:text-white">Estación Clínica de Piloto v0.1</h2>
+            <p class="text-xs text-slate-500 leading-relaxed">Exclusivo para los 5 profesionales de salud acreditados en el protocolo clínico.</p>
           </div>
-          <div class="flex items-center gap-2 shrink-0">
-            <span class="text-xs px-3 py-1.5 rounded-xl bg-white/10 font-bold border border-white/20">5 Médicos Habilitados</span>
+
+          <form id="form-login-piloto" onsubmit="iniciarSesionPiloto(event)" class="space-y-3.5">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Correo Institucional del Piloto</label>
+              <input type="email" id="inp-piloto-email" required placeholder="piloto.medico1@piediabetico.lat" class="med-input !text-xs bg-slate-50 dark:bg-slate-800 border-slate-200 w-full" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Contraseña de Acceso Seguro</label>
+              <input type="password" id="inp-piloto-password" required placeholder="••••••••••••••••" class="med-input !text-xs bg-slate-50 dark:bg-slate-800 border-slate-200 w-full" />
+            </div>
+
+            <div id="msg-error-login-piloto" class="hidden p-3 rounded-xl bg-red-50 dark:bg-red-950/60 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-300 text-xs font-semibold"></div>
+
+            <button type="submit" id="btn-submit-login-piloto" class="btn-primary w-full !py-2.5 text-xs font-black bg-purple-900 hover:bg-purple-950 text-white rounded-2xl shadow-md flex items-center justify-center gap-2 min-h-[44px]">
+              <span>Ingresar a la Estación Clínica</span>
+              <span>→</span>
+            </button>
+          </form>
+
+          <div class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700 text-[11px] text-slate-500 space-y-1">
+            <span class="font-bold text-slate-700 dark:text-slate-300 block">🔒 Seguridad de Sesión:</span>
+            <span>Autenticación validada en Redis multi-worker. Token Bearer mantenido estrictamente en memoria sin persistencia en localStorage.</span>
           </div>
         </div>
       </div>
+
+      <!-- CONTENEDOR AUTENTICADO DEL PILOTO -->
+      <div id="piloto-authenticated-view" class="hidden space-y-6">
+
+        <!-- Barra de Estado del Profesional Autenticado -->
+        <div class="med-card p-4 bg-white dark:bg-slate-900 border border-purple-200 dark:border-purple-900/60 rounded-3xl shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <span class="w-10 h-10 rounded-2xl bg-purple-100 dark:bg-purple-900 text-purple-900 dark:text-purple-200 flex items-center justify-center font-black text-base shadow-xs">👨‍⚕️</span>
+            <div>
+              <div class="flex items-center gap-2">
+                <h3 id="txt-piloto-medico-nombre" class="text-sm font-black text-slate-900 dark:text-white">Médico Piloto</h3>
+                <span id="badge-piloto-medico-rol" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-900 border border-purple-200">medico_general</span>
+              </div>
+              <p id="txt-piloto-medico-email" class="text-xs text-slate-500 font-mono">piloto.medico1@piediabetico.lat</p>
+            </div>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <div id="badge-unet-readiness" class="px-2.5 py-1 rounded-xl text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              <span>U-Net: READY</span>
+            </div>
+            <div id="badge-classifier-readiness" class="px-2.5 py-1 rounded-xl text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200 flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+              <span>Clasificador: ARTIFACT_MISSING (Fail-Closed)</span>
+            </div>
+            <button type="button" onclick="cerrarSesionPiloto()" class="btn-sec !py-1.5 !px-3 text-xs font-bold text-slate-600 hover:text-rose-600 border-slate-200">
+              Cerrar Sesión
+            </button>
+          </div>
+        </div>
+      
+        <!-- Banner Piloto v0.1 -->
+        <div class="med-card p-5 bg-gradient-to-r from-purple-950 via-slate-900 to-indigo-950 text-white rounded-3xl shadow-lg border-2 border-purple-800/60">
+          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div class="space-y-1">
+              <div class="flex items-center gap-2">
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-purple-500/20 text-purple-300 border border-purple-400/40">Modo Piloto Cerrado v0.1</span>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/40">Sin datos identificatorios</span>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/20 text-blue-300 border border-blue-400/40">TTL 72h / 21d</span>
+              </div>
+              <h2 class="text-xl sm:text-2xl font-black">Estación Clínica de Pruebas del Piloto</h2>
+              <p class="text-xs text-slate-300">Fotografías retrospectivas, timeline cronológico y validación de concordancia con IA.</p>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              <span class="text-xs px-3 py-1.5 rounded-xl bg-white/10 font-bold border border-white/20">5 Médicos Habilitados</span>
+            </div>
+          </div>
+        </div>
 
       <!-- Barra de Navegación 3 Pestañas del Piloto -->
       <div class="flex rounded-2xl bg-slate-100 dark:bg-slate-800 p-1.5 border border-slate-200 dark:border-slate-700 shadow-xs">
@@ -1061,6 +1125,8 @@
           </button>
         </div>
       </div>
+
+      </div> <!-- Cierre de piloto-authenticated-view -->
 
     </div>
 
@@ -4929,11 +4995,34 @@
   <!-- ═════════════════════════════════════════════════════════════════ -->
   <div id="portal-paciente-remoto-view" class="hidden space-y-4 max-w-md mx-auto p-4 pb-16">
     
-    <div class="text-center space-y-1 pt-2 pb-2">
-      <div class="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center text-2xl mx-auto shadow-md">🦶</div>
-      <h2 class="text-lg font-black text-slate-900 dark:text-white mt-1">Foto de Control</h2>
-      <p class="text-xs text-slate-600 dark:text-slate-300">Su profesional de salud solicitó una nueva fotografía de seguimiento de su herida.</p>
+    <!-- ESTADO: CARGANDO TOKEN -->
+    <div id="pac-remoto-loading" class="med-card p-8 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl text-center space-y-3 shadow-md">
+      <div class="w-10 h-10 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
+      <p class="text-xs font-bold text-slate-700 dark:text-slate-300">Validando enlace de control seguro...</p>
     </div>
+
+    <!-- ESTADO: TOKEN INVÁLIDO / EXPIRADO / USADO -->
+    <div id="pac-remoto-invalido" class="hidden med-card p-6 bg-white dark:bg-slate-900 border-2 border-rose-400 rounded-3xl text-center space-y-4 shadow-lg">
+      <div class="w-14 h-14 rounded-2xl bg-rose-100 text-rose-700 flex items-center justify-center text-2xl mx-auto">⚠️</div>
+      <div class="space-y-1">
+        <h3 class="text-base font-black text-slate-900 dark:text-white">Enlace No Disponible</h3>
+        <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+          Este enlace de control no es válido, ha expirado o ya fue utilizado anteriormente.
+        </p>
+      </div>
+      <div class="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800 text-[11px] text-slate-500">
+        Por favor comuníquese con su profesional de salud tratante para solicitar un nuevo enlace de seguimiento.
+      </div>
+    </div>
+
+    <!-- ESTADO: TOKEN VÁLIDO (FLUJO DE FOTOGRAFÍA) -->
+    <div id="pac-remoto-valido" class="hidden space-y-4">
+      <div class="text-center space-y-1 pt-2 pb-2">
+        <div class="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center text-2xl mx-auto shadow-md">🦶</div>
+        <h2 class="text-lg font-black text-slate-900 dark:text-white mt-1">Foto de Control</h2>
+        <p id="pac-remoto-subtitulo" class="text-xs text-slate-600 dark:text-slate-300">Su profesional de salud solicitó una nueva fotografía de seguimiento de su herida.</p>
+        <span id="pac-remoto-badge-fecha" class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-900 border border-emerald-300 mt-1"></span>
+      </div>
 
     <!-- PASO 1: Privacy Gate 4 Checks -->
     <div id="pac-remoto-paso-privacidad" class="med-card p-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl space-y-4 shadow-sm">
@@ -5018,6 +5107,8 @@
         Este enlace ha cumplido su objetivo de uso único y ha quedado cerrado. Puede cerrar esta pestaña.
       </div>
     </div>
+
+    </div> <!-- Cierre de pac-remoto-valido -->
 
   </div>
 
