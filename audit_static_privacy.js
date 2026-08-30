@@ -13,6 +13,20 @@ const forbidden = [
   'piediabetico_pilot_data_v01'
 ];
 
+const prohibitedStorageKeys = [
+  'piediabetico_paciente_profile',
+  'piediabetico_prof_profile',
+  'pd_current_user',
+  'AUTH_USER_KEY',
+  'PACIENTES_KEY',
+  'TURNOS_STORAGE_KEY',
+  'piediabetico_turnos_db',
+  'pd_newsletter_subs',
+  'pd_consultas_contacto',
+  'ultimo_analisis_paciente_ts',
+  'pd_api_url'
+];
+
 console.log('═══════════════════════════════════════════════════════════════════════');
 console.log('🔍 STATIC PRIVACY & ZERO-STORAGE AUDIT');
 console.log('═══════════════════════════════════════════════════════════════════════\n');
@@ -27,6 +41,17 @@ forbidden.forEach(str => {
     allClean = false;
   } else {
     console.log(`  ✓ PASS: Clean of "${str}"`);
+  }
+});
+
+console.log('\n--- Prohibited Storage Keys Audit ---');
+prohibitedStorageKeys.forEach(key => {
+  const hasProhibitedWrite = app.includes(`localStorage.setItem('${key}'`) || app.includes(`localStorage.setItem("${key}"`);
+  if (hasProhibitedWrite) {
+    console.error(`  ✗ FAIL: Found prohibited storage write for key "${key}"`);
+    allClean = false;
+  } else {
+    console.log(`  ✓ PASS: Clean of prohibited storage key "${key}"`);
   }
 });
 

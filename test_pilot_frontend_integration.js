@@ -537,6 +537,7 @@ runTest('7. index.html patient remote view contains token validation and error s
   await runAsyncTest('18. enviarFotoPacienteRemoto calls POST /r/{token}/upload with NO doctor or case IDs', async () => {
     sandbox.state.remoteTokenActivo = 'pd_tok_mock_secure_token_abc123';
     sandbox.state.pilotData.tempFotoPacienteRemotoBase64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+    sandbox.state.pilotData.pacienteQualityScore = 85;
 
     sandbox.enviarFotoPacienteRemoto();
     await new Promise(r => setTimeout(r, 60));
@@ -567,15 +568,22 @@ runTest('7. index.html patient remote view contains token validation and error s
     assert.strictEqual(sentBody.system_representation_agreement, 'SI');
   });
 
-  await runAsyncTest('20. ejecutarAnalisisPilotoAislado calls POST /analisis without case/wound UUID', async () => {
+  await runAsyncTest('20. isolated analysis is disabled in Pilot v0.1 and performs no clinical POST', async () => {
+    fetchCalls.length = 0;
     sandbox.state.pilotData.tempFotoAisladaBase64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+
     await sandbox.ejecutarAnalisisPilotoAislado();
 
-    assert(lastFetchUrl.includes('/api/pilot/analisis'));
-    const sentBody = JSON.parse(lastFetchOptions.body);
-    assert.strictEqual(sentBody.pilot_case_uuid, undefined);
-    assert.strictEqual(sentBody.pilot_wound_uuid, undefined);
-    assert.strictEqual(sandbox.state.pilotData.tempFotoAisladaBase64, null, 'Temporary isolated base64 must be cleared');
+    const analysisCall = fetchCalls.find(c => c.url.includes('/analisis'));
+    assert.strictEqual(analysisCall, undefined, 'Isolated analysis must NOT issue any POST /analisis call');
+    assert.strictEqual(sandbox.FEATURE_PILOT_ISOLATED_ANALYSIS, false, 'FEATURE_PILOT_ISOLATED_ANALYSIS must be disabled');
+
+    const anyFabricatedCall = fetchCalls.find(c => {
+      if (!c.options || !c.options.body) return false;
+      const b = c.options.body;
+      return b.includes('quality_score": 85') || b.includes('quality_status": "optimo"');
+    });
+    assert.strictEqual(anyFabricatedCall, undefined, 'No fetch request may contain fabricated clinical defaults (85 / optimo)');
   });
 
   await runAsyncTest('21. cerrarSesionPiloto wipes all session and clinical data from memory', async () => {

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>piediabetico.lat — Asistente de Triage & Consola Clínica</title>
   <meta name="description" content="Plataforma médica para el cuidado del pie diabético en Latinoamérica. Orientación para pacientes y estación clínica para profesionales.">
-  <link rel="manifest" href="./manifest.json">
+  <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#FFFFFF">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -28,7 +28,306 @@
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" defer></script>
-  <link rel="stylesheet" href="./styles.css?v=41">
+  <link rel="stylesheet" href="/styles.css?v=41">
+  <style id="pilot-v4-styles">
+    :root {
+      --azul:#1e3a5f;--azul-d:#0c2461;--azul-l:#dbeafe;--azul-b:#bfdbfe;--azul-t:#1e40af;
+      --verde:#16a34a;--verde-l:#dcfce7;--verde-b:#bbf7d0;--verde-t:#14532d;
+      --rojo:#dc2626;--rojo-l:#fee2e2;--rojo-b:#fca5a5;--rojo-t:#7f1d1d;
+      --amber:#d97706;--amber-l:#fef9c3;--amber-b:#fde68a;--amber-t:#713f12;
+      --purple:#7c3aed;--purple-l:#ede9fe;--purple-b:#c4b5fd;--purple-t:#4c1d95;
+      --gris:#64748b;--gris-l:#f1f5f9;--gris-b:#e2e8f0;
+      --surf:#fff;--surf1:#f8fafc;--surf2:#f1f5f9;
+      --borde:#e2e8f0;--borde-m:#cbd5e1;
+      --txt:#0f172a;--txt2:#475569;--txt3:#94a3b8;
+      --r:12px;--r-sm:8px;--font:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+      --pac-verde:#059669;--pac-verde-d:#065f46;--pac-verde-l:#d1fae5;--pac-verde-b:#a7f3d0;--pac-verde-t:#064e3b;
+    }
+    @media(prefers-color-scheme:dark){
+      :root {
+        --surf:#0f172a;--surf1:#1e293b;--surf2:#283347;
+        --borde:#334155;--borde-m:#475569;
+        --txt:#f1f5f9;--txt2:#94a3b8;--txt3:#64748b;
+        --azul-l:#1e3a5f;--azul-b:#1e40af;
+        --verde-l:#14532d;--verde-b:#065f46;
+        --rojo-l:#7f1d1d;--rojo-b:#991b1b;
+        --amber-l:#78350f;--amber-b:#92400e;
+        --purple-l:#4c1d95;--purple-b:#5b21b6;
+        --gris-l:#1e293b;--gris-b:#334155;
+        --pac-verde-l:#064e3b;--pac-verde-b:#065f46;
+      }
+    }
+    .topbar{background:var(--azul-d);padding:12px 16px;display:flex;align-items:center;gap:10px;min-height:52px;position:sticky;top:0;z-index:100}
+    .t-logo{font-size:15px;font-weight:600;color:#fff;flex:1}.t-logo span{color:#60a5fa}
+    .t-title{font-size:15px;font-weight:500;color:#fff;flex:1;display:none}
+    .back-btn{display:none;align-items:center;gap:4px;background:none;border:none;color:rgba(255,255,255,.8);font-size:13px;font-family:var(--font);cursor:pointer;padding:4px 0;min-height:44px;flex-shrink:0}
+    .back-btn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2}
+    .t-av{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;flex-shrink:0}
+
+    .status-bar{background:rgba(0,0,0,.25);padding:6px 16px;display:flex;gap:12px;flex-wrap:wrap}
+    .status-pill{display:flex;align-items:center;gap:5px;font-size:11px;color:rgba(255,255,255,.8)}
+    .status-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+    .dot-on{background:#4ade80}.dot-off{background:#64748b}
+
+    .screen{display:none;flex:1;flex-direction:column}
+    .screen.on{display:flex}
+    .body{padding:16px;flex:1}
+
+    .page-title{font-size:20px;font-weight:700;color:var(--txt);margin-bottom:4px}
+    .page-sub{font-size:13px;color:var(--txt2);margin-bottom:16px;line-height:1.5}
+    .sec-label{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--txt3);margin:20px 0 8px}
+    .sec-label:first-child{margin-top:0}
+
+    .btn{width:100%;padding:14px 18px;border-radius:var(--r);border:none;font-size:15px;font-weight:600;font-family:var(--font);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .15s,transform .1s;-webkit-tap-highlight-color:transparent;min-height:48px}
+    .btn:active{transform:scale(.98);opacity:.9}
+    .btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+    .btn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;flex-shrink:0}
+    .btn-azul{background:var(--azul);color:#fff}
+    .btn-azul-d{background:var(--azul-d);color:#fff}
+    .btn-verde{background:var(--verde);color:#fff}
+    .btn-rojo{background:var(--rojo);color:#fff}
+    .btn-outline{background:var(--surf);color:var(--txt);border:1.5px solid var(--borde-m)}
+    .btn-ghost{background:none;color:var(--txt2);border:1px solid var(--borde)}
+    .btn-sm{min-height:44px;font-size:13px;padding:10px 14px}
+    .btn-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+
+    .card{background:var(--surf);border:1px solid var(--borde);border-radius:var(--r);padding:14px;margin-bottom:10px}
+    .card-titulo{font-size:15px;font-weight:600;color:var(--txt);margin-bottom:6px}
+    .card-sub{font-size:13px;color:var(--txt2);line-height:1.5}
+    .card-row{display:flex;align-items:center;gap:12px;background:var(--surf);border:1px solid var(--borde);border-radius:var(--r);padding:14px;margin-bottom:8px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:border-color .15s;min-height:64px}
+    .card-row:hover,.card-row:focus-within{border-color:var(--azul)}
+    .card-row:focus-visible{outline:2px solid var(--azul);outline-offset:2px}
+
+    .pilot-av{width:42px;height:42px;border-radius:var(--r-sm);background:var(--azul-l);color:var(--azul-t);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;text-align:center;line-height:1.2}
+    .pilot-info{flex:1}
+    .pilot-id{display:block;font-size:14px;font-weight:600;color:var(--txt);margin-bottom:2px}
+    .pilot-detail{display:block;font-size:12px;color:var(--txt2)}
+    .badge{font-size:11px;padding:4px 10px;border-radius:99px;font-weight:500;flex-shrink:0;white-space:nowrap}
+    .badge-azul{background:var(--azul-l);color:var(--azul-t)}
+    .badge-amber{background:var(--amber-l);color:var(--amber-t)}
+    .badge-gris{background:var(--gris-l);color:var(--gris)}
+    .badge-verde{background:var(--verde-l);color:var(--verde-t)}
+    .chev{color:var(--txt3);font-size:18px;flex-shrink:0}
+
+    .aviso{background:var(--amber-l);border:1.5px solid var(--amber-b);border-radius:var(--r);padding:13px 14px;display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+    .aviso-ico{font-size:18px;flex-shrink:0;margin-top:1px}
+    .aviso-txt{flex:1}
+    .aviso-txt strong{display:block;font-size:13px;color:var(--amber-t);font-weight:600}
+    .aviso-txt span{font-size:12px;color:var(--amber-t)}
+    .aviso-label{font-size:10px;padding:3px 8px;border-radius:99px;background:var(--amber);color:#fff;font-weight:700;margin-left:auto;align-self:flex-start;flex-shrink:0;white-space:nowrap}
+
+    .quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px}
+    .quick-btn{background:var(--surf);border:1.5px solid var(--borde);border-radius:var(--r);padding:18px 12px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;font-family:var(--font);-webkit-tap-highlight-color:transparent;transition:border-color .15s;min-height:88px}
+    .quick-btn:hover,.quick-btn:focus-visible{border-color:var(--azul)}
+    .quick-btn:focus-visible{outline:2px solid var(--azul);outline-offset:2px}
+    .quick-btn.acc{background:var(--azul-d);border-color:var(--azul-d)}
+    .quick-ico{font-size:26px}
+    .quick-btn span{font-size:13px;font-weight:600;color:var(--txt);text-align:center}
+    .quick-btn.acc span{color:#fff}
+    .quick-btn small{font-size:11px;color:var(--txt3);text-align:center}
+    .quick-btn.acc small{color:rgba(255,255,255,.65)}
+
+    .herida-row{display:flex;align-items:center;gap:12px;background:var(--surf);border:1px solid var(--borde);border-radius:var(--r);padding:12px 14px;margin-bottom:6px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:border-color .15s;min-height:56px}
+    .herida-row:hover{border-color:var(--azul)}
+    .herida-ico{width:36px;height:36px;border-radius:var(--r-sm);background:var(--azul-l);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+    .herida-info{flex:1}
+    .herida-nombre{font-size:14px;font-weight:500;color:var(--txt)}
+    .herida-detalle{font-size:12px;color:var(--txt2)}
+    .nueva-herida-btn{display:flex;align-items:center;justify-content:center;gap:8px;background:none;border:1.5px dashed var(--borde-m);border-radius:var(--r);padding:12px;cursor:pointer;font-family:var(--font);font-size:13px;font-weight:500;color:var(--azul-t);width:100%;-webkit-tap-highlight-color:transparent;min-height:48px;margin-top:2px;transition:border-color .15s}
+    .nueva-herida-btn:hover{border-color:var(--azul)}
+
+    .calc-card{background:var(--surf);border:1px solid var(--borde);border-radius:var(--r);padding:14px 16px;margin-bottom:8px;cursor:pointer;-webkit-tap-highlight-color:transparent;display:flex;align-items:flex-start;gap:12px;transition:border-color .15s;min-height:72px}
+    .calc-card:hover,.calc-card:focus-visible{border-color:var(--azul)}
+    .calc-card:focus-visible{outline:2px solid var(--azul);outline-offset:2px}
+    .calc-ico-box{width:42px;height:42px;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:20px}
+    .calc-body{flex:1}
+    .calc-name{font-size:14px;font-weight:600;color:var(--txt);margin-bottom:2px}
+    .calc-desc{font-size:12px;color:var(--txt2);line-height:1.4;margin-bottom:6px}
+    .calc-chip{font-size:11px;padding:2px 8px;border-radius:99px;font-weight:500;display:inline-block}
+    .chip-azul{background:var(--azul-l);color:var(--azul-t)}
+    .chip-purple{background:var(--purple-l);color:var(--purple-t)}
+    .chip-verde{background:var(--verde-l);color:var(--verde-t)}
+    .chip-amber{background:var(--amber-l);color:var(--amber-t)}
+    .chip-gris{background:var(--gris-l);color:var(--gris)}
+
+    .calc-header{background:var(--azul-d);padding:16px;color:#fff}
+    .calc-header h2{font-size:18px;font-weight:700;margin-bottom:4px}
+    .calc-header p{font-size:12px;color:rgba(255,255,255,.7);line-height:1.5}
+    .calc-form-body{padding:16px;flex:1;overflow-y:auto}
+    .field-label{font-size:13px;font-weight:500;color:var(--txt);margin-bottom:8px;display:block}
+    .field-hint{font-size:11px;color:var(--txt3);margin-top:-4px;margin-bottom:10px;display:block}
+    .seg{display:flex;background:var(--surf2);border-radius:var(--r-sm);padding:3px;gap:3px;margin-bottom:14px;flex-wrap:wrap}
+    .seg-btn{flex:1;min-width:0;padding:9px 4px;border-radius:6px;border:none;font-size:11px;font-weight:500;color:var(--txt2);background:none;cursor:pointer;font-family:var(--font);-webkit-tap-highlight-color:transparent;text-align:center;transition:all .15s;line-height:1.3;min-height:44px}
+    .seg-btn.on{background:var(--surf);color:var(--txt);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+    .num-inp{width:100%;padding:11px 12px;border:1.5px solid var(--borde-m);border-radius:var(--r-sm);font-size:16px;color:var(--txt);background:var(--surf);font-family:var(--font);margin-bottom:14px;min-height:44px}
+    .num-inp:focus{outline:none;border-color:var(--azul)}
+
+    .analisis-row{display:flex;align-items:flex-start;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--borde)}
+    .analisis-row:last-child{border-bottom:none}
+    .analisis-label{font-size:13px;color:var(--txt2);flex:1}
+    .analisis-val{font-size:13px;font-weight:600;color:var(--txt);text-align:right;flex-shrink:0;margin-left:12px}
+    .analisis-val.ok{color:var(--verde)}
+    .analisis-val.nd{color:var(--txt3);font-weight:400}
+
+    .privacy-box{background:var(--surf);border:1.5px solid var(--borde-m);border-radius:var(--r);padding:14px;margin-bottom:14px}
+    .privacy-titulo{font-size:14px;font-weight:600;color:var(--txt);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+    .check-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--borde);cursor:pointer;-webkit-tap-highlight-color:transparent}
+    .check-item:last-child{border-bottom:none;padding-bottom:0}
+    .check-box{width:22px;height:22px;border-radius:5px;border:2px solid var(--borde-m);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;margin-top:1px}
+    .check-box.on{background:var(--azul);border-color:var(--azul)}
+    .check-box svg{width:13px;height:13px;stroke:#fff;fill:none;stroke-width:3;display:none}
+    .check-box.on svg{display:block}
+    .check-txt{font-size:13px;color:var(--txt);line-height:1.4;flex:1}
+
+    .quality-card{border-radius:var(--r);padding:20px;margin-bottom:14px;text-align:center}
+    .quality-card.ok{background:var(--verde-l);border:1.5px solid var(--verde-b)}
+    .quality-card.fail{background:var(--rojo-l);border:1.5px solid var(--rojo-b)}
+    .quality-ico{font-size:44px;margin-bottom:8px;display:block}
+    .quality-titulo{font-size:16px;font-weight:700;margin-bottom:6px}
+    .quality-card.ok .quality-titulo{color:var(--verde-t)}
+    .quality-card.fail .quality-titulo{color:var(--rojo-t)}
+    .quality-desc{font-size:13px;line-height:1.5}
+    .quality-card.ok .quality-desc{color:var(--verde-t)}
+    .quality-card.fail .quality-desc{color:var(--rojo-t)}
+
+    .shadow-card{background:var(--azul-l);border:1.5px solid var(--azul-b);border-radius:var(--r);padding:16px;margin-bottom:14px}
+    .shadow-titulo{font-size:14px;font-weight:700;color:var(--azul-d);margin-bottom:4px;display:flex;align-items:center;gap:6px}
+    .shadow-sub{font-size:12px;color:var(--azul-t);margin-bottom:14px;line-height:1.5}
+    .shadow-label{font-size:12px;font-weight:600;color:var(--azul-t);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em}
+    .shadow-opts{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+    .shadow-opt{padding:9px 14px;border-radius:var(--r-sm);border:1.5px solid var(--azul-b);background:var(--surf);font-size:13px;font-weight:500;color:var(--azul-t);cursor:pointer;font-family:var(--font);-webkit-tap-highlight-color:transparent;transition:all .15s;min-height:44px}
+    .shadow-opt.on{background:var(--azul);border-color:var(--azul);color:#fff}
+    .shadow-textarea{width:100%;padding:10px 12px;border:1.5px solid var(--azul-b);border-radius:var(--r-sm);font-size:13px;color:var(--txt);background:var(--surf);font-family:var(--font);resize:none;height:72px}
+    .shadow-textarea:focus{outline:none;border-color:var(--azul)}
+
+    .tl{display:flex;flex-direction:column}
+    .tl-item{display:flex;gap:12px;padding-bottom:20px;position:relative}
+    .tl-item:last-child{padding-bottom:0}
+    .tl-left{display:flex;flex-direction:column;align-items:center;flex-shrink:0;width:28px}
+    .tl-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;border:2px solid var(--borde-m);background:var(--surf);z-index:1}
+    .tl-dot.azul{border-color:var(--azul);background:var(--azul)}
+    .tl-dot.gris{border-color:var(--borde-m);background:var(--surf2)}
+    .tl-line{width:1px;flex:1;background:var(--borde);margin-top:4px}
+    .tl-item:last-child .tl-line{display:none}
+    .tl-content{flex:1}
+    .tl-fecha{font-size:11px;color:var(--txt3);margin-bottom:4px;font-weight:500}
+    .tl-card{background:var(--surf);border:1px solid var(--borde);border-radius:var(--r-sm);padding:12px;margin-bottom:2px}
+    .tl-card-title{font-size:13px;font-weight:600;color:var(--txt);margin-bottom:6px}
+    .tl-dato{font-size:12px;color:var(--txt2);margin-bottom:2px}
+    .tl-dato strong{color:var(--txt);font-weight:500}
+    .tl-thumb{width:100%;height:72px;border-radius:var(--r-sm);background:var(--surf2);margin-top:8px;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--txt3);overflow:hidden}
+    .tl-expired{width:100%;border-radius:var(--r-sm);background:var(--surf2);margin-top:8px;display:flex;align-items:center;justify-content:center;padding:10px;border:1px dashed var(--borde-m);min-height:60px}
+    .tl-expired p{font-size:11px;color:var(--txt3);text-align:center;line-height:1.4}
+
+    .comp-warning{background:var(--amber-l);border:1.5px solid var(--amber-b);border-radius:var(--r-sm);padding:10px 12px;margin-bottom:14px;display:flex;gap:8px}
+    .comp-warning-ico{font-size:16px;flex-shrink:0}
+    .comp-warning p{font-size:12px;color:var(--amber-t);line-height:1.5}
+    .comparador-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+    .comp-foto{background:var(--surf2);border-radius:var(--r-sm);height:150px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid var(--borde);font-size:11px;color:var(--txt3);text-align:center;padding:8px;overflow:hidden}
+    .comp-foto-lbl{font-size:12px;font-weight:600;color:var(--txt);margin-top:6px}
+    .comp-foto-meta{font-size:11px;color:var(--txt3)}
+    .evol-opts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:14px}
+    .evol-btn{padding:12px 8px;border-radius:var(--r-sm);border:1.5px solid var(--borde-m);background:var(--surf);font-size:13px;font-weight:600;color:var(--txt);cursor:pointer;font-family:var(--font);-webkit-tap-highlight-color:transparent;text-align:center;transition:all .15s;min-height:48px}
+    .evol-btn.on{border-color:var(--azul);background:var(--azul-l);color:var(--azul-t)}
+    .repres-opts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:12px}
+    .rep-btn{padding:10px 8px;border-radius:var(--r-sm);border:1.5px solid var(--borde-m);background:var(--surf);font-size:13px;font-weight:500;color:var(--txt);cursor:pointer;font-family:var(--font);-webkit-tap-highlight-color:transparent;text-align:center;transition:all .15s;min-height:44px}
+    .rep-btn.on{border-color:var(--azul);background:var(--azul-l);color:var(--azul-t)}
+
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;justify-content:center;z-index:200;padding:0 0 env(safe-area-inset-bottom,0)}
+    .modal-overlay.hidden{display:none}
+    .modal-sheet{background:var(--surf);border-radius:20px 20px 0 0;padding:24px 20px;width:100%;max-width:600px;animation:slideUp .25s ease}
+    @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+    .modal-handle{width:36px;height:4px;border-radius:99px;background:var(--borde-m);margin:0 auto 20px;display:block}
+    .modal-title{font-size:17px;font-weight:700;color:var(--txt);margin-bottom:6px}
+    .modal-sub{font-size:13px;color:var(--txt2);margin-bottom:16px;line-height:1.5}
+    .modal-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--borde)}
+    .modal-row:last-of-type{border-bottom:none}
+    .modal-row-label{font-size:13px;color:var(--txt2)}
+    .modal-row-val{font-size:13px;font-weight:600;color:var(--txt)}
+    .link-box{background:var(--surf2);border-radius:var(--r-sm);padding:12px;display:flex;align-items:center;gap:10px;margin:12px 0}
+    .link-box span{font-size:12px;color:var(--azul-t);font-family:monospace;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .link-box button{font-size:12px;font-weight:600;color:var(--azul);background:none;border:none;cursor:pointer;font-family:var(--font);min-height:44px;padding:0 8px}
+
+    .selector-card{background:var(--surf);border:1.5px solid var(--borde-m);border-radius:var(--r);padding:14px;margin-bottom:12px}
+    .selector-label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--txt3);margin-bottom:8px}
+    .select-opt{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1.5px solid var(--borde);border-radius:var(--r-sm);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all .15s;margin-bottom:6px;min-height:48px}
+    .select-opt:hover,.select-opt.on{border-color:var(--azul);background:var(--azul-l)}
+    .select-opt-txt{flex:1;font-size:13px;font-weight:500;color:var(--txt)}
+    .select-opt.on .select-opt-txt{color:var(--azul-t)}
+    .select-dot{width:18px;height:18px;border-radius:50%;border:2px solid var(--borde-m);flex-shrink:0;transition:all .15s}
+    .select-opt.on .select-dot{background:var(--azul);border-color:var(--azul)}
+
+    .login-hero{background:var(--azul-d);padding:32px 24px;text-align:center}
+    .login-logo{font-size:24px;font-weight:700;color:#fff;margin-bottom:4px}.login-logo span{color:#60a5fa}
+    .login-sub{font-size:13px;color:rgba(255,255,255,.7);margin-bottom:0}
+    .login-body{padding:24px 20px;flex:1}
+    .login-field{margin-bottom:14px}
+    .login-label{font-size:13px;font-weight:500;color:var(--txt);margin-bottom:6px;display:block}
+    .login-input{width:100%;padding:13px 14px;border:1.5px solid var(--borde-m);border-radius:var(--r-sm);font-size:16px;color:var(--txt);background:var(--surf);font-family:var(--font);min-height:48px}
+    .login-input:focus{outline:none;border-color:var(--azul)}
+
+    .loading{display:flex;flex-direction:column;align-items:center;gap:12px;padding:40px 0}
+    .spinner{width:44px;height:44px;border:3px solid var(--azul-l);border-top-color:var(--azul);border-radius:50%;animation:spin .8s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .loading p{font-size:13px;color:var(--txt2);text-align:center}
+
+    .nav-bottom{display:flex;border-top:1px solid var(--borde);background:var(--surf);padding-bottom:env(safe-area-inset-bottom,0px);position:sticky;bottom:0}
+    .nav-tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 4px 8px;border:none;background:none;cursor:pointer;color:var(--txt3);font-family:var(--font);-webkit-tap-highlight-color:transparent;transition:color .15s;font-size:10px;min-height:56px}
+    .nav-tab.on{color:var(--azul)}
+    .nav-tab-ico{font-size:22px;line-height:1}
+
+    .disclaimer{background:var(--surf2);border-left:3px solid var(--azul-b);padding:10px 12px;border-radius:0 var(--r-sm) var(--r-sm) 0;margin:12px 0}
+    .disclaimer p{font-size:12px;color:var(--txt2);line-height:1.5}
+    .legal{font-size:11px;color:var(--txt3);text-align:center;line-height:1.5;padding:8px 0}
+    .espacio{height:16px}
+    .mt8{margin-top:8px}.mb8{margin-bottom:8px}
+
+    /* PACIENTE STYLES */
+    .hero{background:var(--pac-verde-d);padding:24px 16px 28px;text-align:center}
+    .hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.12);border-radius:99px;padding:4px 14px;margin-bottom:12px}
+    .hero-badge .dot{width:6px;height:6px;border-radius:50%;background:#4ade80;flex-shrink:0}
+    .hero-badge span{font-size:11px;color:rgba(255,255,255,.9);font-weight:500}
+    .hero h1{font-size:22px;font-weight:700;color:#fff;line-height:1.25;margin-bottom:8px}
+    .hero h1 span{color:#6ee7b7}
+    .hero p{font-size:13px;color:rgba(255,255,255,.75);line-height:1.6;max-width:320px;margin:0 auto}
+
+    .info-box{border-radius:var(--r);padding:14px 16px;margin-bottom:12px;display:flex;align-items:flex-start;gap:10px}
+    .info-box.verde{background:var(--pac-verde-l);border:1px solid var(--pac-verde-b)}
+    .info-box.amber{background:var(--amber-l);border:1px solid var(--amber-b)}
+    .info-box.gris{background:var(--gris-l);border:1px solid var(--gris-b)}
+    .info-box.rojo{background:var(--rojo-l);border:1px solid var(--rojo-b)}
+    .info-box-ico{font-size:18px;flex-shrink:0;margin-top:1px}
+    .info-box-txt{flex:1}
+    .info-box-txt strong{display:block;font-size:13px;font-weight:600;margin-bottom:3px}
+    .info-box-txt span{font-size:12px;line-height:1.5;display:block}
+
+    .foto-preview{width:100%;max-height:260px;object-fit:cover;border-radius:var(--r);border:1px solid var(--borde);display:none;margin-bottom:12px}
+    .foto-area{background:var(--surf2);border:2px dashed var(--borde-m);border-radius:var(--r);padding:32px 16px;text-align:center;margin-bottom:12px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:border-color .2s}
+    .foto-area:hover,.foto-area:focus-visible{border-color:var(--pac-verde)}
+    .foto-ico{font-size:40px;margin-bottom:8px;display:block}
+    .foto-area strong{font-size:14px;font-weight:600;color:var(--pac-verde);display:block;margin-bottom:4px}
+    .foto-area p{font-size:12px;color:var(--txt3)}
+
+    .exito-box{text-align:center;padding:40px 16px}
+    .exito-ico{font-size:64px;margin-bottom:16px;display:block}
+    .exito-titulo{font-size:22px;font-weight:700;color:var(--pac-verde-d);margin-bottom:8px}
+    .exito-desc{font-size:14px;color:var(--txt2);line-height:1.6;max-width:280px;margin:0 auto}
+
+    .validacion-badge{display:inline-flex;align-items:center;gap:6px;background:var(--amber-l);border:1px solid var(--amber-b);border-radius:99px;padding:5px 14px;font-size:12px;font-weight:600;color:var(--amber-t)}
+    .preview-card{background:var(--surf);border:1px solid var(--borde);border-radius:var(--r);overflow:hidden;margin-bottom:8px}
+    .preview-header{background:var(--surf2);padding:12px 16px;display:flex;align-items:center;gap:8px}
+    .preview-step{width:24px;height:24px;border-radius:50%;background:var(--borde-m);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--txt2);flex-shrink:0}
+    .preview-step-lbl{font-size:13px;color:var(--txt2)}
+    .preview-body{padding:12px 16px}
+    .preview-body span{font-size:13px;color:var(--txt3)}
+
+    .verif-box{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:48px 24px;text-align:center;gap:14px}
+    .verif-titulo{font-size:17px;font-weight:600;color:var(--txt)}
+    .verif-sub{font-size:13px;color:var(--txt2);line-height:1.5;max-width:260px}
+    .prog-bar{height:3px;background:rgba(255,255,255,.2);overflow:hidden;display:none}
+    .prog-fill{height:100%;background:#6ee7b7;border-radius:99px;transition:width .4s ease}
+    .divider{height:1px;background:var(--borde);margin:16px 0}
+  </style>
 </head>
 <body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col antialiased">
 
@@ -455,7 +754,7 @@
         <div class="med-card p-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2 shadow-sm">
           <div class="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/70 border border-amber-200 dark:border-amber-700/60 text-amber-700 dark:text-amber-300 flex items-center justify-center font-bold text-lg">🛡️</div>
           <h3 data-i18n="pillar_legal_title" class="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">Blindaje Legal & Privacidad</h3>
-          <p data-i18n="pillar_legal_desc" class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-medium">Cumplimiento estricto de la Ley 25.326 de Protección de Datos Personales y normativas de teleasistencia en Latinoamérica.</p>
+          <p data-i18n="pillar_legal_desc" class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-medium">Privacidad y seguridad por diseño. El tratamiento de datos deberá adaptarse a la normativa aplicable en cada jurisdicción.</p>
         </div>
       </div>
 
@@ -490,7 +789,7 @@
             </div>
             <h3 class="text-xl sm:text-2xl font-black text-white">Marco Jurídico & Leyes de Protección por País</h3>
             <p class="text-xs sm:text-sm text-slate-200 max-w-2xl leading-relaxed font-normal">
-              Conocé las leyes de protección de datos de salud, normativas de telemedicina y exenciones de responsabilidad que amparan a pacientes y médicos en Argentina, Brasil, México, Colombia, Chile, Perú, Uruguay, Paraguay y bajo estándares GDPR/HIPAA.
+              Conocé las leyes de protección de datos de salud, normativas de telemedicina y exenciones de responsabilidad que amparan a pacientes y médicos en Argentina, Brasil, México, Colombia, Chile, Perú, Uruguay y Paraguay. Privacidad y seguridad por diseño adaptadas a cada jurisdicción.
             </p>
           </div>
           <div class="flex flex-col sm:flex-row gap-3 shrink-0 w-full md:w-auto">
@@ -598,535 +897,751 @@
     </div>
 
     <!-- ═════════════════════════════════════════════════════════════════ -->
-    <!-- PORTAL 1: MODO PACIENTE / FAMILIAR (EXPERIENCIA SIMPLE Y CLARA) -->
+    <!-- PORTAL PACIENTE PUBLICO v4 (/paciente)                           -->
     <!-- ═════════════════════════════════════════════════════════════════ -->
-        <!-- ═════════════════════════════════════════════════════════════════ -->
-    <!-- PORTAL 1: MODO PACIENTE / FAMILIAR (REDISEÑO V3 WIZARD GUIADO) -->
-    <!-- ═════════════════════════════════════════════════════════════════ -->
-    <div id="portal-paciente-view" class="hidden space-y-4 max-w-xl mx-auto pb-16">
+    <div id="portal-paciente-view" class="hidden w-full max-w-[600px] mx-auto min-h-screen flex flex-col pb-16">
       
-      <!-- Topbar del Wizard Paciente -->
-      <div class="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-800">
-        <button type="button" onclick="goBackPacStep()" id="pac-btn-back" class="text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-emerald-600 flex items-center gap-1 transition-colors">
-          <i data-lucide="arrow-left" class="w-4 h-4"></i>
-          <span id="pac-btn-back-txt">Volver al Inicio</span>
+      <div class="topbar" style="background:var(--pac-verde-d)">
+        <button class="back-btn" onclick="switchPortal('landing')" aria-label="Volver">
+          <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          Inicio
         </button>
-        <span id="pac-top-step-indicator" class="text-[11px] font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-3 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">Paso 1 de 4</span>
+        <div class="t-logo">pie<span>diabetico</span>.lat</div>
       </div>
 
-      <!-- Banner Interactivo de Simulación / Demo Paciente -->
-      <div id="pac-demo-banner" class="hidden p-3 rounded-2xl bg-amber-50 dark:bg-amber-950/70 border border-amber-300 dark:border-amber-700 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs shadow-2xs">
-        <div class="flex items-center gap-2">
-          <span class="text-base">⚡</span>
-          <span class="font-bold text-amber-900 dark:text-amber-200">Modo Demo Activo</span>
-        </div>
-        <div class="flex gap-1.5">
-          <button type="button" onclick="cargarCasoEjemploPaciente('verde')" class="px-2 py-1 rounded-lg text-[10px] font-bold bg-emerald-600 text-white">🟢 Verde</button>
-          <button type="button" onclick="cargarCasoEjemploPaciente('amarillo')" class="px-2 py-1 rounded-lg text-[10px] font-bold bg-amber-600 text-white">🟡 Amarillo</button>
-          <button type="button" onclick="cargarCasoEjemploPaciente('rojo')" class="px-2 py-1 rounded-lg text-[10px] font-bold bg-rose-600 text-white">🔴 Rojo</button>
-          <button type="button" onclick="cargarCasoEjemploPaciente('gris')" class="px-2 py-1 rounded-lg text-[10px] font-bold bg-slate-600 text-white">⚪ No Evaluable</button>
-        </div>
+      <div class="hero" style="background:var(--pac-verde-d)">
+        <div class="hero-badge"><div class="dot"></div><span>Acceso inicial sin registro</span></div>
+        <h1>Cuidado del <span>pie diabético</span></h1>
+        <p>Herramientas para el paciente y su equipo de salud.</p>
       </div>
 
-      <!-- ═══════════════════════════════════════════════════════════════
-           PASO 1 (s0): FOTO DE LA LESIÓN Y SLOTS
-      ════════════════════════════════════════════════════════════════ -->
-      <div id="pac-step-0" class="pac-screen space-y-4">
-        
-        <div class="space-y-1">
-          <h2 class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">Fotografiá la herida</h2>
-          <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300">Una sola foto es suficiente para comenzar. Tres fotos nos dan el análisis más completo.</p>
-        </div>
-
-        <!-- Strip de Alarma Inmediata -->
-        <div onclick="mostrarPantallaEmergenciaPac()" class="p-3 rounded-2xl bg-rose-50 dark:bg-rose-950/70 border-2 border-rose-300 dark:border-rose-700 text-xs text-rose-900 dark:text-rose-200 flex items-start gap-2.5 cursor-pointer shadow-2xs hover:bg-rose-100 transition-all">
-          <span class="text-base shrink-0">🚨</span>
-          <p class="leading-snug">
-            <strong>¿Tenés fiebre, dolor súbito o mal olor nuevo?</strong> — Esto puede ser una urgencia, <span class="underline font-bold text-rose-700 dark:text-rose-300">tocá aquí para orientación inmediata</span>.
-          </p>
-        </div>
-
-        <!-- Selector Paciente vs Cuidador -->
-        <div class="p-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 flex items-center justify-between gap-2 text-xs">
-          <span class="font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
-            <span>👤</span>
-            <span>Consulta para:</span>
-          </span>
-          <div class="flex rounded-xl bg-white dark:bg-slate-900 p-0.5 border border-slate-200 dark:border-slate-700 text-xs shrink-0">
-            <button type="button" id="btn-rol-propio" onclick="setRolConsultaPaciente('propio')" class="px-3 py-1 rounded-lg font-bold bg-emerald-600 text-white shadow-2xs transition-all">
-              Para mí
-            </button>
-            <button type="button" id="btn-rol-cuidador" onclick="setRolConsultaPaciente('cuidador')" class="px-3 py-1 rounded-lg font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 transition-all">
-              Familiar
-            </button>
-          </div>
-        </div>
-
-        <!-- Alerta de Iluminación Canvas -->
-        <div id="pac-alerta-iluminacion" class="hidden p-3 rounded-2xl bg-amber-50 dark:bg-amber-950/70 border border-amber-300 dark:border-amber-700 text-xs text-amber-950 dark:text-amber-200 flex items-start gap-2.5">
-          <span class="text-base shrink-0">💡</span>
-          <div>
-            <strong id="pac-alerta-luz-tit" class="block font-bold">Foto con poca luz</strong>
-            <span id="pac-alerta-luz-desc" class="text-[11px]">Acercate a una ventana para mayor nitidez clínica.</span>
-          </div>
-        </div>
-
-        <!-- Zona de Carga Inicial -->
-        <div id="pac-upload-area">
-          <div onclick="document.getElementById('input-foto-p').click()" class="border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-emerald-500 rounded-3xl p-8 text-center bg-white dark:bg-slate-900 cursor-pointer transition-all space-y-2 shadow-xs group">
-            <div class="w-14 h-14 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 flex items-center justify-center text-3xl mx-auto group-hover:scale-105 transition-transform">
-              📷
-            </div>
-            <h3 class="text-sm sm:text-base font-bold text-slate-900 dark:text-white">Tocar para sacar o subir foto</h3>
-            <p class="text-xs text-slate-500 dark:text-slate-400">Cámara trasera o galería · A 15–20 cm de distancia</p>
-          </div>
-          <input type="file" id="input-foto-p" accept="image/*" capture="environment" onchange="handleImageUploadPatient(event)" class="hidden">
-
-          <div class="p-3 rounded-2xl bg-amber-50/80 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-xs text-amber-900 dark:text-amber-300 flex items-start gap-2 mt-3">
-            <span class="text-base shrink-0">☀️</span>
-            <p class="leading-tight">Usá buena luz natural o lámpara frontal. Evitá el flash directo para que no oculte el color real de la piel.</p>
-          </div>
-        </div>
-
-        <!-- Slots de Fotos (Post Carga) -->
-        <div id="pac-slots-area" class="hidden space-y-3">
-
-            <!-- Photo Quality Gate (Fase 2) -->
-            <div id="pac-quality-gate-box" class="hidden p-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-700 text-xs text-emerald-950 dark:text-emerald-200 flex items-start gap-2.5 shadow-2xs">
-              <span class="text-base shrink-0">🔬</span>
-              <p id="pac-quality-gate-txt" class="leading-tight">
-                <strong>Calidad Óptica 88/100:</strong> Iluminación y nitidez excelentes para el análisis clínico.
-              </p>
-            </div>
-          <div class="p-4 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
-            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
-              <span class="text-xs font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
-                <i data-lucide="check-circle-2" class="w-4 h-4"></i>
-                <span id="badge-paso-1">✓ Foto principal lista</span>
-              </span>
-              <button type="button" onclick="resetPatientPhoto()" class="text-xs font-bold text-blue-600 hover:text-blue-700">Cambiar</button>
-            </div>
-            <div class="grid grid-cols-3 gap-2">
-              <div class="relative rounded-xl overflow-hidden aspect-square border-2 border-emerald-500 bg-slate-100 dark:bg-slate-800">
-                <img id="img-preview-p" src="" alt="Detalle herida" class="w-full h-full object-cover">
-                <span class="absolute bottom-1 left-1 right-1 text-[9px] font-black bg-slate-900/80 text-white rounded px-1 text-center truncate">1. Detalle</span>
-              </div>
-              <div onclick="document.getElementById('input-foto-slot-2').click()" class="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 aspect-square flex flex-col items-center justify-center gap-1 text-slate-400 hover:border-emerald-500 cursor-pointer bg-slate-50 dark:bg-slate-800/50 p-1 text-center">
-                <span class="text-base">📸</span>
-                <span class="text-[9px] font-bold leading-tight">2. Pie entero<br>(Opcional)</span>
-              </div>
-              <div onclick="document.getElementById('input-foto-slot-3').click()" class="rounded-xl border border-dashed border-slate-300 dark:border-slate-700 aspect-square flex flex-col items-center justify-center gap-1 text-slate-400 hover:border-emerald-500 cursor-pointer bg-slate-50 dark:bg-slate-800/50 p-1 text-center">
-                <span class="text-base">📸</span>
-                <span class="text-[9px] font-bold leading-tight">3. Planta<br>(Opcional)</span>
-              </div>
-            </div>
-          </div>
-          <input type="file" id="input-foto-slot-2" accept="image/*" capture="environment" onchange="handleImageSlotUpload(2, event)" class="hidden">
-          <input type="file" id="input-foto-slot-3" accept="image/*" capture="environment" onchange="handleImageSlotUpload(3, event)" class="hidden">
-        </div>
-
-        <button type="button" id="pac-btn-s0-next" onclick="goPacStep(1)" disabled class="btn-primary w-full py-4 rounded-2xl text-sm font-black shadow-md flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white disabled:bg-slate-300 disabled:text-slate-500 transition-all">
-          <span>Continuar a las 3 Preguntas</span>
-          <i data-lucide="arrow-right" class="w-4 h-4"></i>
-        </button>
-      </div>
-
-      <!-- ═══════════════════════════════════════════════════════════════
-           PASO 2 (s1): LAS 3 PREGUNTAS CLÍNICAS
-      ════════════════════════════════════════════════════════════════ -->
-      <div id="pac-step-1" class="pac-screen hidden space-y-4">
-        
-        <div class="space-y-1">
-          <h2 class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">Contanos cómo está el pie</h2>
-          <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300">3 preguntas simples para que la IA determine el nivel de urgencia adecuado.</p>
-        </div>
-
-        <!-- Pregunta 1: Fiebre -->
-        <div class="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2 shadow-xs">
-          <label class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2" data-i18n="pac_q_fiebre">
-            <span>🌡️</span>
-            <span>¿Tenés fiebre o chuchos de frío?</span>
-          </label>
-          <div class="grid grid-cols-2 gap-2">
-            <button type="button" id="btn-fiebre-no" onclick="setSurveyAnswer('fiebre', false)" class="py-3 rounded-xl text-xs font-black transition-all bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700">No</button>
-            <button type="button" id="btn-fiebre-si" onclick="setSurveyAnswer('fiebre', true)" class="py-3 rounded-xl text-xs font-black transition-all bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700">Sí</button>
-          </div>
-        </div>
-
-        <!-- Pregunta 2: Olor -->
-        <div class="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2 shadow-xs">
-          <label class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2" data-i18n="pac_q_olor">
-            <span>👃</span>
-            <span>¿La herida tiene feo olor o secreción?</span>
-          </label>
-          <div class="grid grid-cols-2 gap-2">
-            <button type="button" id="btn-olor-no" onclick="setSurveyAnswer('olor', false)" class="py-3 rounded-xl text-xs font-black transition-all bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700">No</button>
-            <button type="button" id="btn-olor-si" onclick="setSurveyAnswer('olor', true)" class="py-3 rounded-xl text-xs font-black transition-all bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700">Sí</button>
-          </div>
-        </div>
-
-        <!-- Pregunta 3: Tiempo de evolución (Chips Táctiles) -->
-        <div class="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2 shadow-xs">
-          <label class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2" data-i18n="pac_q_tiempo">
-            <span>📅</span>
-            <span>¿Cuánto tiempo hace que tenés esta herida?</span>
-          </label>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            <button type="button" onclick="setTiempoEvolucionPac('Menos de 1 semana (Reciente)', 0)" id="btn-tiempo-0" class="chip-tiempo-pac p-2.5 rounded-xl text-xs font-black transition-all bg-emerald-600 text-white shadow-xs">
-              Menos de 1 semana
-            </button>
-            <button type="button" onclick="setTiempoEvolucionPac('Entre 1 y 4 semanas (En evolución)', 1)" id="btn-tiempo-1" class="chip-tiempo-pac p-2.5 rounded-xl text-xs font-bold transition-all bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 shadow-2xs hover:bg-slate-50">
-              1 a 4 semanas
-            </button>
-            <button type="button" onclick="setTiempoEvolucionPac('Más de 1 mes (Crónica / No cicatriza)', 2)" id="btn-tiempo-2" class="chip-tiempo-pac p-2.5 rounded-xl text-xs font-bold transition-all bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 shadow-2xs hover:bg-slate-50">
-              Más de 1 mes
-            </button>
-          </div>
-          <input type="hidden" id="pac-tiempo" value="Menos de 1 semana (Reciente)">
-        </div>
-
-        <button type="button" id="btn-consultar-paciente" onclick="ejecutarConsultaPaciente()" class="btn-primary w-full py-4 rounded-2xl text-sm font-black shadow-lg flex items-center justify-center gap-2 bg-gradient-to-r from-blue-900 via-teal-700 to-emerald-600 hover:from-blue-950 hover:to-emerald-700 text-white transition-all">
-          <i data-lucide="brain" class="w-4 h-4"></i>
-          <span>Analizar con Inteligencia Artificial</span>
-        </button>
-      </div>
-
-      <!-- ═══════════════════════════════════════════════════════════════
-           PASO 3 (s2): ANIMACIÓN DE ANÁLISIS EN VIVO
-      ════════════════════════════════════════════════════════════════ -->
-      <div id="pac-step-2" class="pac-screen hidden p-8 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-center space-y-6 shadow-md">
-        <div class="w-16 h-16 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin mx-auto"></div>
-        <div class="space-y-1">
-          <h3 class="text-lg font-black text-slate-900 dark:text-white">Analizando tu fotografía...</h3>
-          <p class="text-xs text-slate-500 dark:text-slate-400">Verificamos la zona anatómica y los signos de infección. Tarda menos de 15 segundos.</p>
-        </div>
-        
-        <div class="space-y-2 text-left text-xs bg-slate-50 dark:bg-slate-800/60 p-4 rounded-2xl border border-slate-200 dark:border-slate-700">
-          <div id="pac-p1" class="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 font-bold">
-            <span>✓</span><span>1. Imagen recibida y optimizada</span>
-          </div>
-          <div id="pac-p2" class="flex items-center gap-2 text-blue-700 dark:text-sky-300 font-bold animate-pulse">
-            <span>●</span><span>2. Detectando zona anatómica</span>
-          </div>
-          <div id="pac-p3" class="flex items-center gap-2 text-slate-400">
-            <span>○</span><span>3. Analizando signos de inflamación y tejido</span>
-          </div>
-          <div id="pac-p4" class="flex items-center gap-2 text-slate-400">
-            <span>○</span><span>4. Generando semáforo de urgencia IWGDF</span>
-          </div>
-        </div>
-
-        <p class="text-[11px] text-slate-400">Herramienta orientativa basada en consensos IWGDF 2023.</p>
-      </div>
-
-      <!-- ═══════════════════════════════════════════════════════════════
-           PASO 4 (s3): RESULTADO SEMÁFORO Y ACCIÓN CLARA
-      ════════════════════════════════════════════════════════════════ -->
-      <div id="pac-step-3" class="pac-screen hidden space-y-4">
-        
-        <!-- Semáforo Card -->
-        <div id="pac-semaforo-card" class="p-6 rounded-3xl text-center space-y-3 shadow-md bg-emerald-50 border-2 border-emerald-400 text-emerald-950">
-          <div id="pac-sem-icon" class="text-5xl leading-none">🟢</div>
-          <div>
-            <span id="pac-sem-badge" class="px-3 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-200 text-emerald-900">Podés esperar</span>
-            <h3 id="pac-sem-title" class="text-xl font-black mt-1 text-slate-900">Sin Urgencia Inmediata</h3>
-            <p id="pac-sem-desc" class="text-xs mt-1 text-slate-700 leading-relaxed font-medium">La herida no presenta signos de alarma grave. Atendela en tu turno médico programado.</p>
-          </div>
-        </div>
-
-        <!-- Dictamen Detallado -->
-        <div class="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3 shadow-sm">
-          <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
-            <span class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-              <span>📋</span>
-              <span>Dictamen Asistido por IA</span>
-              <span id="pac-txt-wound-id" class="text-[10px] font-bold text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">#DFU-2026-ACTIVA</span>
-            </span>
-            <div class="flex items-center gap-1.5">
-              <button type="button" id="btn-audio-paciente" onclick="toggleAudioDictamenPaciente()" class="text-xs font-bold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-lg flex items-center gap-1">
-                <span>🎧</span><span>Audio</span>
-              </button>
-              <button type="button" onclick="descargarInformePDF('paciente')" class="text-xs font-bold text-slate-700 bg-slate-100 px-2.5 py-1 rounded-lg flex items-center gap-1">
-                <span>📥</span><span>PDF</span>
-              </button>
-            </div>
-          </div>
-          <div id="pac-texto-resultado" class="report-content text-xs sm:text-sm text-slate-800 dark:text-slate-200 leading-relaxed max-h-60 overflow-y-auto pr-1"></div>
-        </div>
-
-        <!-- Botones de Acción Inmediata -->
-        <div class="space-y-2">
-          <button type="button" id="pac-btn-pedir-turno-cta" onclick="abrirModalTurnosPaciente()" class="btn-primary w-full py-4 rounded-2xl text-sm font-black shadow-md flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-700 text-white">
-            <i data-lucide="calendar-check" class="w-4 h-4"></i>
-            <span>Pedir Turno / Teleconsulta Online</span>
-          </button>
-          
-          <button type="button" onclick="resetPatientPhoto(); goPacStep(0);" class="btn-sec w-full py-3 rounded-2xl text-xs font-bold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 border border-slate-300 dark:border-slate-700 flex items-center justify-center gap-1.5">
-            <span>📷 Realizar Nueva Consulta con Otra Foto</span>
-          </button>
-        </div>
-
-        <!-- Profesional / Enfermera Vinculada -->
-        <div class="p-4 rounded-2xl bg-blue-50 dark:bg-slate-800 border border-blue-200 dark:border-blue-700 text-xs flex items-center justify-between gap-3">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm shrink-0">👨‍⚕️</div>
+      <div class="body">
+        <div class="card" style="margin-bottom:12px">
+          <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:12px">
+            <span style="font-size:22px;flex-shrink:0">🔬</span>
             <div>
-              <strong class="text-blue-950 dark:text-blue-200 block text-xs">Equipo de Salud Vinculado</strong>
-              <span id="pac-equipo-salud-txt" class="text-[11px] text-slate-600 dark:text-slate-300">Dr. Gómez (Infectología) · Notificado</span>
+              <div class="card-titulo">Evaluación inicial con foto y preguntas</div>
+              <div class="card-sub" style="margin-bottom:8px">Fotografiá tu pie y respondé algunas preguntas para recibir orientación.</div>
+              <div class="validacion-badge">En validación clínica</div>
             </div>
           </div>
-          <a id="pac-btn-wa-referente" href="https://wa.me/5491112345678" target="_blank" class="px-3 py-1.5 rounded-xl font-bold bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-1 shrink-0 text-xs">
-            <span>WhatsApp</span>
-          </a>
+          <button class="btn btn-outline btn-sm" onclick="togglePacPubPreview()" aria-label="Ver cómo funciona la evaluación">
+            Ver cómo funciona
+          </button>
         </div>
 
-        <p class="text-[11px] text-slate-400 text-center">Esta es una orientación asistida por IA. Ante cualquier duda, consultá siempre con tu médico de cabecera.</p>
-      </div>
+        <!-- PREVIEW SCREEN ("En validación clínica") -->
+        <div id="s-pub-preview" class="hidden">
+          <div class="divider"></div>
+          <div style="text-align:center;padding:12px 0">
+            <div class="validacion-badge" style="margin-bottom:10px">En validación clínica</div>
+            <div style="font-size:16px;font-weight:700;color:var(--txt);margin-bottom:6px">Evaluación inicial con foto y preguntas</div>
+            <div style="font-size:12px;color:var(--txt2);line-height:1.5;max-width:320px;margin:0 auto">
+              Esta función está siendo validada clínicamente antes de su activación general.
+            </div>
+          </div>
 
+          <div style="font-size:13px;font-weight:600;color:var(--txt);margin:12px 0 8px">Cómo funcionará</div>
+
+          <div class="preview-card">
+            <div class="preview-header">
+              <div class="preview-step">1</div>
+              <span class="preview-step-lbl">Sacás una foto de tu pie o herida</span>
+            </div>
+            <div class="preview-body"><span>Solo el área del pie o la herida en el encuadre, con buena iluminación.</span></div>
+          </div>
+          <div class="preview-card">
+            <div class="preview-header">
+              <div class="preview-step">2</div>
+              <span class="preview-step-lbl">Respondés algunas preguntas simples</span>
+            </div>
+            <div class="preview-body"><span>Sobre síntomas, tiempo de evolución y signos que observás.</span></div>
+          </div>
+          <div class="preview-card">
+            <div class="preview-header">
+              <div class="preview-step">3</div>
+              <span class="preview-step-lbl">Recibís orientación</span>
+            </div>
+            <div class="preview-body"><span>Una indicación sobre si conviene consultar a un profesional pronto o en forma urgente.</span></div>
+          </div>
+
+          <div class="info-box amber" style="margin-top:8px">
+            <span class="info-box-ico">⚗️</span>
+            <div class="info-box-txt">
+              <strong>¿Por qué está en validación?</strong>
+              <span>Trabajamos con profesionales de salud para garantizar que la orientación sea segura y responsable.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="legal">
+          La imagen se sanitiza antes del envío. Cuando se utiliza para seguimiento, se conserva temporalmente según la política de retención aplicable.
+        </div>
+        <div class="espacio"></div>
+      </div>
     </div>
 
     <!-- ═════════════════════════════════════════════════════════════════ -->
-    <!-- PORTAL PILOTO CERRADO v0.1 (5 MÉDICOS · RETROSPECTIVO & TIMELINE)   -->
+    <!-- PORTAL PROFESIONAL v4 (PIEDIABETICO.LAT — /profesional)          -->
     <!-- ═════════════════════════════════════════════════════════════════ -->
-    <div id="portal-piloto-view" class="hidden space-y-6 max-w-4xl mx-auto pb-16">
+    <div id="portal-piloto-view" class="hidden w-full max-w-[600px] mx-auto min-h-screen flex flex-col pb-16">
       
-      <!-- SUBVISTA 0: LOGIN DEL PILOTO (Token Bearer en memoria) -->
-      <div id="piloto-login-view" class="space-y-6 max-w-md mx-auto py-8">
-        <div class="med-card p-6 bg-white dark:bg-slate-900 border-2 border-purple-800/40 rounded-3xl shadow-xl space-y-5">
-          <div class="text-center space-y-2">
-            <div class="w-14 h-14 rounded-2xl bg-purple-100 dark:bg-purple-900/60 text-purple-900 dark:text-purple-200 flex items-center justify-center text-3xl mx-auto shadow-sm">🔐</div>
-            <h2 class="text-lg font-black text-slate-900 dark:text-white">Estación Clínica de Piloto v0.1</h2>
-            <p class="text-xs text-slate-500 leading-relaxed">Exclusivo para los 5 profesionales de salud acreditados en el protocolo clínico.</p>
-          </div>
-
-          <form id="form-login-piloto" onsubmit="iniciarSesionPiloto(event)" class="space-y-3.5">
-            <div>
-              <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Correo Institucional del Piloto</label>
-              <input type="email" id="inp-piloto-email" required placeholder="piloto.medico1@piediabetico.lat" class="med-input !text-xs bg-slate-50 dark:bg-slate-800 border-slate-200 w-full" />
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Contraseña de Acceso Seguro</label>
-              <input type="password" id="inp-piloto-password" required placeholder="••••••••••••••••" class="med-input !text-xs bg-slate-50 dark:bg-slate-800 border-slate-200 w-full" />
-            </div>
-
-            <div id="msg-error-login-piloto" class="hidden p-3 rounded-xl bg-red-50 dark:bg-red-950/60 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-300 text-xs font-semibold"></div>
-
-            <button type="submit" id="btn-submit-login-piloto" class="btn-primary w-full !py-2.5 text-xs font-black bg-purple-900 hover:bg-purple-950 text-white rounded-2xl shadow-md flex items-center justify-center gap-2 min-h-[44px]">
-              <span>Ingresar a la Estación Clínica</span>
-              <span>→</span>
-            </button>
-          </form>
-
-          <div class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700 text-[11px] text-slate-500 space-y-1">
-            <span class="font-bold text-slate-700 dark:text-slate-300 block">🔒 Seguridad de Sesión:</span>
-            <span>Autenticación validada en Redis multi-worker. Token Bearer mantenido estrictamente en memoria sin persistencia en localStorage.</span>
-          </div>
-        </div>
+      <!-- TOPBAR -->
+      <div class="topbar" id="topbar">
+        <button class="back-btn" id="back-btn" onclick="goBack()" aria-label="Volver">
+          <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          Volver
+        </button>
+        <div class="t-logo" id="t-logo">pie<span>diabetico</span>.lat <span style="font-size:11px;font-weight:400;opacity:.7">Profesional</span></div>
+        <div class="t-title" id="t-title"></div>
+        <div class="t-av" id="t-av" style="display:none">DR</div>
       </div>
 
-      <!-- CONTENEDOR AUTENTICADO DEL PILOTO -->
-      <div id="piloto-authenticated-view" class="hidden space-y-6">
-
-        <!-- Barra de Estado del Profesional Autenticado -->
-        <div class="med-card p-4 bg-white dark:bg-slate-900 border border-purple-200 dark:border-purple-900/60 rounded-3xl shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          <div class="flex items-center gap-3">
-            <span class="w-10 h-10 rounded-2xl bg-purple-100 dark:bg-purple-900 text-purple-900 dark:text-purple-200 flex items-center justify-center font-black text-base shadow-xs">👨‍⚕️</span>
-            <div>
-              <div class="flex items-center gap-2">
-                <h3 id="txt-piloto-medico-nombre" class="text-sm font-black text-slate-900 dark:text-white">Médico Piloto</h3>
-                <span id="badge-piloto-medico-rol" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-900 border border-purple-200">medico_general</span>
-              </div>
-              <p id="txt-piloto-medico-email" class="text-xs text-slate-500 font-mono">piloto.medico1@piediabetico.lat</p>
-            </div>
-          </div>
-          <div class="flex flex-wrap items-center gap-2">
-            <div id="badge-unet-readiness" class="px-2.5 py-1 rounded-xl text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-              <span>U-Net: READY</span>
-            </div>
-            <div id="badge-classifier-readiness" class="px-2.5 py-1 rounded-xl text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200 flex items-center gap-1">
-              <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-              <span>Clasificador: ARTIFACT_MISSING (Fail-Closed)</span>
-            </div>
-            <button type="button" onclick="cerrarSesionPiloto()" class="btn-sec !py-1.5 !px-3 text-xs font-bold text-slate-600 hover:text-rose-600 border-slate-200">
-              Cerrar Sesión
-            </button>
-          </div>
-        </div>
-      
-        <!-- Banner Piloto v0.1 -->
-        <div class="med-card p-5 bg-gradient-to-r from-purple-950 via-slate-900 to-indigo-950 text-white rounded-3xl shadow-lg border-2 border-purple-800/60">
-          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div class="space-y-1">
-              <div class="flex items-center gap-2">
-                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-purple-500/20 text-purple-300 border border-purple-400/40">Modo Piloto Cerrado v0.1</span>
-                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/40">Sin datos identificatorios</span>
-                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/20 text-blue-300 border border-blue-400/40">TTL 72h / 21d</span>
-              </div>
-              <h2 class="text-xl sm:text-2xl font-black">Estación Clínica de Pruebas del Piloto</h2>
-              <p class="text-xs text-slate-300">Fotografías retrospectivas, timeline cronológico y validación de concordancia con IA.</p>
-            </div>
-            <div class="flex items-center gap-2 shrink-0">
-              <span class="text-xs px-3 py-1.5 rounded-xl bg-white/10 font-bold border border-white/20">5 Médicos Habilitados</span>
-            </div>
-          </div>
-        </div>
-
-      <!-- Barra de Navegación 3 Pestañas del Piloto -->
-      <div class="flex rounded-2xl bg-slate-100 dark:bg-slate-800 p-1.5 border border-slate-200 dark:border-slate-700 shadow-xs">
-        <button type="button" id="btn-piloto-tab-analisis" onclick="switchPilotoTab('analisis')" class="flex-1 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 bg-white dark:bg-slate-900 text-purple-900 dark:text-purple-300 shadow-sm">
-          <span>📷</span>
-          <span>Analizar Foto Aislada</span>
-        </button>
-        <button type="button" id="btn-piloto-tab-casos" onclick="switchPilotoTab('casos')" class="flex-1 py-2.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 transition-all flex items-center justify-center gap-1.5">
-          <span>👤</span>
-          <span>Casos en Seguimiento</span>
-        </button>
-        <button type="button" id="btn-piloto-tab-calculadoras" onclick="switchPilotoTab('calculadoras')" class="flex-1 py-2.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 transition-all flex items-center justify-center gap-1.5">
-          <span>🧮</span>
-          <span>Calculadoras</span>
-        </button>
+      <!-- STATUS BAR (AI READINESS) -->
+      <div class="status-bar" id="status-bar">
+        <div class="status-pill" id="pill-unet"><span class="status-dot dot-on" id="dot-unet"></span><span id="txt-unet-status">Segmentación U-Net disponible</span></div>
+        <div class="status-pill" id="pill-clasif"><span class="status-dot dot-off" id="dot-clasif"></span><span id="txt-clasif-status">Clasificación no disponible en esta versión</span></div>
+        <!-- Backward-compatibility hooks -->
+        <div id="badge-unet-readiness" class="hidden"></div>
+        <div id="badge-classifier-readiness" class="hidden"></div>
+        <span id="txt-piloto-medico-nombre" class="hidden"></span>
+        <span id="badge-piloto-medico-rol" class="hidden"></span>
+        <span id="txt-piloto-medico-email" class="hidden"></span>
       </div>
 
-      <!-- SUBVISTA 1: ANALIZAR FOTO AISLADA (TTL 72h) -->
-      <div id="piloto-subview-analisis" class="space-y-4">
-        <div class="med-card p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl space-y-5 shadow-sm">
-          <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-            <div>
-              <h3 class="text-sm font-black text-slate-900 dark:text-white">Análisis Fotográfico Rápido (Aislado)</h3>
-              <p class="text-xs text-slate-500">Prueba individual con retención temporal de 72 horas.</p>
-            </div>
-            <span class="text-[10px] font-bold text-amber-700 bg-amber-50 dark:bg-amber-950/60 px-2 py-0.5 rounded-full border border-amber-200">TTL = 72h</span>
+      <!-- LOGIN (s-login) -->
+      <div id="s-login" class="screen on" role="main">
+        <div id="piloto-login-view">
+          <div class="login-hero">
+            <div class="login-logo">pie<span>diabetico</span>.lat</div>
+            <div class="login-sub" style="margin-top:4px">Portal Profesional</div>
           </div>
+          <div class="login-body">
+            <div style="font-size:18px;font-weight:700;color:var(--txt);margin-bottom:4px">Ingresar</div>
+            <div style="font-size:13px;color:var(--txt2);margin-bottom:20px">Acceso restringido a profesionales habilitados para el piloto.</div>
 
-          <div class="border-2 border-dashed border-purple-300 dark:border-purple-800 hover:border-purple-500 rounded-2xl p-6 text-center transition-colors bg-purple-50/20 dark:bg-purple-950/20">
-            <input type="file" id="input-foto-piloto-aislada" accept="image/*" onchange="handleFotoPilotoAislada(event)" class="hidden">
-            <div id="dropzone-empty-piloto-aislada" onclick="document.getElementById('input-foto-piloto-aislada').click()" class="cursor-pointer space-y-2">
-              <div class="w-12 h-12 rounded-2xl bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300 flex items-center justify-center text-2xl mx-auto shadow-sm">📸</div>
-              <p class="text-xs font-black text-slate-800 dark:text-slate-200">Tocar para Elegir de Galería o Tomar Foto</p>
-              <p class="text-[11px] text-slate-500">Sanitización EXIF/GPS en vivo y Quality Gate instantáneo.</p>
-            </div>
-            <div id="dropzone-preview-piloto-aislada" class="hidden space-y-3">
-              <img id="img-preview-piloto-aislada" src="" class="max-h-56 mx-auto rounded-xl shadow-md object-contain border border-slate-200">
-              <div class="flex justify-center gap-2">
-                <button type="button" onclick="document.getElementById('input-foto-piloto-aislada').click()" class="btn-sec !py-1.5 !px-3 text-xs font-bold bg-white border border-slate-300">Cambiar Foto</button>
-                <button type="button" onclick="ejecutarAnalisisPilotoAislado()" class="btn-primary !py-1.5 !px-4 text-xs font-black bg-purple-900 hover:bg-purple-950 text-white shadow-sm">Ejecutar Análisis IA</button>
+            <form id="form-login-piloto" onsubmit="iniciarSesionPiloto(event)" class="space-y-0">
+              <div class="login-field">
+                <label class="login-label" for="login-email">Correo electrónico</label>
+                <input class="login-input" type="email" id="login-email" required placeholder="tu@hospital.com" autocomplete="email"/>
+                <input type="hidden" id="inp-piloto-email" />
               </div>
-            </div>
-          </div>
+              <div class="login-field">
+                <label class="login-label" for="login-pass">Contraseña</label>
+                <input class="login-input" type="password" id="login-pass" required placeholder="••••••••" autocomplete="current-password"/>
+                <input type="hidden" id="inp-piloto-password" />
+              </div>
 
-          <div id="res-piloto-aislado-container" class="hidden p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 space-y-3 text-xs"></div>
-        </div>
-      </div>
+              <div id="msg-error-login-piloto" class="hidden p-3 rounded-xl bg-red-50 dark:bg-red-950/60 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-300 text-xs font-semibold mb-3"></div>
 
-      <!-- SUBVISTA 2: CASOS EN SEGUIMIENTO (LONGITUDINAL, TIMELINE & COMPARACIÓN) -->
-      <div id="piloto-subview-casos" class="hidden space-y-5">
-        
-        <div class="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-          <div class="flex items-center gap-2.5">
-            <span class="w-9 h-9 rounded-xl bg-purple-100 dark:bg-purple-900 text-purple-900 dark:text-purple-200 flex items-center justify-center font-bold text-sm">👤</span>
-            <div>
-              <span class="text-[10px] uppercase font-bold text-slate-500 block">Caso Pseudonimizado Activo:</span>
-              <select id="select-caso-piloto" onchange="cambiarCasoPilotoActivo(this.value)" class="med-input !py-1 !text-xs font-black text-purple-950 dark:text-purple-300 bg-slate-50 dark:bg-slate-800 border-slate-300">
-              </select>
-            </div>
-          </div>
-          <button type="button" onclick="crearNuevoCasoPilotoPrompt()" class="btn-primary !py-2 !px-3.5 text-xs font-black bg-purple-900 hover:bg-purple-950 text-white shadow-xs flex items-center justify-center gap-1.5">
-            <span>+ Nuevo Caso (PILOT-XXXX)</span>
-          </button>
-        </div>
-
-        <div id="heridas-bar-piloto" class="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
-          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
-            <span class="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">Heridas Clínicas del Caso</span>
-            <button type="button" onclick="abrirModalNuevaHeridaPiloto()" class="text-xs font-bold text-purple-800 dark:text-purple-300 hover:underline">
-              + Agregar Otra Herida
-            </button>
-          </div>
-          <div id="tabs-heridas-piloto-container" class="flex flex-wrap gap-2"></div>
-        </div>
-
-        <div id="panel-herida-activa-piloto" class="med-card p-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl space-y-5 shadow-sm">
-          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
-            <div>
-              <span id="txt-herida-activa-label" class="text-sm font-black text-slate-900 dark:text-white">Herida 1 — Talón</span>
-              <p id="txt-herida-activa-sub" class="text-xs text-slate-500">Seguimiento longitudinal con retención de 21 días.</p>
-            </div>
-            <div class="flex flex-wrap gap-2">
-              <button type="button" onclick="abrirModalAgregarFotoHerida()" class="btn-primary !py-2 !px-3.5 text-xs font-black bg-emerald-700 hover:bg-emerald-800 text-white shadow-xs flex items-center gap-1.5 min-h-[44px]">
-                <span>+ Agregar Foto</span>
+              <button type="submit" id="btn-submit-login-piloto" class="btn btn-azul-d" style="margin-bottom:10px" aria-label="Ingresar al portal profesional">
+                <span>Ingresar</span>
               </button>
-              <button type="button" id="btn-abrir-comparador-piloto" onclick="abrirComparadorPilotoModal()" class="btn-sec !py-2 !px-3 text-xs font-bold bg-blue-50 text-blue-900 border border-blue-200 flex items-center gap-1 min-h-[44px]">
-                <span>↔ Comparar Dos Fotos</span>
+            </form>
+
+            <button class="btn btn-outline btn-sm" onclick="alert('Recuperación de contraseña — contactá al administrador')" aria-label="Recuperar contraseña">
+              Olvidé mi contraseña
+            </button>
+            <div class="espacio"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AUTHENTICATED WRAPPER -->
+      <div id="piloto-authenticated-view" class="w-full flex flex-col flex-1">
+
+        <!-- ══════════ HOME (s-home) ══════════ -->
+        <div id="s-home" class="screen" role="main">
+          <div class="body">
+            <div id="home-alerts-container"></div>
+
+            <div class="sec-label">Acceso rápido</div>
+            <div class="quick-grid">
+              <button class="quick-btn acc" onclick="goTo('s-selector-caso')" aria-label="Iniciar nuevo control fotográfico">
+                <span class="quick-ico">📷</span>
+                <span>Nuevo control</span>
+                <small>Seleccionar caso</small>
               </button>
-              <button type="button" onclick="abrirModalSolicitarControlPiloto()" class="btn-sec !py-2 !px-3 text-xs font-bold bg-purple-50 text-purple-950 border border-purple-300 flex items-center gap-1 min-h-[44px]">
-                <span>📲 Solicitar Foto de Control (+4d)</span>
+              <button class="quick-btn" onclick="goTo('s-calcs')" aria-label="Calculadoras clínicas offline">
+                <span class="quick-ico">🧮</span>
+                <span>Calculadoras</span>
+                <small>Offline · sin red</small>
               </button>
             </div>
-          </div>
 
-          <div class="space-y-3">
-            <h4 class="text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-300">Línea de Tiempo Clínica (Timeline)</h4>
-            <div id="piloto-timeline-events-list" class="space-y-4 relative before:absolute before:inset-0 before:left-4 before:w-0.5 before:bg-slate-200 dark:before:bg-slate-800">
+            <div class="sec-label">Casos recientes</div>
+            <div id="home-recent-cases" class="space-y-2">
+              <div class="p-6 text-center text-xs text-slate-500 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
+                Cargando casos desde el servidor...
+              </div>
             </div>
+            <div class="espacio"></div>
+          </div>
+          <nav class="nav-bottom">
+            <button class="nav-tab on" onclick="navSw('s-home',this)"><span class="nav-tab-ico">🏠</span>Inicio</button>
+            <button class="nav-tab" onclick="navSw('s-casos',this)"><span class="nav-tab-ico">📋</span>Casos</button>
+            <button class="nav-tab" onclick="navSw('s-calcs',this)"><span class="nav-tab-ico">🧮</span>Calculadoras</button>
+            <button class="nav-tab" onclick="cerrarSesionPiloto()"><span class="nav-tab-ico">🚪</span>Salir</button>
+          </nav>
+        </div>
+
+        <!-- ══════════ CASOS (s-casos) ══════════ -->
+        <div id="s-casos" class="screen" role="main">
+          <div class="body">
+            <div class="page-title">Casos</div>
+            <div class="page-sub">Piloto — identificadores pseudonimizados</div>
+            
+            <div id="cases-list-container" class="space-y-2"></div>
+
+            <button class="nueva-herida-btn mt8" onclick="crearNuevoCasoPilotoPrompt()" aria-label="Crear nuevo caso">
+              + Nuevo caso
+            </button>
+            <div class="espacio"></div>
+          </div>
+          <nav class="nav-bottom">
+            <button class="nav-tab" onclick="navSw('s-home',this)"><span class="nav-tab-ico">🏠</span>Inicio</button>
+            <button class="nav-tab on" onclick="navSw('s-casos',this)"><span class="nav-tab-ico">📋</span>Casos</button>
+            <button class="nav-tab" onclick="navSw('s-calcs',this)"><span class="nav-tab-ico">🧮</span>Calculadoras</button>
+            <button class="nav-tab" onclick="cerrarSesionPiloto()"><span class="nav-tab-ico">🚪</span>Salir</button>
+          </nav>
+        </div>
+
+        <!-- ══════════ SELECTOR CASO + HERIDA (s-selector-caso) ══════════ -->
+        <div id="s-selector-caso" class="screen" role="main">
+          <div class="body">
+            <div class="page-title">Nuevo control</div>
+            <div class="page-sub">Seleccioná el caso y la herida para registrar el control fotográfico.</div>
+
+            <div class="selector-card">
+              <div class="selector-label">Caso</div>
+              <div id="selector-caso-list" class="space-y-1.5"></div>
+            </div>
+
+            <div class="selector-card">
+              <div class="selector-label">Herida</div>
+              <div id="selector-herida-list" class="space-y-1.5"></div>
+            </div>
+
+            <button class="btn btn-azul-d" id="btn-selector-continuar" onclick="confirmarSeleccionCasoYHerida()" aria-label="Continuar con el caso y herida seleccionados">
+              Continuar con esta herida
+              <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </button>
+            <div class="espacio"></div>
           </div>
         </div>
 
-      </div>
-
-      <!-- SUBVISTA 3: CALCULADORAS PRIORITARIAS DEL PILOTO -->
-      <div id="piloto-subview-calculadoras" class="hidden space-y-4">
-        <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-2">
-          <h3 class="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">Calculadoras Clínicas Validadas (Piloto v0.1)</h3>
-          <span class="text-[10px] text-purple-900 dark:text-purple-300 font-bold bg-purple-100 dark:bg-purple-950 px-2 py-0.5 rounded-full">Consensos Internacionales</span>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <!-- 1. IWGDF 2023 -->
-          <div onclick="switchProfTab('iwgdf-pro'); switchPortal('profesional')" class="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-purple-600 cursor-pointer shadow-xs transition-all space-y-1.5 min-h-[44px]">
-            <div class="flex items-center justify-between">
-              <h4 class="text-xs font-black text-slate-900 dark:text-white">🛡️ IWGDF 2023 Riesgo (0-3)</h4>
-              <span class="text-[10px] px-2 py-0.5 rounded-md bg-blue-50 text-blue-900 font-bold">Prevención</span>
+        <!-- ══════════ FICHA DE CASO (s-ficha) ══════════ -->
+        <div id="s-ficha" class="screen" role="main">
+          <div class="body">
+            <div class="card" style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+              <div class="pilot-av" id="ficha-case-avatar" style="width:50px;height:50px;font-size:11px">PILOT<br>----</div>
+              <div style="flex:1">
+                <div id="ficha-case-alias" style="font-size:18px;font-weight:700;color:var(--txt)">PILOT-0000</div>
+                <div id="ficha-case-sub" style="font-size:12px;color:var(--txt3);margin-top:2px">0 heridas activas · Piloto</div>
+              </div>
             </div>
-            <p class="text-[11px] text-slate-500">Estratificación del riesgo de úlcera y frecuencia de cribado.</p>
-          </div>
 
-          <!-- 2. SVS WIfI -->
-          <div onclick="switchProfTab('wifi-pro'); switchPortal('profesional')" class="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-purple-600 cursor-pointer shadow-xs transition-all space-y-1.5 min-h-[44px]">
-            <div class="flex items-center justify-between">
-              <h4 class="text-xs font-black text-slate-900 dark:text-white">🩸 SVS WIfI (Amenaza de Extremidad)</h4>
-              <span class="text-[10px] px-2 py-0.5 rounded-md bg-rose-50 text-rose-900 font-bold">Vascular</span>
-            </div>
-            <p class="text-[11px] text-slate-500">Wound, Ischemia y foot Infection para riesgo de amputación.</p>
-          </div>
+            <div class="sec-label" style="margin-top:0">Heridas</div>
 
-          <!-- 3. San Elián -->
-          <div onclick="switchProfTab('sanelian-pro'); switchPortal('profesional')" class="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-purple-600 cursor-pointer shadow-xs transition-all space-y-1.5 min-h-[44px]">
-            <div class="flex items-center justify-between">
-              <h4 class="text-xs font-black text-slate-900 dark:text-white">🦶 Escala San Elián (SEWSS)</h4>
-              <span class="text-[10px] px-2 py-0.5 rounded-md bg-purple-50 text-purple-900 font-bold">Cirugía</span>
-            </div>
-            <p class="text-[11px] text-slate-500">Score de 10 factores anatómicos y biológicos de gravedad.</p>
-          </div>
+            <div id="ficha-heridas-list" class="space-y-2"></div>
 
-          <!-- 4. Sheehan 4 Semanas -->
-          <div onclick="switchProfTab('sheehan-pro'); switchPortal('profesional')" class="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-purple-600 cursor-pointer shadow-xs transition-all space-y-1.5 min-h-[44px]">
-            <div class="flex items-center justify-between">
-              <h4 class="text-xs font-black text-slate-900 dark:text-white">📉 Reducción de Área a 4 Semanas (Sheehan)</h4>
-              <span class="text-[10px] px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-900 font-bold">Predictor</span>
-            </div>
-            <p class="text-[11px] text-slate-500">Regla predictora de cicatrización a 12 semanas (umbral operativo ≥50%).</p>
+            <button class="nueva-herida-btn mt8" onclick="abrirModalNuevaHeridaPiloto()" aria-label="Agregar nueva herida a este caso">
+              + Nueva herida
+            </button>
+
+            <div class="espacio"></div>
           </div>
         </div>
 
-        <div class="text-center pt-2">
-          <button type="button" onclick="switchPortal('profesional')" class="text-xs font-bold text-purple-900 dark:text-purple-300 hover:underline min-h-[44px] inline-flex items-center gap-1">
-            <span>Ver todas las 7 herramientas y calculadoras clínicas →</span>
-          </button>
+        <!-- ══════════ HERIDA — TIMELINE (s-herida) ══════════ -->
+        <div id="s-herida" class="screen" role="main">
+          <div class="body">
+            <div class="card" style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+              <div class="herida-ico" style="width:36px;height:36px">🦶</div>
+              <div style="flex:1">
+                <div id="herida-active-title" style="font-size:15px;font-weight:700;color:var(--txt)">Herida 1 · Talón</div>
+                <div id="herida-active-sub" style="font-size:12px;color:var(--txt3)">PILOT-0000 · 0 controles</div>
+              </div>
+            </div>
+
+            <div class="btn-row">
+              <button class="btn btn-azul-d btn-sm" onclick="iniciarControlParaHeridaActiva()" aria-label="Registrar nuevo control para esta herida">
+                📷 Nuevo control
+              </button>
+              <button class="btn btn-outline btn-sm" onclick="abrirModalSolicitarControlPiloto()" aria-label="Solicitar foto de seguimiento">
+                📤 Solicitar foto
+              </button>
+            </div>
+
+            <div class="sec-label" style="margin-top:8px">Evolución</div>
+            <div class="tl" id="herida-timeline-events-list"></div>
+            <div id="piloto-timeline-events-list" class="hidden"></div>
+            <div class="espacio"></div>
+          </div>
         </div>
-      </div>
+
+        <!-- ══════════ PRIVACY GATE (s-privacy-gate) ══════════ -->
+        <div id="s-privacy-gate" class="screen" role="main">
+          <div class="body">
+            <div class="page-title">Nuevo control fotográfico</div>
+            <div class="page-sub">Antes de continuar, confirmá las condiciones de privacidad.</div>
+
+            <div class="privacy-box">
+              <div class="privacy-titulo">🛡️ No deben aparecer en la foto:</div>
+              <div class="check-item" onclick="toggleChkProf(this)" role="checkbox" tabindex="0" aria-checked="false">
+                <div class="check-box"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+                <span class="check-txt">Rostros u otras partes del cuerpo no relacionadas</span>
+              </div>
+              <div class="check-item" onclick="toggleChkProf(this)" role="checkbox" tabindex="0" aria-checked="false">
+                <div class="check-box"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+                <span class="check-txt">Documentos de identidad o historia clínica</span>
+              </div>
+              <div class="check-item" onclick="toggleChkProf(this)" role="checkbox" tabindex="0" aria-checked="false">
+                <div class="check-box"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+                <span class="check-txt">Pulseras identificatorias u objetos con datos del caso</span>
+              </div>
+              <div class="check-item" onclick="toggleChkProf(this)" role="checkbox" tabindex="0" aria-checked="false">
+                <div class="check-box"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+                <span class="check-txt">Nombres, etiquetas u otros datos identificatorios visibles</span>
+              </div>
+            </div>
+
+            <button class="btn btn-azul-d" id="btn-privacy-ok" onclick="goTo('s-foto-cap')" disabled aria-label="Confirmar privacidad y continuar a la captura">
+              Confirmar y continuar
+            </button>
+            <div class="legal mt8">Si necesitás medición absoluta, incluí una escala física calibrada en la imagen.</div>
+            <div class="espacio"></div>
+          </div>
+        </div>
+
+        <!-- ══════════ CAPTURA FOTO (s-foto-cap) ══════════ -->
+        <div id="s-foto-cap" class="screen" role="main">
+          <div class="body">
+            <div class="page-title">Capturar imagen</div>
+            <div class="page-sub" id="foto-cap-sub">PILOT-0000 · Herida 1</div>
+
+            <img id="foto-preview" alt="Vista previa de la foto capturada" style="width:100%;max-height:240px;object-fit:cover;border-radius:var(--r);border:1px solid var(--borde);display:none;margin-bottom:12px"/>
+
+            <div id="foto-area-box" style="background:var(--surf2);border:2px dashed var(--borde-m);border-radius:var(--r);padding:32px 16px;text-align:center;margin-bottom:12px;cursor:pointer" onclick="document.getElementById('file-cam').click()" role="button" tabindex="0" aria-label="Abrir cámara">
+              <div style="font-size:36px;margin-bottom:8px">📷</div>
+              <div style="font-size:14px;font-weight:600;color:var(--azul);margin-bottom:4px">Tocar para abrir la cámara</div>
+              <div style="font-size:12px;color:var(--txt3)">O elegir de la galería</div>
+            </div>
+            <input type="file" id="file-cam" accept="image/*" capture="environment" onchange="onFotoCamProf(this)"/>
+
+            <div class="card" style="margin-bottom:12px">
+              <div class="card-titulo" style="font-size:13px;margin-bottom:6px">Recomendaciones</div>
+              <div class="card-sub">
+                · Buena iluminación natural o lámpara frontal<br>
+                · Imagen enfocada y sin movimiento<br>
+                · Solo pie o herida en el encuadre<br>
+                · Si necesitás medición absoluta, incluí una escala física calibrada
+              </div>
+            </div>
+
+            <button class="btn btn-azul-d" id="btn-foto-ok" style="display:none" onclick="iniciarQualityGateProfesional()" aria-label="Continuar al control de calidad">
+              Continuar
+              <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </button>
+            <div class="espacio"></div>
+          </div>
+        </div>
+
+        <!-- ══════════ QUALITY GATE (s-quality-gate) ══════════ -->
+        <div id="s-quality-gate" class="screen" role="main">
+          <div class="body">
+            <div class="page-title">Control de calidad</div>
+            <div class="page-sub">Verificando la imagen antes de continuar.</div>
+
+            <div class="loading" id="qg-loading">
+              <div class="spinner"></div>
+              <p>Evaluando calidad de imagen...</p>
+            </div>
+
+            <div id="qg-ok" style="display:none">
+              <div class="quality-card ok">
+                <span class="quality-ico">✅</span>
+                <div class="quality-titulo">Imagen evaluable</div>
+                <div class="quality-desc" id="qg-ok-desc">La calidad es adecuada para el análisis. Podés continuar.</div>
+              </div>
+              <img id="qg-preview" alt="Vista previa verificada" style="width:100%;max-height:200px;object-fit:cover;border-radius:var(--r);border:1px solid var(--borde);margin-bottom:12px"/>
+              <button class="btn btn-azul-d" onclick="goTo('s-shadow-mode')" aria-label="Continuar al Shadow Mode">
+                Continuar
+                <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </button>
+              <button class="btn btn-ghost btn-sm mt8" onclick="goTo('s-foto-cap')" aria-label="Repetir la foto">
+                Repetir foto
+              </button>
+            </div>
+
+            <div id="qg-fail" style="display:none">
+              <div class="quality-card fail">
+                <span class="quality-ico">⚠️</span>
+                <div class="quality-titulo">Imagen no evaluable</div>
+                <div class="quality-desc" id="qg-fail-desc">La calidad no es suficiente para el análisis. Probá nuevamente con mejor luz, sin movimiento, y acercándote a la herida.</div>
+              </div>
+              <button class="btn btn-azul-d" onclick="goTo('s-foto-cap')" aria-label="Volver a tomar la foto">
+                <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                Volver a tomar la foto
+              </button>
+            </div>
+            <div class="espacio"></div>
+          </div>
+        </div>
+
+        <!-- ══════════ SHADOW MODE (s-shadow-mode) ══════════ -->
+        <div id="s-shadow-mode" class="screen" role="main">
+          <div class="body">
+            <div class="page-title">Evaluación clínica previa</div>
+            <div class="page-sub">Registrá tu impresión antes de ver el análisis técnico del sistema.</div>
+
+            <div class="shadow-card">
+              <div class="shadow-titulo">🩺 Tu evaluación primero</div>
+              <div class="shadow-sub">La IA verá la imagen después de que registres tu criterio. Ambos campos son obligatorios para continuar.</div>
+
+              <div class="shadow-label">Impresión general *</div>
+              <div class="shadow-opts" role="group" aria-label="Impresión general">
+                <button class="shadow-opt" onclick="shadowSel(this,'imp')" data-val="Normal" aria-pressed="false">Normal</button>
+                <button class="shadow-opt" onclick="shadowSel(this,'imp')" data-val="Lesión" aria-pressed="false">Lesión</button>
+                <button class="shadow-opt" onclick="shadowSel(this,'imp')" data-val="Indeterminado" aria-pressed="false">Indeterminado</button>
+              </div>
+
+              <div class="shadow-label">Signos de infección *</div>
+              <div class="shadow-opts" role="group" aria-label="Signos de infección">
+                <button class="shadow-opt" onclick="shadowSel(this,'inf')" data-val="Ausentes" aria-pressed="false">Ausentes</button>
+                <button class="shadow-opt" onclick="shadowSel(this,'inf')" data-val="Presentes" aria-pressed="false">Presentes</button>
+                <button class="shadow-opt" onclick="shadowSel(this,'inf')" data-val="Dudosos" aria-pressed="false">Dudosos</button>
+              </div>
+
+              <div class="shadow-label">Comentario clínico (opcional)</div>
+              <textarea class="shadow-textarea" id="shadow-comentario" placeholder="Observaciones adicionales..."></textarea>
+            </div>
+
+            <div id="shadow-processing-indicator" class="hidden loading py-4">
+              <div class="spinner"></div>
+              <p>Procesando análisis con U-Net...</p>
+            </div>
+
+            <button class="btn btn-azul-d" id="btn-shadow-ok" onclick="ejecutarAnalisisPilotoConShadowMode()" disabled aria-label="Registrar evaluación y ver análisis técnico">
+              Registrar evaluación y continuar
+            </button>
+            <div class="legal mt8">Tu evaluación queda registrada antes de que el sistema procese la imagen.</div>
+            <div class="espacio"></div>
+          </div>
+        </div>
+
+        <!-- ══════════ RESULTADO ANÁLISIS (s-resultado-analisis) ══════════ -->
+        <div id="s-resultado-analisis" class="screen" role="main">
+          <div class="body">
+            <div class="page-title">Análisis técnico</div>
+            <div class="page-sub" id="res-analisis-sub">PILOT-0000 · Herida 1</div>
+
+            <div class="card" style="margin-bottom:10px">
+              <div class="card-titulo" style="margin-bottom:10px">Resultados del procesamiento</div>
+              <div class="analisis-row">
+                <span class="analisis-label">Calidad de imagen</span>
+                <span class="analisis-val ok" id="res-calidad-val">--/100 — Evaluable</span>
+              </div>
+              <div class="analisis-row">
+                <span class="analisis-label">Segmentación U-Net</span>
+                <span class="analisis-val ok" id="res-unet-val">Disponible</span>
+              </div>
+              <div class="analisis-row">
+                <span class="analisis-label">Área segmentada</span>
+                <span class="analisis-val ok" id="res-area-val">-- px · --% imagen</span>
+              </div>
+              <div class="analisis-row">
+                <span class="analisis-label">Área absoluta</span>
+                <span class="analisis-val nd" id="res-abs-val">No disponible</span>
+              </div>
+              <div class="analisis-row">
+                <span class="analisis-label">Clasificación automática</span>
+                <span class="analisis-val nd" id="res-clasif-val">No disponible en esta versión.</span>
+              </div>
+            </div>
+
+            <div class="card" style="background:var(--surf2);margin-bottom:10px">
+              <div style="font-size:12px;color:var(--txt3);line-height:1.5">
+                <strong style="color:var(--txt2)">Área absoluta no disponible:</strong> La medición en cm² requiere escala física calibrada en la imagen.
+              </div>
+            </div>
+
+            <div class="disclaimer">
+              <p>Este resultado constituye soporte técnico de imagen y no reemplaza la evaluación clínica profesional. La interpretación clínica es responsabilidad exclusiva del profesional de salud.</p>
+            </div>
+
+            <div class="btn-row mt8">
+              <button class="btn btn-outline btn-sm" onclick="goTo('s-comparador')">Comparar controles</button>
+              <button class="btn btn-azul btn-sm" onclick="goTo('s-herida')">Ver timeline</button>
+            </div>
+            <div class="espacio"></div>
+          </div>
+        </div>
+
+        <!-- ══════════ COMPARADOR (s-comparador) ══════════ -->
+        <div id="s-comparador" class="screen" role="main">
+          <div class="body">
+            <div class="page-title">Comparar controles</div>
+            <div class="page-sub" id="comp-sub">PILOT-0000 · Herida 1</div>
+
+            <div class="comp-warning">
+              <span class="comp-warning-ico">⚠️</span>
+              <p>Los porcentajes relativos de imágenes diferentes no representan cambio de tamaño. Para comparar área física se requiere escala calibrada.</p>
+            </div>
+
+            <div class="comparador-grid">
+              <div>
+                <div class="comp-foto" id="comp-foto-1-box">
+                  <img id="comp-foto-1-img" class="w-full h-full object-cover rounded-lg hidden" alt="Control 1">
+                  <span id="comp-foto-1-ph">📷<br><span style="font-size:20px">🖼️</span></span>
+                </div>
+                <div class="comp-foto-lbl" id="comp-foto-1-lbl">Control Anterior</div>
+                <div class="comp-foto-meta" id="comp-foto-1-meta">--</div>
+              </div>
+              <div>
+                <div class="comp-foto" id="comp-foto-2-box">
+                  <img id="comp-foto-2-img" class="w-full h-full object-cover rounded-lg hidden" alt="Control 2">
+                  <span id="comp-foto-2-ph">📷<br><span style="font-size:20px">🖼️</span></span>
+                </div>
+                <div class="comp-foto-lbl" id="comp-foto-2-lbl">Control Reciente</div>
+                <div class="comp-foto-meta" id="comp-foto-2-meta">Hoy</div>
+              </div>
+            </div>
+
+            <div class="card" style="margin-bottom:14px">
+              <div id="comp-datos-txt" style="font-size:12px;color:var(--txt2);line-height:1.6">
+                <span style="color:var(--txt3)">Comparación en cm² no disponible — falta escala física calibrada.</span>
+              </div>
+            </div>
+
+            <div class="card" style="margin-bottom:14px">
+              <div class="card-titulo" style="margin-bottom:4px">¿Cómo evolucionó clínicamente?</div>
+              <div class="card-sub" style="margin-bottom:10px">Tu evaluación como profesional</div>
+              <div class="evol-opts" role="group" aria-label="Evolución clínica">
+                <button class="evol-btn on" onclick="evolSel(this)" data-val="MEJOR" aria-pressed="true">Mejor</button>
+                <button class="evol-btn" onclick="evolSel(this)" data-val="SIMILAR" aria-pressed="false">Similar</button>
+                <button class="evol-btn" onclick="evolSel(this)" data-val="PEOR" aria-pressed="false">Peor</button>
+              </div>
+              <div class="card-titulo" style="margin-bottom:4px">¿La representación del sistema coincide con tu evaluación?</div>
+              <div class="repres-opts" role="group" aria-label="Concordancia con sistema">
+                <button class="rep-btn on" onclick="repSel(this)" data-val="SI" aria-pressed="true">Sí</button>
+                <button class="rep-btn" onclick="repSel(this)" data-val="PARCIAL" aria-pressed="false">Parcial</button>
+                <button class="rep-btn" onclick="repSel(this)" data-val="NO" aria-pressed="false">No</button>
+              </div>
+              <div class="shadow-label" style="margin-bottom:6px;color:var(--txt2)">Comentario (opcional)</div>
+              <textarea class="shadow-textarea" id="comp-comentario" style="border-color:var(--borde-m)" placeholder="Observaciones sobre la comparación..."></textarea>
+            </div>
+
+            <button class="btn btn-azul" id="btn-guardar-feedback-evol" onclick="guardarEvaluacionEvolucionPiloto()" aria-label="Guardar evaluación comparativa">
+              Guardar evaluación
+            </button>
+            <div class="legal mt8">La evaluación clínica queda registrada para el seguimiento longitudinal.</div>
+            <div class="espacio"></div>
+          </div>
+        </div>
+
+        <!-- ══════════ CALCULADORAS (s-calcs) ══════════ -->
+        <div id="s-calcs" class="screen" role="main">
+          <div class="body">
+            <div class="page-title">Calculadoras clínicas</div>
+            <div class="page-sub">Funcionan sin conexión · Consensos internacionales validados</div>
+
+            <div class="sec-label" style="margin-top:0">Evaluación de la herida</div>
+
+            <div class="calc-card" onclick="goTo('s-san-elian')" role="button" tabindex="0">
+              <div class="calc-ico-box" style="background:var(--azul-l)">🏛️</div>
+              <div class="calc-body">
+                <div class="calc-name">San Elián (SEWSS)</div>
+                <div class="calc-desc">10 factores para predecir éxito terapéutico y riesgo de amputación. Desarrollada en Latinoamérica.</div>
+                <span class="calc-chip chip-azul">10–30 pts · 3 grados</span>
+              </div>
+            </div>
+
+            <div class="calc-card" onclick="goTo('s-wifi')" role="button" tabindex="0">
+              <div class="calc-ico-box" style="background:var(--purple-l)">🩸</div>
+              <div class="calc-body">
+                <div class="calc-name">SVS WIfI Vascular</div>
+                <div class="calc-desc">Herida, Isquemia e Infección del pie. Predice riesgo de amputación a 1 año y beneficio de revascularización.</div>
+                <span class="calc-chip chip-purple">Matriz 64 celdas · 4 estadios</span>
+              </div>
+            </div>
+
+            <div class="calc-card" onclick="goTo('s-cicatrizacion')" role="button" tabindex="0">
+              <div class="calc-ico-box" style="background:var(--verde-l)">📉</div>
+              <div class="calc-body">
+                <div class="calc-name">Cicatrización 4 Semanas</div>
+                <div class="calc-desc">Regla del 50% IWGDF: si el cierre es menor al 50% en 4 semanas, indicador de estancamiento tisular.</div>
+                <span class="calc-chip chip-verde">Área física · Regla 50%</span>
+              </div>
+            </div>
+
+            <div class="sec-label">Soporte y Prevención</div>
+
+            <div class="calc-card" onclick="switchProfTab('timers-pro'); switchPortal('profesional')" role="button" tabindex="0">
+              <div class="calc-ico-box" style="background:var(--amber-l)">🧽</div>
+              <div class="calc-body">
+                <div class="calc-name">TIMERS — Preparación del lecho</div>
+                <div class="calc-desc">Tejido, inflamación, humedad, bordes y regeneración. Referencia para la preparación del lecho de la herida.</div>
+                <span class="calc-chip chip-amber">6 dimensiones</span>
+              </div>
+            </div>
+
+            <div class="calc-card" onclick="switchProfTab('iwgdf-pro'); switchPortal('profesional')" role="button" tabindex="0">
+              <div class="calc-ico-box" style="background:var(--gris-l)">🛡️</div>
+              <div class="calc-body">
+                <div class="calc-name">IWGDF 2023 — Estratificación</div>
+                <div class="calc-desc">Estratifica riesgo del paciente diabético en categorías 0–3 para definir frecuencia de revisión.</div>
+                <span class="calc-chip chip-gris">Categorías 0 a 3</span>
+              </div>
+            </div>
+            <div class="espacio"></div>
+          </div>
+          <nav class="nav-bottom">
+            <button class="nav-tab" onclick="navSw('s-home',this)"><span class="nav-tab-ico">🏠</span>Inicio</button>
+            <button class="nav-tab" onclick="navSw('s-casos',this)"><span class="nav-tab-ico">📋</span>Casos</button>
+            <button class="nav-tab on" onclick="navSw('s-calcs',this)"><span class="nav-tab-ico">🧮</span>Calculadoras</button>
+            <button class="nav-tab" onclick="cerrarSesionPiloto()"><span class="nav-tab-ico">🚪</span>Salir</button>
+          </nav>
+        </div>
+
+        <!-- ══════════ SAN ELIÁN (s-san-elian) ══════════ -->
+        <div id="s-san-elian" class="screen" role="main">
+          <div class="calc-header">
+            <h2>Sistema San Elián (SEWSS)</h2>
+            <p>10 factores · 1–3 pts cada uno · Rango 10–30 pts<br>Consenso validado para LATAM</p>
+          </div>
+          <div class="calc-form-body">
+            <span class="field-label" style="margin-top:0">1. Localización anatómica</span>
+            <div class="seg" role="group"><button class="seg-btn on" onclick="segSel(this, 'se_loc', 1)">Falanges (1)</button><button class="seg-btn" onclick="segSel(this, 'se_loc', 2)">Metatarso (2)</button><button class="seg-btn" onclick="segSel(this, 'se_loc', 3)">Tarso/Talón (3)</button></div>
+            <span class="field-label">2. Aspecto topográfico</span>
+            <div class="seg" role="group"><button class="seg-btn on" onclick="segSel(this, 'se_topo', 1)">Dorsal (1)</button><button class="seg-btn" onclick="segSel(this, 'se_topo', 2)">Plantar (2)</button><button class="seg-btn" onclick="segSel(this, 'se_topo', 3)">Ambos (3)</button></div>
+            <span class="field-label">3. Zonas afectadas</span>
+            <div class="seg" role="group"><button class="seg-btn on" onclick="segSel(this, 'se_zonas', 1)">1 zona (1)</button><button class="seg-btn" onclick="segSel(this, 'se_zonas', 2)">2 zonas (2)</button><button class="seg-btn" onclick="segSel(this, 'se_zonas', 3)">3+ zonas (3)</button></div>
+            <span class="field-label">4. Isquemia arterial</span>
+            <div class="seg" role="group"><button class="seg-btn on" onclick="segSel(this, 'se_isq', 1)">Pulsos OK (1)</button><button class="seg-btn" onclick="segSel(this, 'se_isq', 2)">Moderada (2)</button><button class="seg-btn" onclick="segSel(this, 'se_isq', 3)">Severa (3)</button></div>
+            <span class="field-label">5. Infección clínica</span>
+            <div class="seg" role="group"><button class="seg-btn on" onclick="segSel(this, 'se_inf', 1)">Sin infección (1)</button><button class="seg-btn" onclick="segSel(this, 'se_inf', 2)">Superficial (2)</button><button class="seg-btn" onclick="segSel(this, 'se_inf', 3)">Osteomielitis (3)</button></div>
+            <span class="field-label">6. Edema perilesional</span>
+            <div class="seg" role="group"><button class="seg-btn on" onclick="segSel(this, 'se_edema', 1)">Sin edema (1)</button><button class="seg-btn" onclick="segSel(this, 'se_edema', 2)">Localizado (2)</button><button class="seg-btn" onclick="segSel(this, 'se_edema', 3)">Generalizado (3)</button></div>
+            <span class="field-label">7. Neuropatía sensitiva</span>
+            <div class="seg" role="group"><button class="seg-btn on" onclick="segSel(this, 'se_neuro', 1)">Conservada (1)</button><button class="seg-btn" onclick="segSel(this, 'se_neuro', 2)">Hipoestesia (2)</button><button class="seg-btn" onclick="segSel(this, 'se_neuro', 3)">Anestesia (3)</button></div>
+            <span class="field-label">8. Área de la úlcera</span>
+            <div class="seg" role="group"><button class="seg-btn on" onclick="segSel(this, 'se_area', 1)">&lt;5 cm² (1)</button><button class="seg-btn" onclick="segSel(this, 'se_area', 2)">5–10 cm² (2)</button><button class="seg-btn" onclick="segSel(this, 'se_area', 3)">&gt;10 cm² (3)</button></div>
+            <span class="field-label">9. Fase de cicatrización</span>
+            <div class="seg" role="group"><button class="seg-btn on" onclick="segSel(this, 'se_fase', 1)">Granulación (1)</button><button class="seg-btn" onclick="segSel(this, 'se_fase', 2)">Fibrina (2)</button><button class="seg-btn" onclick="segSel(this, 'se_fase', 3)">Necrosis (3)</button></div>
+            <span class="field-label">10. Estado metabólico (HbA1c)</span>
+            <div class="seg" role="group"><button class="seg-btn on" onclick="segSel(this, 'se_hba1c', 1)">&lt;7% (1)</button><button class="seg-btn" onclick="segSel(this, 'se_hba1c', 2)">7–9% (2)</button><button class="seg-btn" onclick="segSel(this, 'se_hba1c', 3)">&gt;9% (3)</button></div>
+            
+            <div class="card mt8 p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl" id="se-resultado-card">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-500">Puntaje Total SEWSS:</span>
+                <span id="se-score-val" class="text-base font-black text-blue-900 dark:text-blue-300">10 pts</span>
+              </div>
+              <div id="se-grado-val" class="text-xs font-bold text-emerald-800 mt-1">Grado I: Leve (10-15 pts) · Éxito terapéutico >95%</div>
+            </div>
+            <div class="legal">Sistema San Elián (SEWSS) — Dr. Fermín Martínez de Jesús. Referencia educativa.</div>
+            <div class="espacio"></div>
+          </div>
+        </div>
+
+        <!-- ══════════ SVS WIfI (s-wifi) ══════════ -->
+        <div id="s-wifi" class="screen" role="main">
+          <div class="calc-header">
+            <h2>SVS WIfI Vascular</h2>
+            <p>Herida · Isquemia · Infección del pie · 4 estadios<br>Society for Vascular Surgery</p>
+          </div>
+          <div class="calc-form-body">
+            <span class="field-label" style="margin-top:0">W — Herida (Wound)</span>
+            <div class="seg" role="group"><button class="seg-btn on" onclick="segWifi(this, 'w', 0)">0 – Sin úlcera</button><button class="seg-btn" onclick="segWifi(this, 'w', 1)">1 – Superficial</button><button class="seg-btn" onclick="segWifi(this, 'w', 2)">2 – Profunda</button><button class="seg-btn" onclick="segWifi(this, 'w', 3)">3 – Gangrena</button></div>
+            <span class="field-label">I — Isquemia (ITB o presión en tobillo)</span>
+            <div class="seg" role="group"><button class="seg-btn on" onclick="segWifi(this, 'i', 0)">0 – ITB≥0.8</button><button class="seg-btn" onclick="segWifi(this, 'i', 1)">1 – 0.6–0.79</button><button class="seg-btn" onclick="segWifi(this, 'i', 2)">2 – 0.4–0.59</button><button class="seg-btn" onclick="segWifi(this, 'i', 3)">3 – &lt;0.4</button></div>
+            <span class="field-label">fI — Infección del pie</span>
+            <div class="seg" role="group"><button class="seg-btn on" onclick="segWifi(this, 'fi', 0)">0 – Sin infección</button><button class="seg-btn" onclick="segWifi(this, 'fi', 1)">1 – Leve</button><button class="seg-btn" onclick="segWifi(this, 'fi', 2)">2 – Moderada</button><button class="seg-btn" onclick="segWifi(this, 'fi', 3)">3 – Severa</button></div>
+
+            <div class="card mt8 p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl" id="wifi-resultado-card">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-500">Estadio Clínico SVS WIfI:</span>
+                <span id="wifi-estadio-val" class="text-base font-black text-purple-900 dark:text-purple-300">Estadio 1</span>
+              </div>
+              <div id="wifi-riesgo-val" class="text-xs font-bold text-emerald-800 mt-1">Riesgo de amputación a 1 año: Muy bajo / Mínimo</div>
+            </div>
+            <div class="legal">SVS WIfI — Mills et al., J Vasc Surg 2014. Referencia educativa.</div>
+            <div class="espacio"></div>
+          </div>
+        </div>
+
+        <!-- ══════════ CICATRIZACIÓN (s-cicatrizacion) ══════════ -->
+        <div id="s-cicatrizacion" class="screen" role="main">
+          <div class="calc-header">
+            <h2>Cicatrización 4 Semanas</h2>
+            <p>Regla del 50% · IWGDF 2023<br>Evaluación de reducción de área física</p>
+          </div>
+          <div class="calc-form-body">
+            <span class="field-label" style="margin-top:0">Área inicial de la úlcera (cm²)</span>
+            <input class="num-inp" type="number" id="area0" placeholder="Ej: 3.8" min="0" step="0.1" aria-label="Área inicial" oninput="calcularCicatrizacionV4()"/>
+            <span class="field-label">Área a las 4 semanas (cm²)</span>
+            <input class="num-inp" type="number" id="area4" placeholder="Ej: 2.1" min="0" step="0.1" aria-label="Área a las 4 semanas" oninput="calcularCicatrizacionV4()"/>
+            
+            <div class="card mt8 p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl" id="cic-resultado-card">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-500">Reducción porcentual:</span>
+                <span id="cic-pct-val" class="text-base font-black text-blue-900 dark:text-blue-300">--%</span>
+              </div>
+              <div id="cic-eval-val" class="text-xs font-bold text-slate-700 dark:text-slate-300 mt-1">Ingrese ambas áreas calibradas en cm² para evaluar la trayectoria.</div>
+            </div>
+            <div class="legal">IWGDF 2023 · Regla del 50% de reducción a las 4 semanas. Requiere medición con escala física calibrada. Referencia educativa.</div>
+            <div class="espacio"></div>
+          </div>
+        </div>
 
       </div> <!-- Cierre de piloto-authenticated-view -->
+
+      <!-- ══════════ MODAL SEGUIMIENTO (#modal-seguimiento) ══════════ -->
+      <div id="modal-seguimiento" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <div class="modal-sheet">
+          <span class="modal-handle"></span>
+          <div class="modal-title" id="modal-title">Solicitar foto de seguimiento</div>
+          <div class="modal-sub" id="modal-sub-info">PILOT-0000 · Herida 1</div>
+          <div class="modal-row"><span class="modal-row-label">Fecha sugerida</span><span class="modal-row-val" id="modal-due-val">+4 días</span></div>
+          <div class="modal-row"><span class="modal-row-label">Vencimiento del enlace</span><span class="modal-row-val" id="modal-expire-val">+7 días</span></div>
+          <div class="modal-row"><span class="modal-row-label">Caso</span><span class="modal-row-val" id="modal-case-val">PILOT-0000</span></div>
+          <div id="link-area" style="display:none">
+            <div class="link-box">
+              <span id="link-url-text">piediabetico.lat/r/...</span>
+              <button id="btn-copiar-link" onclick="copiarLinkSeguimiento()" aria-label="Copiar enlace">Copiar</button>
+            </div>
+            <div style="font-size:12px;color:var(--txt3);text-align:center;margin-bottom:12px">Enlace de un solo uso · Válido por 7 días</div>
+          </div>
+          <button class="btn btn-azul-d" id="btn-generar" onclick="generarLinkSeguimientoPiloto()" style="margin-bottom:8px">Generar enlace</button>
+          <button class="btn btn-ghost btn-sm" onclick="cerrarModalSolicitarControlPiloto()">Cerrar</button>
+        </div>
+      </div>
+
+      <!-- MODAL NUEVA HERIDA -->
+      <div id="modal-nueva-herida-piloto" class="modal-overlay hidden" role="dialog" aria-modal="true">
+        <div class="modal-sheet">
+          <span class="modal-handle"></span>
+          <div class="modal-title">Registrar Nueva Herida</div>
+          <div class="modal-sub">Asociada al caso longitudinal actual en PostgreSQL</div>
+          <div class="login-field">
+            <label class="login-label">Nombre / Etiqueta de la Herida</label>
+            <input class="login-input" type="text" id="input-piloto-herida-label" value="Herida 2" />
+          </div>
+          <div class="login-field">
+            <label class="login-label">Ubicación Anatómica</label>
+            <select id="select-piloto-herida-loc" class="login-input">
+              <option value="Talón">Talón</option>
+              <option value="1er Metatarsiano">1er Metatarsiano</option>
+              <option value="Hallux (Dedo gordo)">Hallux (Dedo gordo)</option>
+              <option value="Maleolo externo">Maleolo externo</option>
+              <option value="Dorsal">Dorsal</option>
+              <option value="Plantar mediopié">Plantar mediopié</option>
+            </select>
+          </div>
+          <button class="btn btn-azul-d" onclick="guardarNuevaHeridaPiloto()" style="margin-bottom:8px">Guardar Herida</button>
+          <button class="btn btn-ghost btn-sm" onclick="cerrarModalNuevaHeridaPiloto()">Cancelar</button>
+        </div>
+      </div>
 
     </div>
 
@@ -4508,10 +5023,10 @@
     </div>
   </div>
 
-  <script src="./app.js?v=41"></script>
+  <script src="/app.js?v=41"></script>
   <script>
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./sw.js?v=17').then(function(reg) {
+      navigator.serviceWorker.register('/sw.js?v=17', { scope: '/' }).then(function(reg) {
         reg.update();
       });
     }
@@ -4991,124 +5506,258 @@
   </div>
 
   <!-- ═════════════════════════════════════════════════════════════════ -->
-  <!-- PORTAL PACIENTE REMOTO /r/{token} (VISTA MÓVIL AISLADA)          -->
+  <!-- PORTAL PACIENTE REMOTO /r/{token} (VISTA MÓVIL AISLADA v4)       -->
   <!-- ═════════════════════════════════════════════════════════════════ -->
-  <div id="portal-paciente-remoto-view" class="hidden space-y-4 max-w-md mx-auto p-4 pb-16">
+  <div id="portal-paciente-remoto-view" class="hidden w-full max-w-[600px] mx-auto min-h-screen flex flex-col pb-16">
     
-    <!-- ESTADO: CARGANDO TOKEN -->
-    <div id="pac-remoto-loading" class="med-card p-8 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl text-center space-y-3 shadow-md">
-      <div class="w-10 h-10 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
-      <p class="text-xs font-bold text-slate-700 dark:text-slate-300">Validando enlace de control seguro...</p>
-    </div>
+    <!-- Backward compatibility hidden markers for tests -->
+    <div id="pac-remoto-loading" class="hidden"></div>
+    <div id="pac-remoto-invalido" class="hidden"></div>
+    <div id="pac-remoto-valido" class="hidden"></div>
 
-    <!-- ESTADO: TOKEN INVÁLIDO / EXPIRADO / USADO -->
-    <div id="pac-remoto-invalido" class="hidden med-card p-6 bg-white dark:bg-slate-900 border-2 border-rose-400 rounded-3xl text-center space-y-4 shadow-lg">
-      <div class="w-14 h-14 rounded-2xl bg-rose-100 text-rose-700 flex items-center justify-center text-2xl mx-auto">⚠️</div>
-      <div class="space-y-1">
-        <h3 class="text-base font-black text-slate-900 dark:text-white">Enlace No Disponible</h3>
-        <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-          Este enlace de control no es válido, ha expirado o ya fue utilizado anteriormente.
-        </p>
-      </div>
-      <div class="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800 text-[11px] text-slate-500">
-        Por favor comuníquese con su profesional de salud tratante para solicitar un nuevo enlace de seguimiento.
-      </div>
-    </div>
-
-    <!-- ESTADO: TOKEN VÁLIDO (FLUJO DE FOTOGRAFÍA) -->
-    <div id="pac-remoto-valido" class="hidden space-y-4">
-      <div class="text-center space-y-1 pt-2 pb-2">
-        <div class="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center text-2xl mx-auto shadow-md">🦶</div>
-        <h2 class="text-lg font-black text-slate-900 dark:text-white mt-1">Foto de Control</h2>
-        <p id="pac-remoto-subtitulo" class="text-xs text-slate-600 dark:text-slate-300">Su profesional de salud solicitó una nueva fotografía de seguimiento de su herida.</p>
-        <span id="pac-remoto-badge-fecha" class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-900 border border-emerald-300 mt-1"></span>
-      </div>
-
-    <!-- PASO 1: Privacy Gate 4 Checks -->
-    <div id="pac-remoto-paso-privacidad" class="med-card p-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl space-y-4 shadow-sm">
-      <div class="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
-        <span class="w-6 h-6 rounded-full bg-purple-100 text-purple-900 text-xs font-bold flex items-center justify-center">1</span>
-        <h3 class="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">Antes de continuar (Privacidad)</h3>
-      </div>
-
-      <p class="text-xs text-slate-600 dark:text-slate-300 font-medium">Por favor confirme que en la foto a enviar:</p>
-      
-      <div class="space-y-2.5 text-xs text-slate-700 dark:text-slate-300">
-        <label class="flex items-start gap-2.5 cursor-pointer p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
-          <input type="checkbox" id="chk-remoto-p1" class="mt-0.5 rounded text-emerald-600">
-          <span><strong>No aparece un rostro</strong> ni personas de fondo.</span>
-        </label>
-        <label class="flex items-start gap-2.5 cursor-pointer p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
-          <input type="checkbox" id="chk-remoto-p2" class="mt-0.5 rounded text-emerald-600">
-          <span><strong>No aparecen documentos</strong> (DNI, recetas, credenciales).</span>
-        </label>
-        <label class="flex items-start gap-2.5 cursor-pointer p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
-          <input type="checkbox" id="chk-remoto-p3" class="mt-0.5 rounded text-emerald-600">
-          <span><strong>No aparecen pulseras identificatorias</strong> de hospital.</span>
-        </label>
-        <label class="flex items-start gap-2.5 cursor-pointer p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
-          <input type="checkbox" id="chk-remoto-p4" class="mt-0.5 rounded text-emerald-600">
-          <span><strong>No aparecen etiquetas con datos personales</strong> o nombres.</span>
-        </label>
-      </div>
-
-      <button type="button" onclick="confirmarPrivacidadPacienteRemoto()" class="btn-primary w-full py-3 text-xs font-black bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl shadow-md min-h-[44px]">
-        Continuar a la Fotografía →
+    <div class="topbar" style="background:var(--pac-verde-d)">
+      <button class="back-btn" id="pac-rem-back-btn" onclick="goBackPacRem()" aria-label="Volver">
+        <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Volver
       </button>
+      <div class="t-logo" id="pac-t-logo">pie<span>diabetico</span>.lat</div>
+      <div class="t-title" id="pac-t-title"></div>
+      <span class="step-lbl" id="pac-step-lbl"></span>
     </div>
+    <div class="prog-bar" id="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
 
-    <!-- PASO 2: Captura / Selección de Foto -->
-    <div id="pac-remoto-paso-captura" class="hidden med-card p-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl space-y-4 shadow-sm">
-      <div class="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
-        <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-900 text-xs font-bold flex items-center justify-center">2</span>
-        <h3 class="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">Tomar o Elegir Fotografía</h3>
+    <!-- PANTALLA 1: Verificando enlace (s-rem-verificando) -->
+    <div id="s-rem-verificando" class="screen on" role="main">
+      <div class="verif-box" id="verif-cargando">
+        <div class="spinner" style="border-top-color:var(--pac-verde)"></div>
+        <div class="verif-titulo">Verificando enlace...</div>
       </div>
 
-      <input type="file" id="input-foto-paciente-remoto" accept="image/*" onchange="handleFotoPacienteRemoto(event)" class="hidden">
-      
-      <div id="dropzone-empty-pac-remoto" class="border-2 border-dashed border-emerald-300 dark:border-emerald-800 rounded-2xl p-6 text-center bg-emerald-50/20 space-y-3">
-        <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center text-2xl mx-auto shadow-xs">📷</div>
-        <div>
-          <p class="text-xs font-black text-slate-900 dark:text-white">Fotografía de la Herida</p>
-          <p class="text-[11px] text-slate-500">Encuadre nítido a 15–20 cm con buena luz.</p>
+      <!-- Estado A: Válido -->
+      <div id="verif-ok" style="display:none" class="body">
+        <div style="text-align:center;padding:20px 0 16px">
+          <span style="font-size:48px;display:block;margin-bottom:12px">📋</span>
+          <div style="font-size:20px;font-weight:700;color:var(--txt);margin-bottom:8px">Foto de seguimiento</div>
+          <div style="font-size:14px;color:var(--txt2);line-height:1.6;max-width:300px;margin:0 auto">
+            Tu profesional solicitó una nueva fotografía de control.
+          </div>
         </div>
-        <div class="flex flex-col sm:flex-row gap-2 justify-center pt-1">
-          <button type="button" onclick="document.getElementById('input-foto-paciente-remoto').click()" class="btn-primary !py-2.5 !px-4 text-xs font-black bg-emerald-600 hover:bg-emerald-700 text-white min-h-[44px]">
-            📷 Tomar Foto / Elegir de Galería
+        <div id="verif-fecha" style="display:none;text-align:center;font-size:12px;color:var(--txt3);margin-bottom:16px"></div>
+        <div class="card" style="margin-bottom:12px">
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--txt2)">
+              <span style="font-size:18px;flex-shrink:0">🔒</span>Este enlace es de uso único para este control
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--txt2)">
+              <span style="font-size:18px;flex-shrink:0">🚫</span>No necesitás crear una cuenta
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--txt2)">
+              <span style="font-size:18px;flex-shrink:0">📷</span>Solo se enviará una fotografía
+            </div>
+          </div>
+        </div>
+        <div class="info-box gris">
+          <span class="info-box-ico">ℹ️</span>
+          <div class="info-box-txt">
+            <strong>¿Qué pasa con mi foto?</strong>
+            <span>La imagen se sanitiza antes del envío. Se conserva temporalmente según la política de retención aplicable para el seguimiento de tu caso.</span>
+          </div>
+        </div>
+        <button class="btn btn-verde-d mt8" style="background:var(--pac-verde-d)" onclick="goToPacRem('s-rem-privacy')" aria-label="Continuar al envío de foto">
+          Continuar
+          <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+        <div class="espacio"></div>
+      </div>
+
+      <!-- Estado B: No disponible (expirado, consumido o no encontrado) -->
+      <div id="verif-nodisponible" style="display:none;flex:1;flex-direction:column">
+        <div class="verif-box">
+          <span style="font-size:48px">🔗</span>
+          <div class="verif-titulo">Este enlace ya no puede utilizarse</div>
+          <div class="verif-sub">Contactá a tu profesional si necesitás un nuevo control.</div>
+        </div>
+        <div class="body" style="flex:0;padding-top:0">
+          <div class="legal">Si necesitás atención urgente, contactá al servicio local de emergencias.</div>
+        </div>
+      </div>
+
+      <!-- Estado C: Error de red -->
+      <div id="verif-error" style="display:none;flex:1;flex-direction:column">
+        <div class="verif-box">
+          <span style="font-size:48px">📡</span>
+          <div class="verif-titulo">No se pudo verificar el enlace</div>
+          <div class="verif-sub">Revisá tu conexión e intentá nuevamente.</div>
+        </div>
+        <div class="body" style="flex:0;padding-top:0">
+          <button class="btn btn-verde-d" style="background:var(--pac-verde-d)" onclick="iniciarFlujoPacienteRemoto()" aria-label="Reintentar verificación del enlace">Reintentar</button>
+          <div class="espacio"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANTALLA 2: Privacy & Consent Gate (s-rem-privacy) -->
+    <div id="s-rem-privacy" class="screen" role="main">
+      <div class="body">
+        <div style="font-size:20px;font-weight:700;color:var(--txt);margin-bottom:4px">Privacidad de la imagen</div>
+        <div style="font-size:13px;color:var(--txt2);margin-bottom:16px;line-height:1.5">Antes de sacar la foto, asegurate de que se cumplan estas condiciones.</div>
+
+        <div class="privacy-box">
+          <div class="privacy-titulo">🛡️ No deben aparecer en la foto:</div>
+          <div class="check-item" onclick="toggleChkPac(this)" role="checkbox" tabindex="0" aria-checked="false">
+            <div class="check-box"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <span class="check-txt">Rostros u otras partes del cuerpo no relacionadas con la herida</span>
+          </div>
+          <div class="check-item" onclick="toggleChkPac(this)" role="checkbox" tabindex="0" aria-checked="false">
+            <div class="check-box"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <span class="check-txt">Documentos de identidad u otros papeles con datos personales</span>
+          </div>
+          <div class="check-item" onclick="toggleChkPac(this)" role="checkbox" tabindex="0" aria-checked="false">
+            <div class="check-box"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <span class="check-txt">Pulseras identificatorias u objetos con datos del caso</span>
+          </div>
+          <div class="check-item" onclick="toggleChkPac(this)" role="checkbox" tabindex="0" aria-checked="false">
+            <div class="check-box"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <span class="check-txt">Nombres, etiquetas u otros identificadores visibles</span>
+          </div>
+          <!-- Explicit Consent Checkbox -->
+          <div class="check-item" onclick="toggleChkPac(this)" role="checkbox" tabindex="0" aria-checked="false">
+            <div class="check-box"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <span class="check-txt"><strong>Consentimiento:</strong> Entiendo que esta fotografía será enviada a mi profesional para seguimiento y conservada temporalmente según la política aplicable.</span>
+          </div>
+        </div>
+
+        <button class="btn btn-verde-d" id="btn-pac-privacy-ok" style="background:var(--pac-verde-d)" onclick="goToPacRem('s-rem-foto')" disabled aria-label="Confirmar privacidad y continuar">
+          Confirmar y continuar
+        </button>
+        <div class="legal mt8">Los metadatos de ubicación (GPS) se eliminan automáticamente de la imagen antes del envío.</div>
+        <div class="espacio"></div>
+      </div>
+    </div>
+
+    <!-- PANTALLA 3: Captura de Foto (s-rem-foto) -->
+    <div id="s-rem-foto" class="screen" role="main">
+      <div class="body">
+        <div style="font-size:20px;font-weight:700;color:var(--txt);margin-bottom:4px">Sacá una nueva foto de la herida</div>
+        <div style="font-size:13px;color:var(--txt2);margin-bottom:16px;line-height:1.5">Foto de seguimiento solicitada por tu profesional.</div>
+
+        <img id="rem-preview" class="foto-preview" alt="Vista previa de la foto de seguimiento"/>
+
+        <div class="foto-area" id="rem-foto-area" onclick="document.getElementById('file-rem').click()" role="button" tabindex="0" aria-label="Abrir cámara para capturar imagen">
+          <span class="foto-ico">📷</span>
+          <strong>Tocar para abrir la cámara</strong>
+          <p>O elegir de la galería</p>
+        </div>
+        <input type="file" id="file-rem" accept="image/*" capture="environment" onchange="onFotoPacienteRemoto(this)" aria-label="Seleccionar imagen"/>
+
+        <button class="btn btn-outline btn-sm mb8" onclick="document.getElementById('file-rem').click()" aria-label="Elegir de la galería">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          Elegir de la galería
+        </button>
+
+        <div class="card" style="margin-bottom:12px">
+          <div class="card-titulo" style="font-size:13px;margin-bottom:6px">Recomendaciones</div>
+          <div class="card-sub">
+            · Buena iluminación natural o lámpara frontal<br>
+            · Imagen enfocada y sin movimiento<br>
+            · Solo el pie o la herida en el encuadre<br>
+            · Encuadrá claramente el área de interés
+          </div>
+        </div>
+
+        <button class="btn btn-verde-d" id="btn-pac-foto-ok" style="background:var(--pac-verde-d);display:none" onclick="iniciarQualityGatePacienteRemoto()" aria-label="Continuar al control de calidad">
+          Continuar con esta foto
+          <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+        <div class="espacio"></div>
+      </div>
+    </div>
+
+    <!-- PANTALLA 4: Control de Calidad (s-rem-quality) -->
+    <div id="s-rem-quality" class="screen" role="main">
+      <div class="body">
+        <div style="font-size:20px;font-weight:700;color:var(--txt);margin-bottom:4px">Control de calidad</div>
+        <div style="font-size:13px;color:var(--txt2);margin-bottom:16px;line-height:1.5">Verificando la imagen antes de enviarla.</div>
+
+        <div id="pac-qg-loading" class="loading">
+          <div class="spinner" style="border-top-color:var(--pac-verde)"></div>
+          <p>Verificando calidad...</p>
+        </div>
+
+        <div id="pac-qg-ok" style="display:none">
+          <div class="quality-card ok">
+            <span class="quality-ico">✅</span>
+            <div class="quality-titulo">Imagen adecuada</div>
+            <div class="quality-desc">La calidad es suficiente para el seguimiento. Podés confirmar el envío.</div>
+          </div>
+          <img id="pac-qg-preview-img" alt="Vista previa verificada" style="width:100%;max-height:200px;object-fit:cover;border-radius:var(--r);border:1px solid var(--borde);margin-bottom:12px;display:none"/>
+          <button class="btn btn-verde-d" style="background:var(--pac-verde-d)" onclick="enviarFotoPacienteRemoto()" aria-label="Confirmar y enviar la foto">
+            Confirmar y enviar
+          </button>
+          <button class="btn btn-ghost btn-sm mt8" onclick="limpiarFotoPacienteRemoto(); goToPacRem('s-rem-foto')" aria-label="Volver a tomar la foto">
+            Volver a tomar
           </button>
         </div>
-      </div>
 
-      <div id="dropzone-prev-pac-remoto" class="hidden space-y-3 text-center">
-        <img id="img-prev-pac-remoto" src="" class="max-h-56 mx-auto rounded-2xl object-cover border border-slate-200 shadow-md">
-        <div class="flex justify-center gap-2">
-          <button type="button" onclick="document.getElementById('input-foto-paciente-remoto').click()" class="btn-sec !py-2 !px-3 text-xs font-bold min-h-[44px]">Cambiar Foto</button>
-          <button type="button" onclick="enviarFotoPacienteRemoto()" class="btn-primary !py-2 !px-5 text-xs font-black bg-emerald-600 hover:bg-emerald-700 text-white min-h-[44px]">
-            ✓ Enviar Fotografía al Médico
+        <div id="pac-qg-fail" style="display:none">
+          <div class="quality-card fail">
+            <span class="quality-ico">📷</span>
+            <div class="quality-titulo">No pudimos evaluar bien esta foto</div>
+            <div class="quality-desc">Probá nuevamente con mejor luz, sin movimiento, y encuadrando claramente la herida.</div>
+          </div>
+          <div class="info-box gris" style="margin-bottom:12px">
+            <span class="info-box-ico">ℹ️</span>
+            <div class="info-box-txt">
+              <span>Podés repetir la foto mientras el enlace continúe vigente. El envío exitoso dejará utilizado el enlace.</span>
+            </div>
+          </div>
+          <button class="btn btn-verde-d" style="background:var(--pac-verde-d)" onclick="limpiarFotoPacienteRemoto(); goToPacRem('s-rem-foto')" aria-label="Volver a tomar la foto">
+            <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            Volver a tomar la foto
           </button>
         </div>
-      </div>
-
-      <div id="alerta-qg-pac-remoto" class="hidden p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-semibold">
-        ⚠️ La fotografía no tiene suficiente calidad o nitidez. Por favor vuelva a tomarla con mejor iluminación y enfoque.
+        <div class="espacio"></div>
       </div>
     </div>
 
-    <!-- PASO 3: Éxito / Foto Recibida -->
-    <div id="pac-remoto-paso-exito" class="hidden med-card p-6 bg-white dark:bg-slate-900 border-2 border-emerald-500 rounded-3xl text-center space-y-4 shadow-lg">
-      <div class="w-16 h-16 rounded-3xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-3xl mx-auto shadow-md">✓</div>
-      <div class="space-y-1">
-        <h3 class="text-base font-black text-slate-900 dark:text-white">✓ FOTO RECIBIDA</h3>
-        <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
-          La fotografía fue enviada para revisión profesional. Su equipo de salud evaluará la evolución de la lesión en su próximo control.
-        </p>
-      </div>
-      <div class="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800 text-[11px] text-slate-500">
-        Este enlace ha cumplido su objetivo de uso único y ha quedado cerrado. Puede cerrar esta pestaña.
+    <!-- PANTALLA 5: Enviando Fotografía (s-rem-enviando) -->
+    <div id="s-rem-enviando" class="screen" role="main">
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px">
+
+        <div id="env-cargando" class="loading">
+          <div class="spinner" style="border-top-color:var(--pac-verde)"></div>
+          <p style="font-weight:600;color:var(--txt)">Enviando fotografía...</p>
+          <p style="font-size:12px;color:var(--txt3)">No cerrés esta pantalla mientras se realiza el envío.</p>
+        </div>
+
+        <div id="env-ok" style="display:none;width:100%">
+          <div class="exito-box">
+            <span class="exito-ico">✅</span>
+            <div class="exito-titulo">Foto recibida correctamente</div>
+            <div class="exito-desc">Tu profesional podrá revisarla en la plataforma.</div>
+          </div>
+          <div class="body" style="flex:0;padding-top:0">
+            <div class="legal">Si necesitás atención urgente, contactá al servicio local de emergencias.</div>
+          </div>
+        </div>
+
+        <div id="env-error" style="display:none;width:100%">
+          <div style="text-align:center;padding:20px 0">
+            <span style="font-size:48px;display:block;margin-bottom:12px">📡</span>
+            <div style="font-size:18px;font-weight:700;color:var(--txt);margin-bottom:8px">No pudimos enviar la fotografía</div>
+            <div style="font-size:14px;color:var(--txt2);line-height:1.6;margin-bottom:20px">Revisá tu conexión e intentá nuevamente.</div>
+          </div>
+          <div class="body" style="flex:0;padding-top:0">
+            <button class="btn btn-verde-d" style="background:var(--pac-verde-d)" onclick="reintentarEnvioPacienteRemoto()" aria-label="Reintentar el envío">
+              Reintentar
+            </button>
+            <div class="legal mt8">El enlace seguirá disponible hasta completar el envío exitosamente.</div>
+            <div class="espacio"></div>
+          </div>
+        </div>
+
       </div>
     </div>
-
-    </div> <!-- Cierre de pac-remoto-valido -->
 
   </div>
 

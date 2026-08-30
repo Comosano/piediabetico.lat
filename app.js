@@ -24,7 +24,7 @@ var state = {
   lastPatientResult: '',
   lastProfResult: '',
   config: {
-    apiUrl: localStorage.getItem('pd_api_url') || 'http://localhost:8000',
+    apiUrl: 'http://localhost:8000',
     // API Keys se gestionan 100% en backend por seguridad (Fase 1)
   }
 };
@@ -84,7 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
   aplicarTema(state.theme || 'auto');
   if (window.lucide) lucide.createIcons();
 
-  // Enrutamiento directo por URL para paciente remoto (/r/{token}, #/r/{token} o ?r={token})
+  // Enrutamiento directo por URL para profesional, paciente y paciente remoto
   const pathname = (typeof window !== 'undefined' && window.location && window.location.pathname) || '';
   const search = (typeof window !== 'undefined' && window.location && window.location.search) || '';
   const hash = (typeof window !== 'undefined' && window.location && window.location.hash) || '';
@@ -102,6 +102,10 @@ document.addEventListener('DOMContentLoaded', () => {
   if (remoteToken) {
     state.remoteTokenActivo = remoteToken;
     switchPortal('paciente-remoto', true);
+  } else if (pathname === '/profesional' || pathname.startsWith('/profesional') || hash.startsWith('#/profesional')) {
+    switchPortal('profesional', true);
+  } else if (pathname === '/paciente' || pathname.startsWith('/paciente') || hash.startsWith('#/paciente')) {
+    switchPortal('paciente', true);
   } else {
     switchPortal('landing');
   }
@@ -133,9 +137,6 @@ function ingresarModoDemo(perfil) {
       pais: "AR",
       diabetes: "diabetes_2"
     };
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem('piediabetico_paciente_profile', JSON.stringify(pacienteDemo));
-    }
     switchPortal('paciente', true);
     document.getElementById('pac-demo-banner')?.classList.remove('hidden');
     // Pre-cargar caso de ejemplo para experiencia interactiva inmediata
@@ -153,10 +154,6 @@ function ingresarModoDemo(perfil) {
     };
     state.profMatriculaVerificada = true;
     state.currentUser = profDemo;
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem('piediabetico_prof_profile', JSON.stringify(profDemo));
-      localStorage.setItem('pd_current_user', JSON.stringify(profDemo));
-    }
     if (typeof actualizarHeaderUsuario === 'function') {
       actualizarHeaderUsuario(profDemo);
     }
@@ -213,12 +210,7 @@ function switchPortal(portal, skipRegistration = false) {
   if (portal === 'paciente') {
     if (viewPac) viewPac.classList.remove('hidden');
     if (btnVolver) btnVolver.classList.remove('hidden');
-    if (typeof renderizarReferentesPaciente === 'function') renderizarReferentesPaciente();
-    if (typeof actualizarCtaTurnosPaciente === 'function') actualizarCtaTurnosPaciente();
-  } else if (portal === 'profesional') {
-    if (viewProf) viewProf.classList.remove('hidden');
-    if (btnVolver) btnVolver.classList.remove('hidden');
-  } else if (portal === 'piloto') {
+  } else if (portal === 'profesional' || portal === 'piloto') {
     if (viewPiloto) viewPiloto.classList.remove('hidden');
     if (btnVolver) btnVolver.classList.remove('hidden');
     if (typeof inicializarModoPiloto === 'function') inicializarModoPiloto();
@@ -445,7 +437,7 @@ async function ejecutarConsultaPaciente(forzar = false) {
   }
 
   // ⏱️ CONTROL DE FRECUENCIA CLÍNICA (ANTI-SPAM DE TOKENS)
-  const ultimoTs = parseInt(localStorage.getItem('ultimo_analisis_paciente_ts') || '0');
+  const ultimoTs = 0;
   const horasPasadas = (Date.now() - ultimoTs) / (1000 * 60 * 60);
   const tieneSintomasAgudos = state.patientSurvey.fiebre || state.patientSurvey.olor;
 
@@ -524,7 +516,6 @@ Inspect images with extreme care BEFORE providing any assessment.
 
   try {
     const res = await callGeminiAPI(systemPrompt, userText, imgsCargadas);
-    localStorage.setItem('ultimo_analisis_paciente_ts', String(Date.now()));
     mostrarResultadoPaciente(res);
   } catch (e) {
     mostrarResultadoPacienteFallback(e.message);
@@ -1228,19 +1219,11 @@ const DEFAULT_PACIENTES_CLINICOS = [
 let pacienteActivoEvolucionId = "pac_1";
 
 function obtenerPacientesClinicos() {
-  if (typeof localStorage === 'undefined') return DEFAULT_PACIENTES_CLINICOS;
-  const guardados = localStorage.getItem(PACIENTES_KEY);
-  if (guardados) {
-    try { return JSON.parse(guardados); } catch (e) { return DEFAULT_PACIENTES_CLINICOS; }
-  }
-  localStorage.setItem(PACIENTES_KEY, JSON.stringify(DEFAULT_PACIENTES_CLINICOS));
   return DEFAULT_PACIENTES_CLINICOS;
 }
 
 function guardarPacientesClinicos(pacientes) {
-  if (typeof localStorage !== 'undefined') {
-    localStorage.setItem(PACIENTES_KEY, JSON.stringify(pacientes));
-  }
+  // In-memory mode for Pilot v0.1 - zero persistent storage
 }
 
 function inicializarHistorialEvolutivo() {
@@ -2113,7 +2096,6 @@ function inicializarTurnosDB() {
         monto: "$ 18.000 ARS"
       }
     ];
-    localStorage.setItem(TURNOS_STORAGE_KEY, JSON.stringify(demo));
   }
 }
 
@@ -2219,7 +2201,6 @@ function confirmarReservaTurno() {
   };
 
   turnos.unshift(nuevoTurno);
-  localStorage.setItem(TURNOS_STORAGE_KEY, JSON.stringify(turnos));
 
   // Mostrar pantalla de éxito
   document.getElementById('turno-form-body')?.classList.add('hidden');
@@ -2477,7 +2458,6 @@ function confirmar2FA() {
   }
 
   state.currentUser = authTempUser;
-  localStorage.setItem(AUTH_USER_KEY, JSON.stringify(authTempUser));
 
   cerrarModalAuth();
   actualizarUIAutenticacion();
@@ -2859,7 +2839,7 @@ const i18nTranslations = {
     pillar_tele_title: "Teleasistencia & Turnos",
     pillar_tele_desc: "Conexión directa entre pacientes y especialistas mediante videoconsultas encriptadas y gestión de agenda médica.",
     pillar_legal_title: "Blindaje Legal & Privacidad",
-    pillar_legal_desc: "Cumplimiento estricto de la Ley 25.326 de Protección de Datos Personales y normativas de teleasistencia en Latinoamérica.",
+    pillar_legal_desc: "Privacidad y seguridad por diseño. El tratamiento de datos deberá adaptarse a la normativa aplicable en cada jurisdicción.",
 
     // Congresses
     sec_cong_badge: "Agenda Científica & Educación Médica Continua · LATAM 2026",
@@ -3516,7 +3496,7 @@ const i18nTranslations = {
     pillar_tele_title: "Telehealth & Appointments",
     pillar_tele_desc: "Direct connection between patients and specialists via encrypted video consults and medical schedule management.",
     pillar_legal_title: "Legal & Regulatory Compliance",
-    pillar_legal_desc: "Strict compliance with Data Privacy laws (GDPR / LGPD / HIPAA-ready) and Latin American telehealth regulations.",
+    pillar_legal_desc: "Privacy and security by design. Data processing must adapt to applicable laws in each jurisdiction.",
 
     // Congresses
     sec_cong_badge: "Continuous Medical Education & Congresses · LATAM 2026",
@@ -4102,7 +4082,6 @@ function validarOtpPaciente() {
     otp_validado_en: new Date().toISOString()
   };
 
-  localStorage.setItem('piediabetico_paciente_profile', JSON.stringify(profile));
   if (profile.pais === 'BR' && state.lang !== 'pt') setLanguage('pt');
 
   cerrarModalRegistroPaciente();
@@ -4167,8 +4146,6 @@ function confirmarRegistroProfesional() {
     validado: true,
     fecha: new Date().toISOString()
   };
-
-  localStorage.setItem('piediabetico_prof_profile', JSON.stringify(profile));
 
   // Actualizar indicador de usuario en la cabecera
   const userHeader = document.getElementById('header-auth-user');
@@ -4431,9 +4408,8 @@ function confirmarReservaTurno() {
     creadoEl: new Date().toISOString()
   };
 
-  const turnosDB = JSON.parse(localStorage.getItem('piediabetico_turnos_db') || '[]');
+  const turnosDB = [];
   turnosDB.unshift(nuevoTurno);
-  localStorage.setItem('piediabetico_turnos_db', JSON.stringify(turnosDB));
 
   document.getElementById('turno-form-body')?.classList.add('hidden');
   const successBody = document.getElementById('turno-success-body');
@@ -4466,63 +4442,7 @@ function confirmarReservaTurno() {
 }
 
 function inicializarTurnosDemo() {
-  const turnosExistentes = localStorage.getItem('piediabetico_turnos_db');
-  if (!turnosExistentes) {
-    const demo = [
-      {
-        id: "T-8921",
-        fecha: "2026-08-28",
-        hora: "15:30",
-        especialistaId: "infectologo",
-        especialistaNombre: "Dr. Alejandro Gómez",
-        especialistaTitulo: "Médico Infectólogo (MN 118.420)",
-        pacienteNombre: "Carlos Mendoza",
-        pacienteTelefono: "+54 9 11 4521-8890",
-        pacienteEmail: "carlos.mendoza@email.com",
-        motivo: "Fiebre y secreción purulenta en talón. Ajuste de antibióticos.",
-        arancelARS: 38750,
-        arancelUSD: 25,
-        estadoPago: "Aprobado (Mercado Pago)",
-        estadoTurno: "Confirmado",
-        meetUrl: "https://meet.google.com/pdi-infecto-arg"
-      },
-      {
-        id: "T-8922",
-        fecha: "2026-08-29",
-        hora: "10:30",
-        especialistaId: "enfermera",
-        especialistaNombre: "Lic. Mariana Rossi",
-        especialistaTitulo: "Enfermera de Heridas (MN 74.310)",
-        pacienteNombre: "María Elena Gómez",
-        pacienteTelefono: "+54 9 11 6712-3344",
-        pacienteEmail: "maria.gomez@email.com",
-        motivo: "Curación avanzada y recambio de apósito de plata en antepié.",
-        arancelARS: 31000,
-        arancelUSD: 20,
-        estadoPago: "Aprobado (Tarjeta Débito)",
-        estadoTurno: "Confirmado",
-        meetUrl: "https://meet.google.com/pdi-heridas-arg"
-      },
-      {
-        id: "T-8923",
-        fecha: "2026-08-30",
-        hora: "11:30",
-        especialistaId: "diabetologo",
-        especialistaNombre: "Dr. Roberto Fernández",
-        especialistaTitulo: "Médico Diabetólogo (MN 98.750)",
-        pacienteNombre: "Jorge Albarracín",
-        pacienteTelefono: "+54 9 11 9988-7766",
-        pacienteEmail: "jorge.albarracin@email.com",
-        motivo: "Control de hemoglobina glicosilada y evaluación de calzado.",
-        arancelARS: 46500,
-        arancelUSD: 30,
-        estadoPago: "Aprobado (Stripe Internacional)",
-        estadoTurno: "Confirmado",
-        meetUrl: "https://meet.google.com/pdi-diabete-arg"
-      }
-    ];
-    localStorage.setItem('piediabetico_turnos_db', JSON.stringify(demo));
-  }
+  // Demo turnos kept in memory only for Pilot v0.1
 }
 
 let filtroEspecialistaAgendaActual = 'todos';
@@ -4808,8 +4728,7 @@ function confirmarEnvioTrabajo() {
     resumen,
     fecha: new Date().toLocaleDateString('es-AR')
   });
-  localStorage.setItem('piediabetico_abstracts', JSON.stringify(abstracts));
-
+  // Abstract kept in memory for Pilot v0.1
   cerrarModalEnviarTrabajo();
   alert(`✓ Abstract "${titulo}" enviado con éxito al Comité Científico. Recibirás confirmación por correo.`);
 }
@@ -7678,10 +7597,6 @@ async function procesarSuscripcionNewsletter(e) {
 
   if (!email) return;
 
-  const suscriptores = JSON.parse(localStorage.getItem('pd_newsletter_subs') || '[]');
-  suscriptores.push({ email, perfil, fecha: new Date().toISOString() });
-  localStorage.setItem('pd_newsletter_subs', JSON.stringify(suscriptores));
-
   cerrarModalNewsletter();
 
   try {
@@ -7707,9 +7622,6 @@ async function procesarEnvioContacto(e) {
   const msg = document.getElementById('input-cont-mensaje')?.value.trim();
 
   let ticketId = 'CONS-' + Math.floor(1000 + Math.random() * 9000);
-  const consultas = JSON.parse(localStorage.getItem('pd_consultas_contacto') || '[]');
-  consultas.push({ ticketId, nombre, email, tel, motivo, msg, fecha: new Date().toISOString() });
-  localStorage.setItem('pd_consultas_contacto', JSON.stringify(consultas));
 
   cerrarModalContacto();
 
@@ -8036,15 +7948,15 @@ function abrirTurnitoPorId(espId) {
 // MOTOR DE EVIDENCIA CIENTÍFICA PUBMED / IWGDF CON CONTROL DE CUOTA
 // ═══════════════════════════════════════════════════════════════════════
 
+let pubmedQuotaMem = { usadasMes: 0, ultimoMes: '' };
+
 function obtenerEstadoCuotaPubMed() {
-  const cuota = JSON.parse(localStorage.getItem('piediabetico_pubmed_quota') || '{"usadasMes":0,"ultimoMes":""}');
-  const mesActual = new Date().toISOString().slice(0, 7); // "2026-08"
-  if (cuota.ultimoMes !== mesActual) {
-    cuota.usadasMes = 0;
-    cuota.ultimoMes = mesActual;
-    localStorage.setItem('piediabetico_pubmed_quota', JSON.stringify(cuota));
+  const mesActual = new Date().toISOString().slice(0, 7);
+  if (pubmedQuotaMem.ultimoMes !== mesActual) {
+    pubmedQuotaMem.usadasMes = 0;
+    pubmedQuotaMem.ultimoMes = mesActual;
   }
-  return cuota;
+  return pubmedQuotaMem;
 }
 
 function setPubMedQuery(query) {
@@ -8150,9 +8062,7 @@ function ejecutarBusquedaPubMedEvidencia() {
     return;
   }
 
-  // Registrar uso de la cuota mensual
   cuota.usadasMes += 1;
-  localStorage.setItem('piediabetico_pubmed_quota', JSON.stringify(cuota));
 
   const badgeQuota = document.getElementById('pubmed-quota-badge');
   if (badgeQuota) {
@@ -8233,18 +8143,16 @@ function toggleAudioDictamenPaciente() {
     return;
   }
 
-  // Control de cuota: 1 audio de reporte por mes por paciente
-  const cuotaAudio = JSON.parse(localStorage.getItem('piediabetico_audio_quota') || '{"usadasMes":0,"ultimoMes":""}');
+  let audioQuotaMem = { usadasMes: 0, ultimoMes: '' };
   const mesActual = new Date().toISOString().slice(0, 7);
 
-  if (cuotaAudio.ultimoMes !== mesActual) {
-    cuotaAudio.usadasMes = 0;
-    cuotaAudio.ultimoMes = mesActual;
+  if (audioQuotaMem.ultimoMes !== mesActual) {
+    audioQuotaMem.usadasMes = 0;
+    audioQuotaMem.ultimoMes = mesActual;
   }
 
   // Registrar uso
-  cuotaAudio.usadasMes += 1;
-  localStorage.setItem('piediabetico_audio_quota', JSON.stringify(cuotaAudio));
+  audioQuotaMem.usadasMes += 1;
 
   const btnText = document.getElementById('txt-audio-pac');
   if (btnText) btnText.textContent = '⏹ Detener Audio';
@@ -8284,7 +8192,7 @@ function detenerAudioActual() {
 // ── REGISTRO DE SERVICE WORKER & ESTADO OFFLINE ──────────────────────
 if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js')
+    navigator.serviceWorker.register('/sw.js?v=17', { scope: '/' })
       .then(reg => {
         console.log('✓ Service Worker registrado con éxito. Scope:', reg.scope);
       })
@@ -9121,6 +9029,7 @@ function renderizarEstadoAuthPiloto() {
   if (!state.pilotSessionToken) {
     if (loginView) loginView.classList.remove('hidden');
     if (authView) authView.classList.add('hidden');
+    goTo('s-login');
   } else {
     if (loginView) loginView.classList.add('hidden');
     if (authView) authView.classList.remove('hidden');
@@ -9128,36 +9037,50 @@ function renderizarEstadoAuthPiloto() {
     const txtNombre = document.getElementById('txt-piloto-medico-nombre');
     const badgeRol = document.getElementById('badge-piloto-medico-rol');
     const txtEmail = document.getElementById('txt-piloto-medico-email');
+    const tAv = document.getElementById('t-av');
 
-    if (txtNombre) txtNombre.textContent = state.pilotUser?.full_name || 'Médico Piloto';
+    const fullName = state.pilotUser?.full_name || 'Médico Piloto';
+    const initials = fullName.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase() || 'MP';
+
+    if (txtNombre) txtNombre.textContent = fullName;
     if (badgeRol) badgeRol.textContent = state.pilotUser?.role || 'medico_general';
     if (txtEmail) txtEmail.textContent = state.pilotUser?.email || 'piloto.medico@piediabetico.lat';
+    if (tAv) tAv.textContent = initials;
   }
 }
 
 async function iniciarSesionPiloto(e) {
   if (e && e.preventDefault) e.preventDefault();
 
-  const inpEmail = document.getElementById('inp-piloto-email');
-  const inpPass = document.getElementById('inp-piloto-password');
-  const msgErr = document.getElementById('msg-error-login-piloto');
-  const btnSub = document.getElementById('btn-submit-login-piloto');
+  const elEmail = document.getElementById('login-email');
+  const elInpEmail = document.getElementById('inp-piloto-email');
+  const elAltEmail = document.getElementById('piloto-login-email');
+  const email = ((elEmail && elEmail.value) ? elEmail.value : ((elInpEmail && elInpEmail.value) ? elInpEmail.value : ((elAltEmail && elAltEmail.value) ? elAltEmail.value : ''))).trim();
 
-  const email = inpEmail ? inpEmail.value.trim() : '';
-  const password = inpPass ? inpPass.value : '';
+  const elPass = document.getElementById('login-pass');
+  const elInpPass = document.getElementById('inp-piloto-password');
+  const elAltPass = document.getElementById('piloto-login-password');
+  const password = (elPass && elPass.value) ? elPass.value : ((elInpPass && elInpPass.value) ? elInpPass.value : ((elAltPass && elAltPass.value) ? elAltPass.value : ''));
+
+  const msgErr = document.getElementById('msg-error-login-piloto') || document.getElementById('login-err');
+  const btnSub = document.getElementById('btn-submit-login-piloto') || document.getElementById('btn-login-submit');
 
   if (!email || !password) {
     if (msgErr) {
       msgErr.textContent = 'Por favor complete correo y contraseña.';
       msgErr.classList.remove('hidden');
+      msgErr.style.display = 'block';
     }
     return;
   }
 
-  if (msgErr) msgErr.classList.add('hidden');
+  if (msgErr) {
+    msgErr.classList.add('hidden');
+    msgErr.style.display = 'none';
+  }
   if (btnSub) {
     btnSub.disabled = true;
-    btnSub.innerHTML = '<span>Verificando credenciales...</span>';
+    btnSub.innerHTML = '<span>Ingresando...</span>';
   }
 
   try {
@@ -9168,8 +9091,7 @@ async function iniciarSesionPiloto(e) {
     });
 
     if (!res.ok) {
-      const errData = await res.json().catch(() => ({}));
-      throw new Error(errData.detail || 'Credenciales incorrectas o usuario no habilitado.');
+      throw new Error('Credenciales inválidas');
     }
 
     const data = await res.json();
@@ -9180,21 +9102,26 @@ async function iniciarSesionPiloto(e) {
       role: data.role
     };
 
-    if (inpPass) inpPass.value = '';
+    if (elPass) elPass.value = '';
+    if (elInpPass) elInpPass.value = '';
+    if (elAltPass) elAltPass.value = '';
 
     renderizarEstadoAuthPiloto();
     await consultarAiReadinessPiloto();
     await cargarCasosPilotoDesdeBackend();
+    goTo('s-home');
 
   } catch (err) {
     if (msgErr) {
-      msgErr.textContent = `⚠️ ${err.message || 'Error de conexión'}`;
+      const isNet = err.message && err.message.includes('servidor');
+      msgErr.textContent = isNet ? 'No se pudo conectar. Reintentar.' : 'Credenciales inválidas';
       msgErr.classList.remove('hidden');
+      msgErr.style.display = 'block';
     }
   } finally {
     if (btnSub) {
       btnSub.disabled = false;
-      btnSub.innerHTML = '<span>Ingresar a la Estación Clínica</span><span>→</span>';
+      btnSub.innerHTML = '<span>Ingresar a la plataforma</span>';
     }
   }
 }
@@ -9207,7 +9134,9 @@ function cerrarSesionPiloto() {
   state.pilotData.activeCaseUuid = null;
   state.pilotData.activeWoundUuid = null;
   state.pilotData.activeTimeline = null;
+  histProf = ['s-login'];
   renderizarEstadoAuthPiloto();
+  goTo('s-login');
 }
 
 async function consultarAiReadinessPiloto() {
@@ -9217,11 +9146,36 @@ async function consultarAiReadinessPiloto() {
       const data = await res.json();
       state.pilotAiReadiness = data;
 
+      const isUnetReady = data.segmentation_status === 'READY' || data.segmentation_ready === true || data.segmentation_artifact_exists === true;
+      const isClasifReady = data.classifier_status === 'READY' || data.classifier_ready === true || data.classifier_artifact_exists === true;
+
+      const pillUnet = document.getElementById('pill-unet');
+      const pillClasif = document.getElementById('pill-clasif');
+
+      if (pillUnet) {
+        if (isUnetReady) {
+          pillUnet.className = 'status-pill';
+          pillUnet.innerHTML = '<span class="status-dot dot-on" id="dot-unet"></span><span id="txt-unet-status">Segmentación U-Net disponible</span>';
+        } else {
+          pillUnet.className = 'status-pill';
+          pillUnet.innerHTML = '<span class="status-dot dot-off" id="dot-unet"></span><span id="txt-unet-status">Segmentación U-Net no disponible</span>';
+        }
+      }
+
+      if (pillClasif) {
+        if (isClasifReady) {
+          pillClasif.className = 'status-pill';
+          pillClasif.innerHTML = '<span class="status-dot dot-on" id="dot-clasif"></span><span id="txt-clasif-status">Clasificación automática disponible</span>';
+        } else {
+          pillClasif.className = 'status-pill';
+          pillClasif.innerHTML = '<span class="status-dot dot-off" id="dot-clasif"></span><span id="txt-clasif-status">Clasificación no disponible en esta versión</span>';
+        }
+      }
+
       const badgeUnet = document.getElementById('badge-unet-readiness');
       const badgeClasif = document.getElementById('badge-classifier-readiness');
 
       if (badgeUnet) {
-        const isUnetReady = data.segmentation_status === 'READY' || data.segmentation_ready === true || data.segmentation_artifact_exists === true;
         if (isUnetReady) {
           badgeUnet.className = 'px-2.5 py-1 rounded-xl text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1';
           badgeUnet.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span><span>U-Net: READY (v1.0.0)</span>';
@@ -9232,7 +9186,6 @@ async function consultarAiReadinessPiloto() {
       }
 
       if (badgeClasif) {
-        const isClasifReady = data.classifier_status === 'READY' || data.classifier_ready === true || data.classifier_artifact_exists === true;
         if (isClasifReady) {
           badgeClasif.className = 'px-2.5 py-1 rounded-xl text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1';
           badgeClasif.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span><span>Clasificador: READY</span>';
@@ -9247,36 +9200,150 @@ async function consultarAiReadinessPiloto() {
   }
 }
 
-// ── INICIALIZACIÓN Y NAVEGACIÓN DE PESTAÑAS ───────────────────────────
+// ── NAVEGACIÓN DE PANTALLAS PROFESIONAL v4 (goTo / goBack / updateTb) ─
+
+let histProf = ['s-login'];
+
+const SCREEN_TITLES_PROF = {
+  's-login': '',
+  's-home': '',
+  's-casos': 'Casos clínicos',
+  's-selector-caso': 'Seleccionar caso y herida',
+  's-ficha': 'Ficha del caso',
+  's-herida': 'Línea de tiempo de la herida',
+  's-privacy-gate': 'Privacy Gate',
+  's-foto-cap': 'Captura de fotografía',
+  's-quality-gate': 'Quality Gate óptico',
+  's-shadow-mode': 'Shadow Mode (Evaluación médica)',
+  's-resultado-analisis': 'Resultado del análisis U-Net',
+  's-comparador': 'Comparador longitudinal',
+  's-calcs': 'Calculadoras clínicas',
+  's-san-elian': 'Escala San Elián',
+  's-wifi': 'Escala SVS WIfI',
+  's-cicatrizacion': 'Tasa de cicatrización a 4 semanas'
+};
+
+function goTo(screenId) {
+  const target = document.getElementById(screenId);
+  if (!target) return;
+
+  const current = histProf[histProf.length - 1];
+  if (current !== screenId) {
+    histProf.push(screenId);
+  }
+
+  const container = document.getElementById('portal-piloto-view');
+  if (container && typeof container.querySelectorAll === 'function') {
+    container.querySelectorAll('.screen').forEach(s => s.classList && s.classList.remove && s.classList.remove('on'));
+  }
+  if (target && target.classList) target.classList.add('on');
+
+  updateTb(screenId);
+
+  if (screenId === 's-home') renderizarHomeV4();
+  else if (screenId === 's-casos') renderizarListaCasosV4();
+  else if (screenId === 's-ficha') renderizarFichaCasoV4();
+  else if (screenId === 's-herida') renderizarHeridaTimelineV4();
+  else if (screenId === 's-selector-caso') renderizarSelectorCasoV4();
+  else if (screenId === 's-comparador') renderizarComparadorV4();
+
+  if (typeof window !== 'undefined' && typeof window.scrollTo === 'function') {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+}
+
+function goBack() {
+  if (histProf.length > 1) {
+    histProf.pop();
+    const prev = histProf[histProf.length - 1];
+    
+    const container = document.getElementById('portal-piloto-view');
+    if (container && typeof container.querySelectorAll === 'function') {
+      container.querySelectorAll('.screen').forEach(s => s.classList && s.classList.remove && s.classList.remove('on'));
+    }
+    const prevEl = document.getElementById(prev);
+    if (prevEl && prevEl.classList) prevEl.classList.add('on');
+
+    updateTb(prev);
+
+    if (prev === 's-home') renderizarHomeV4();
+    else if (prev === 's-casos') renderizarListaCasosV4();
+    else if (prev === 's-ficha') renderizarFichaCasoV4();
+    else if (prev === 's-herida') renderizarHeridaTimelineV4();
+
+    if (typeof window !== 'undefined' && typeof window.scrollTo === 'function') {
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+  }
+}
+
+function updateTb(screenId) {
+  const backBtn = document.getElementById('back-btn');
+  const tLogo = document.getElementById('t-logo');
+  const tTitle = document.getElementById('t-title');
+  const tAv = document.getElementById('t-av');
+  const statusBar = document.getElementById('status-bar');
+
+  const isMain = (screenId === 's-home' || screenId === 's-login');
+
+  if (backBtn && backBtn.style) {
+    backBtn.style.visibility = isMain ? 'hidden' : 'visible';
+  }
+
+  if (tLogo && tTitle) {
+    if (screenId === 's-login' || screenId === 's-home') {
+      if (tLogo.style) tLogo.style.display = 'block';
+      if (tTitle.style) tTitle.style.display = 'none';
+    } else {
+      if (tLogo.style) tLogo.style.display = 'none';
+      if (tTitle.style) {
+        tTitle.style.display = 'block';
+        tTitle.textContent = SCREEN_TITLES_PROF[screenId] || 'Portal Profesional';
+      }
+    }
+  }
+
+  if (tAv && tAv.style) {
+    tAv.style.display = (screenId === 's-login') ? 'none' : 'flex';
+  }
+
+  if (statusBar && statusBar.style) {
+    if (state.pilotSessionToken && (screenId === 's-home' || screenId === 's-casos' || screenId === 's-ficha' || screenId === 's-herida')) {
+      statusBar.style.display = 'flex';
+    } else {
+      statusBar.style.display = 'none';
+    }
+  }
+}
+
+function navSw(screenId, btn) {
+  const parentNav = (btn && typeof btn.closest === 'function') ? btn.closest('.bottom-nav') : null;
+  if (parentNav && typeof parentNav.querySelectorAll === 'function') {
+    parentNav.querySelectorAll('.nav-tab').forEach(t => t.classList && t.classList.remove && t.classList.remove('on'));
+    if (btn && btn.classList) btn.classList.add('on');
+  }
+  goTo(screenId);
+}
+
+// ── INICIALIZACIÓN Y CARGA DE CASOS ──────────────────────────────────
 
 function inicializarModoPiloto() {
-  renderizarEstadoAuthPiloto();
-  if (state.pilotSessionToken) {
-    cargarCasosPilotoDesdeBackend();
+  if (!state.pilotSessionToken) {
+    histProf = ['s-login'];
+    renderizarEstadoAuthPiloto();
+  } else {
+    histProf = ['s-home'];
+    renderizarEstadoAuthPiloto();
     consultarAiReadinessPiloto();
+    cargarCasosPilotoDesdeBackend();
   }
 }
 
 function switchPilotoTab(tab) {
-  state.pilotData.activeTab = tab;
-  ['analisis', 'casos', 'calculadoras'].forEach(t => {
-    const btn = document.getElementById(`btn-piloto-tab-${t}`);
-    const view = document.getElementById(`piloto-subview-${t}`);
-    if (btn) {
-      if (t === tab) {
-        btn.className = 'flex-1 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 bg-white dark:bg-slate-900 text-purple-900 dark:text-purple-300 shadow-sm';
-      } else {
-        btn.className = 'flex-1 py-2.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 transition-all flex items-center justify-center gap-1.5';
-      }
-    }
-    if (view) {
-      if (t === tab) view.classList.remove('hidden');
-      else view.classList.add('hidden');
-    }
-  });
+  if (tab === 'casos') goTo('s-casos');
+  else if (tab === 'calculadoras') goTo('s-calcs');
+  else goTo('s-home');
 }
-
-// ── CARGA Y GESTIÓN DE CASOS Y HERIDAS DESDE POSTGRESQL ──────────────
 
 async function cargarCasosPilotoDesdeBackend() {
   try {
@@ -9342,7 +9409,67 @@ function poblarSelectCasosPiloto() {
   });
 }
 
-async function cambiarCasoPilotoActivo(caseUuid) {
+function renderizarHomeV4() {
+  const listCont = document.getElementById('home-recent-cases');
+  if (!listCont) return;
+  listCont.innerHTML = '';
+
+  if (state.pilotData.cases.length === 0) {
+    listCont.innerHTML = `
+      <div class="empty-state">
+        <span class="ico">📁</span>
+        <div class="empty-state-title">No hay casos registrados</div>
+        <div class="empty-state-sub">Creá tu primer caso con el botón inferior.</div>
+      </div>
+    `;
+    return;
+  }
+
+  state.pilotData.cases.slice(0, 5).forEach(c => {
+    const woundCount = c.wounds ? c.wounds.length : 0;
+    const card = document.createElement('div');
+    card.className = 'caso-card';
+    card.onclick = () => abrirFichaCaso(c.pilot_case_uuid);
+    card.innerHTML = `
+      <div class="caso-alias">${c.case_alias}</div>
+      <div class="caso-meta">${woundCount} ${woundCount === 1 ? 'herida registrada' : 'heridas registradas'} · Pseudonimizado</div>
+      <span class="chevron">›</span>
+    `;
+    listCont.appendChild(card);
+  });
+}
+
+function renderizarListaCasosV4() {
+  const listCont = document.getElementById('cases-list-container');
+  if (!listCont) return;
+  listCont.innerHTML = '';
+
+  if (state.pilotData.cases.length === 0) {
+    listCont.innerHTML = `
+      <div class="empty-state">
+        <span class="ico">📁</span>
+        <div class="empty-state-title">No hay casos en el sistema</div>
+        <div class="empty-state-sub">Registrá un nuevo caso seguro con CERO PII.</div>
+      </div>
+    `;
+    return;
+  }
+
+  state.pilotData.cases.forEach(c => {
+    const woundCount = c.wounds ? c.wounds.length : 0;
+    const card = document.createElement('div');
+    card.className = 'caso-card';
+    card.onclick = () => abrirFichaCaso(c.pilot_case_uuid);
+    card.innerHTML = `
+      <div class="caso-alias">${c.case_alias}</div>
+      <div class="caso-meta">${woundCount} ${woundCount === 1 ? 'herida' : 'heridas'} · ID: ${c.pilot_case_uuid.slice(0, 8)}...</div>
+      <span class="chevron">›</span>
+    `;
+    listCont.appendChild(card);
+  });
+}
+
+function abrirFichaCaso(caseUuid) {
   state.pilotData.activeCaseUuid = caseUuid;
   const c = state.pilotData.cases.find(x => x.pilot_case_uuid === caseUuid);
   if (c && c.wounds && c.wounds.length > 0) {
@@ -9350,13 +9477,87 @@ async function cambiarCasoPilotoActivo(caseUuid) {
   } else {
     state.pilotData.activeWoundUuid = null;
   }
-  renderizarHeridasActivasPiloto();
-  if (caseUuid) {
-    await cargarTimelineCasoPiloto(caseUuid);
-  } else {
-    renderizarTimelinePiloto();
+  goTo('s-ficha');
+}
+
+function renderizarFichaCasoV4() {
+  const currentCase = state.pilotData.cases.find(c => c.pilot_case_uuid === state.pilotData.activeCaseUuid);
+  const aliasEl = document.getElementById('ficha-case-alias');
+  const subEl = document.getElementById('ficha-case-sub');
+  const listCont = document.getElementById('ficha-heridas-list');
+
+  if (!currentCase) return;
+
+  if (aliasEl) aliasEl.textContent = currentCase.case_alias;
+  if (subEl) subEl.textContent = `Caso pseudonimizado · ${currentCase.wounds ? currentCase.wounds.length : 0} heridas`;
+
+  if (listCont) {
+    listCont.innerHTML = '';
+    const wounds = currentCase.wounds || [];
+    if (wounds.length === 0) {
+      listCont.innerHTML = '<div class="empty-state"><div class="empty-state-sub">Sin heridas registradas. Creá una con el botón de abajo.</div></div>';
+    } else {
+      wounds.forEach(w => {
+        const item = document.createElement('div');
+        item.className = 'caso-card';
+        item.onclick = () => abrirHeridaPiloto(w.wound_uuid);
+        item.innerHTML = `
+          <div class="caso-alias">${w.wound_label}</div>
+          <div class="caso-meta">Ubicación: ${w.wound_location || 'Plantar'}</div>
+          <span class="chevron">›</span>
+        `;
+        listCont.appendChild(item);
+      });
+    }
   }
 }
+
+function abrirHeridaPiloto(woundUuid) {
+  state.pilotData.activeWoundUuid = woundUuid;
+  goTo('s-herida');
+}
+
+async function renderizarHeridaTimelineV4() {
+  const currentCase = state.pilotData.cases.find(c => c.pilot_case_uuid === state.pilotData.activeCaseUuid);
+  const currentWound = currentCase && currentCase.wounds ? currentCase.wounds.find(w => w.wound_uuid === state.pilotData.activeWoundUuid) : null;
+
+  const titleEl = document.getElementById('herida-view-title');
+  const subEl = document.getElementById('herida-view-sub');
+
+  if (titleEl && currentWound) titleEl.textContent = currentWound.wound_label;
+  if (subEl && currentCase && currentWound) {
+    subEl.textContent = `${currentCase.case_alias} · ${currentWound.wound_location || 'Plantar'}`;
+  }
+
+  if (state.pilotData.activeCaseUuid) {
+    await cargarTimelineCasoPiloto(state.pilotData.activeCaseUuid);
+  }
+}
+
+function renderizarSelectorCasoV4() {
+  const cont = document.getElementById('selector-casos-grid');
+  if (!cont) return;
+  cont.innerHTML = '';
+
+  state.pilotData.cases.forEach(c => {
+    const isSel = (c.pilot_case_uuid === state.pilotData.activeCaseUuid);
+    const card = document.createElement('div');
+    card.className = `caso-card ${isSel ? 'sel' : ''}`;
+    card.onclick = () => {
+      state.pilotData.activeCaseUuid = c.pilot_case_uuid;
+      if (c.wounds && c.wounds.length > 0) state.pilotData.activeWoundUuid = c.wounds[0].wound_uuid;
+      renderizarSelectorCasoV4();
+    };
+    card.innerHTML = `
+      <div class="caso-alias">${c.case_alias}</div>
+      <div class="caso-meta">${c.wounds ? c.wounds.length : 0} heridas</div>
+      <span class="chevron">${isSel ? '✓' : '›'}</span>
+    `;
+    cont.appendChild(card);
+  });
+}
+
+// ── CREACIÓN DE CASOS Y HERIDAS ──────────────────────────────────────
 
 async function crearNuevoCasoPilotoPrompt() {
   const nextNum = state.pilotData.cases.length + 1;
@@ -9380,14 +9581,14 @@ async function crearNuevoCasoPilotoPrompt() {
     if (!res.ok) throw new Error('Error al persistir el caso en base de datos');
     const newCase = await res.json();
 
-    // Crear inmediatamente la herida primaria por defecto vinculada en PostgreSQL
-    const woundRes = await pilotApi(`/cases/${newCase.pilot_case_uuid}/wounds`, {
+    // Crear inmediatamente la herida primaria vinculada en PostgreSQL
+    await pilotApi(`/cases/${newCase.pilot_case_uuid}/wounds`, {
       method: 'POST',
-      body: { wound_label: 'Herida 1', wound_location: 'Talón' }
+      body: { wound_label: 'Herida 1', wound_location: 'Plantar' }
     });
 
     await cargarCasosPilotoDesdeBackend();
-    await cambiarCasoPilotoActivo(newCase.pilot_case_uuid);
+    abrirFichaCaso(newCase.pilot_case_uuid);
 
   } catch (err) {
     alert(`⚠️ Error creando caso: ${err.message}`);
@@ -9399,10 +9600,11 @@ function abrirModalNuevaHeridaPiloto() {
   if (!modal) return;
   const currentCase = state.pilotData.cases.find(c => c.pilot_case_uuid === state.pilotData.activeCaseUuid);
   const nextIdx = (currentCase && currentCase.wounds ? currentCase.wounds.length : 0) + 1;
-  const inpLabel = document.getElementById('input-piloto-herida-label');
+  const inpLabel = document.getElementById('input-piloto-herida-label') || document.getElementById('inp-nueva-herida-label');
   if (inpLabel) inpLabel.value = `Herida ${nextIdx}`;
   modal.classList.remove('hidden');
   modal.classList.add('flex');
+  modal.style.display = 'flex';
 }
 
 function cerrarModalNuevaHeridaPiloto() {
@@ -9410,6 +9612,7 @@ function cerrarModalNuevaHeridaPiloto() {
   if (modal) {
     modal.classList.add('hidden');
     modal.classList.remove('flex');
+    modal.style.display = 'none';
   }
 }
 
@@ -9419,8 +9622,11 @@ async function guardarNuevaHeridaPiloto() {
     return;
   }
 
-  const label = document.getElementById('input-piloto-herida-label').value.trim() || 'Herida';
-  const location = document.getElementById('select-piloto-herida-location').value || 'Otra / no especificada';
+  const inpLabel = document.getElementById('input-piloto-herida-label') || document.getElementById('inp-nueva-herida-label');
+  const inpLoc = document.getElementById('select-piloto-herida-location') || document.getElementById('inp-nueva-herida-loc');
+
+  const label = inpLabel ? inpLabel.value.trim() || 'Herida' : 'Herida';
+  const location = inpLoc ? inpLoc.value || 'Plantar' : 'Plantar';
 
   try {
     const res = await pilotApi(`/cases/${state.pilotData.activeCaseUuid}/wounds`, {
@@ -9435,7 +9641,7 @@ async function guardarNuevaHeridaPiloto() {
     await cargarCasosPilotoDesdeBackend();
     state.pilotData.activeWoundUuid = newWound.wound_uuid;
     renderizarHeridasActivasPiloto();
-    await cargarTimelineCasoPiloto(state.pilotData.activeCaseUuid);
+    renderizarFichaCasoV4();
 
   } catch (err) {
     alert(`⚠️ Error guardando herida: ${err.message}`);
@@ -9449,7 +9655,7 @@ function renderizarHeridasActivasPiloto() {
 
   const currentCase = state.pilotData.cases.find(c => c.pilot_case_uuid === state.pilotData.activeCaseUuid);
   if (!currentCase || !currentCase.wounds || currentCase.wounds.length === 0) {
-    cont.innerHTML = '<span class="text-xs text-slate-400 italic">Sin heridas registradas en este caso.</span>';
+    cont.innerHTML = '<span class="text-xs text-slate-400 italic">Sin heridas registradas.</span>';
     return;
   }
 
@@ -9468,92 +9674,101 @@ function renderizarHeridasActivasPiloto() {
     };
     cont.appendChild(btn);
   });
+}
 
-  const activeWound = currentCase.wounds.find(w => w.wound_uuid === state.pilotData.activeWoundUuid);
-  const lbl = document.getElementById('txt-herida-activa-label');
-  if (lbl && activeWound) {
-    lbl.textContent = `${activeWound.wound_label} — ${activeWound.wound_location || 'Plantar'}`;
+// ── FLUJO DE NUEVO CONTROL & QUALITY GATE PROFESIONAL ────────────────
+
+function toggleChkProf(item) {
+  if (item && item.classList) {
+    const isChecked = item.classList.toggle('checked');
+    if (typeof item.setAttribute === 'function') {
+      item.setAttribute('aria-checked', isChecked ? 'true' : 'false');
+    }
+    const chk = (typeof item.querySelector === 'function') ? item.querySelector('.chk, .check-box') : null;
+    if (chk && chk.classList) {
+      if (isChecked) chk.classList.add('on');
+      else chk.classList.remove('on');
+    }
+  }
+
+  const items = (typeof document !== 'undefined' && typeof document.querySelectorAll === 'function') ? document.querySelectorAll('#s-privacy-gate .check-item, #s-privacy-gate .chk-item') : [];
+  const allChecked = items.length > 0 && Array.from(items).every(i => i.classList && i.classList.contains('checked'));
+  const btnOk = document.getElementById('btn-privacy-ok');
+  if (btnOk) {
+    btnOk.disabled = !allChecked;
   }
 }
 
-// ── GESTIÓN DE FOTOGRAFÍAS Y ANÁLISIS LONGITUDINAL ───────────────────
-
-function abrirModalAgregarFotoHerida() {
-  const modal = document.getElementById('modal-agregar-foto-herida-piloto');
-  if (!modal) return;
-
-  const currentCase = state.pilotData.cases.find(c => c.pilot_case_uuid === state.pilotData.activeCaseUuid);
-  const currentWound = currentCase ? currentCase.wounds.find(w => w.wound_uuid === state.pilotData.activeWoundUuid) : null;
-  
-  const seqInp = document.getElementById('input-piloto-sequence-idx');
-  const count = (state.pilotData.activeTimeline && currentWound) 
-    ? (state.pilotData.activeTimeline.wounds.find(w => w.wound_uuid === currentWound.wound_uuid)?.events?.length || 0)
-    : 0;
-  if (seqInp) seqInp.value = count + 1;
-
-  const dateInp = document.getElementById('input-piloto-fecha-historica');
-  if (dateInp) dateInp.value = '';
-
-  state.pilotData.tempFotoHeridaBase64 = null;
-  document.getElementById('dropzone-prev-foto-herida-piloto').classList.add('hidden');
-  document.getElementById('dropzone-empty-foto-herida-piloto').classList.remove('hidden');
-
-  modal.classList.remove('hidden');
-  modal.classList.add('flex');
-}
-
-function cerrarModalAgregarFotoHerida() {
-  const modal = document.getElementById('modal-agregar-foto-herida-piloto');
-  if (modal) {
-    modal.classList.add('hidden');
-    modal.classList.remove('flex');
-  }
-  state.pilotData.tempFotoHeridaBase64 = null;
-}
-
-function handleFotoHeridaPilotoSeleccionada(e) {
-  const file = e.target.files[0];
+function onFotoCamProf(input) {
+  const file = input.files && input.files[0];
   if (!file) return;
 
   const reader = new FileReader();
-  reader.onload = (event) => {
-    compressImage(event.target.result, (compressedDataUrl, b64) => {
-      state.pilotData.tempFotoHeridaBase64 = b64;
-      document.getElementById('img-prev-foto-herida-piloto').src = compressedDataUrl;
-      document.getElementById('dropzone-empty-foto-herida-piloto').classList.add('hidden');
-      document.getElementById('dropzone-prev-foto-herida-piloto').classList.remove('hidden');
-    });
+  reader.onload = (e) => {
+    const img = new Image();
+    img.onload = () => {
+      const maxDim = 1200;
+      let w = img.width;
+      let h = img.height;
+      if (w > maxDim || h > maxDim) {
+        if (w > h) {
+          h = Math.round((h * maxDim) / w);
+          w = maxDim;
+        } else {
+          w = Math.round((w * maxDim) / h);
+          h = maxDim;
+        }
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+      const b64 = dataUrl.split(',')[1];
+
+      state.pilotData.tempFotoBase64 = b64;
+      state.pilotData.tempFotoDataUrl = dataUrl;
+
+      const prev = document.getElementById('foto-preview');
+      const box = document.getElementById('cam-box');
+      const btnOk = document.getElementById('btn-foto-ok');
+
+      if (prev) {
+        prev.src = dataUrl;
+        prev.style.display = 'block';
+      }
+      if (box) box.style.display = 'none';
+      if (btnOk) btnOk.style.display = 'block';
+    };
+    img.src = e.target.result;
   };
   reader.readAsDataURL(file);
 }
 
-async function ejecutarAnalisisHeridaPiloto() {
-  if (!state.pilotData.tempFotoHeridaBase64) {
-    alert('Por favor seleccione una imagen primero.');
+function iniciarQualityGateProfesional() {
+  goTo('s-quality-gate');
+
+  const qgLoading = document.getElementById('qg-loading');
+  const qgOk = document.getElementById('qg-ok');
+  const qgFail = document.getElementById('qg-fail');
+  const qgPrev = document.getElementById('qg-preview');
+  const qgBadge = document.getElementById('qg-score-badge');
+
+  if (qgLoading) qgLoading.style.display = 'block';
+  if (qgOk) qgOk.style.display = 'none';
+  if (qgFail) qgFail.style.display = 'none';
+
+  if (!state.pilotData.tempFotoDataUrl) {
+    if (qgLoading) qgLoading.style.display = 'none';
+    if (qgFail) qgFail.style.display = 'block';
     return;
   }
 
-  const p1 = document.getElementById('chk-piloto-p1')?.checked;
-  const p2 = document.getElementById('chk-piloto-p2')?.checked;
-  const p3 = document.getElementById('chk-piloto-p3')?.checked;
-
-  if (!p1 || !p2 || !p3) {
-    alert('Debe confirmar las 3 condiciones de privacidad antes de registrar la imagen.');
-    return;
-  }
-
-  const btnSubmit = document.getElementById('btn-ejecutar-analisis-herida-piloto');
-  if (btnSubmit) {
-    btnSubmit.disabled = true;
-    btnSubmit.textContent = 'Procesando inferencia U-Net...';
-  }
-
-  const fechaHist = document.getElementById('input-piloto-fecha-historica')?.value || null;
-  const seqIdx = parseInt(document.getElementById('input-piloto-sequence-idx')?.value, 10) || 1;
-
-  // Evaluar Quality Gate óptico en vivo sobre canvas
   const tempImg = new Image();
-  tempImg.onload = async () => {
+  tempImg.onload = () => {
     const canvas = document.createElement('canvas');
     canvas.width = tempImg.width;
     canvas.height = tempImg.height;
@@ -9561,47 +9776,128 @@ async function ejecutarAnalisisHeridaPiloto() {
     ctx.drawImage(tempImg, 0, 0);
 
     const qResult = calcularPhotoQualityGate(ctx, canvas.width, canvas.height);
-    const qualityScore = qResult ? qResult.overallScore : 80;
-    const qualityStatus = qResult ? qResult.estado : 'optimo';
+    const score = qResult ? qResult.overallScore : 85;
+    const isOk = (score >= 48 && qResult.estado !== 'insuficiente');
 
-    try {
-      const payload = {
-        imagen_base64: state.pilotData.tempFotoHeridaBase64,
-        privacy_gate_confirmed: true,
-        quality_score: qualityScore,
-        quality_status: qualityStatus,
-        pilot_case_uuid: state.pilotData.activeCaseUuid,
-        pilot_wound_uuid: state.pilotData.activeWoundUuid,
-        taken_at_custom: fechaHist ? `${fechaHist}T12:00:00Z` : null,
-        sequence_index: seqIdx,
-        scale_detected: false
-      };
+    state.pilotData.lastQualityScore = score;
+    state.pilotData.lastQualityStatus = qResult ? qResult.estado : 'optimo';
 
-      const res = await pilotApi('/analisis', {
-        method: 'POST',
-        body: payload
-      });
-
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.detail || 'Error ejecutando análisis en servidor');
+    setTimeout(() => {
+      if (qgLoading) qgLoading.style.display = 'none';
+      if (isOk) {
+        if (qgOk) qgOk.style.display = 'block';
+        if (qgPrev) qgPrev.src = state.pilotData.tempFotoDataUrl;
+        if (qgBadge) qgBadge.textContent = `${score}/100`;
+      } else {
+        if (qgFail) qgFail.style.display = 'block';
       }
-
-      // Limpiar imagen temporal de memoria
-      state.pilotData.tempFotoHeridaBase64 = null;
-      cerrarModalAgregarFotoHerida();
-      await cargarTimelineCasoPiloto(state.pilotData.activeCaseUuid);
-
-    } catch (err) {
-      alert(`⚠️ Error en análisis: ${err.message}`);
-    } finally {
-      if (btnSubmit) {
-        btnSubmit.disabled = false;
-        btnSubmit.textContent = 'Analizar y Guardar en Timeline';
-      }
-    }
+    }, 400);
   };
-  tempImg.src = 'data:image/jpeg;base64,' + state.pilotData.tempFotoHeridaBase64;
+  tempImg.src = state.pilotData.tempFotoDataUrl;
+}
+
+// ── SHADOW MODE & ANÁLISIS U-NET REAL ────────────────────────────────
+
+let shadowImpSel = null;
+let shadowInfSel = null;
+
+function shadowSel(btn, group) {
+  const parent = btn.parentElement;
+  if (!parent) return;
+
+  parent.querySelectorAll('.btn-tag').forEach(b => {
+    b.classList.remove('on');
+    b.setAttribute('aria-pressed', 'false');
+  });
+
+  btn.classList.add('on');
+  btn.setAttribute('aria-pressed', 'true');
+
+  if (group === 'imp') shadowImpSel = btn.dataset.val || btn.textContent.trim();
+  if (group === 'inf') shadowInfSel = btn.dataset.val || btn.textContent.trim();
+
+  const btnOk = document.getElementById('btn-shadow-ok');
+  if (btnOk) {
+    btnOk.disabled = !(shadowImpSel && shadowInfSel);
+  }
+}
+
+async function ejecutarAnalisisPilotoConShadowMode() {
+  if (!state.pilotData.tempFotoBase64) {
+    alert('Por favor capture una imagen primero.');
+    return;
+  }
+
+  if (state.pilotData.lastQualityScore == null || state.pilotData.lastQualityStatus == null) {
+    alert('No hay un resultado válido del control de calidad de imagen. Por favor capture la imagen nuevamente.');
+    return;
+  }
+
+  if (!shadowImpSel || !shadowInfSel) {
+    alert('Completá la evaluación clínica previa para continuar.');
+    return;
+  }
+
+  const btnOk = document.getElementById('btn-shadow-ok');
+  const procInd = document.getElementById('shadow-processing-indicator');
+
+  if (btnOk) btnOk.disabled = true;
+  if (procInd) procInd.classList.remove('hidden');
+
+  const commentInp = document.getElementById('shadow-comentario');
+  const comment = commentInp ? commentInp.value.trim() : '';
+
+  const payload = {
+    imagen_base64: state.pilotData.tempFotoBase64,
+    privacy_gate_confirmed: true,
+    quality_score: state.pilotData.lastQualityScore,
+    quality_status: state.pilotData.lastQualityStatus,
+    pilot_case_uuid: state.pilotData.activeCaseUuid,
+    pilot_wound_uuid: state.pilotData.activeWoundUuid,
+    scale_detected: false,
+    shadow_impression: shadowImpSel,
+    shadow_infection: shadowInfSel,
+    shadow_comment: comment || null
+  };
+
+  try {
+    const res = await pilotApi('/analisis', {
+      method: 'POST',
+      body: payload
+    });
+
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.detail || 'Error al procesar el análisis en el servidor');
+    }
+
+    const data = await res.json();
+
+    // Actualizar pantalla de resultado con datos reales exclusivamente
+    const qgVal = document.getElementById('res-calidad-val');
+    const unetVal = document.getElementById('res-unet-val');
+    const areaVal = document.getElementById('res-area-val');
+    const absVal = document.getElementById('res-abs-val');
+    const clasifVal = document.getElementById('res-clasif-val');
+
+    if (qgVal) qgVal.textContent = `${data.quality_gate_score}/100 — ${data.quality_gate_status || 'Evaluable'}`;
+    if (unetVal) unetVal.textContent = data.segmentation_status === 'COMPLETED' ? 'Disponible' : (data.segmentation_status || 'No disponible');
+    if (areaVal) areaVal.textContent = `${data.pixel_area || 0} px · ${(data.relative_area_percent || 0).toFixed(1)}% imagen`;
+    if (absVal) absVal.textContent = (data.absolute_area_cm2 !== null && data.absolute_area_cm2 !== undefined) ? `${data.absolute_area_cm2.toFixed(2)} cm²` : 'No disponible';
+    if (clasifVal) clasifVal.textContent = 'No disponible en esta versión.';
+
+    // Limpiar imagen temporal de memoria
+    state.pilotData.tempFotoBase64 = null;
+    state.pilotData.tempFotoDataUrl = null;
+
+    if (procInd) procInd.classList.add('hidden');
+    goTo('s-resultado-analisis');
+
+  } catch (err) {
+    if (procInd) procInd.classList.add('hidden');
+    if (btnOk) btnOk.disabled = false;
+    alert(`⚠️ Error en análisis: ${err.message}`);
+  }
 }
 
 // ── TIMELINE VERTICAL Y CONSULTA DE EVENTOS REALES ───────────────────
@@ -9620,12 +9916,16 @@ async function cargarTimelineCasoPiloto(caseUuid) {
 }
 
 function renderizarTimelinePiloto() {
-  const list = document.getElementById('piloto-timeline-events-list');
-  if (!list) return;
-  list.innerHTML = '';
+  const listV4 = document.getElementById('herida-timeline-events-list');
+  const listOld = document.getElementById('piloto-timeline-events-list');
+
+  const targets = [listV4, listOld].filter(Boolean);
+  if (targets.length === 0) return;
 
   if (!state.pilotData.activeTimeline || !state.pilotData.activeWoundUuid) {
-    list.innerHTML = '<li class="p-4 text-center text-xs text-slate-400">Seleccione o cree una herida para ver su línea de tiempo.</li>';
+    targets.forEach(t => {
+      t.innerHTML = '<div class="empty-state"><div class="empty-state-sub">Seleccione una herida para ver la línea de tiempo.</div></div>';
+    });
     return;
   }
 
@@ -9635,71 +9935,52 @@ function renderizarTimelinePiloto() {
   const events = woundGroup ? woundGroup.events : [];
 
   if (!events || events.length === 0) {
-    list.innerHTML = `
-      <li class="p-6 text-center text-xs text-slate-400 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700">
-        <p class="font-bold text-slate-700 dark:text-slate-300 mb-1">Sin análisis fotográficos en esta herida</p>
-        <p class="text-[11px]">Agregue la primera fotografía de referencia con el botón de arriba.</p>
-      </li>
-    `;
+    targets.forEach(t => {
+      t.innerHTML = `
+        <div class="empty-state">
+          <span class="ico">📷</span>
+          <div class="empty-state-title">Sin controles registrados</div>
+          <div class="empty-state-sub">Realizá el primer control con "📷 Nuevo control".</div>
+        </div>
+      `;
+    });
     return;
   }
 
-  events.forEach((a, idx) => {
-    const item = document.createElement('li');
-    item.className = 'relative pl-8 pb-6 border-l-2 border-purple-200 dark:border-purple-900 last:border-l-0';
-    
-    // Honest AI & Classification messaging
-    const clasifHtml = a.classification_label
-      ? `<strong class="text-purple-900">${a.classification_label} (${Math.round((a.classification_confidence || 0) * 100)}%)</strong>`
-      : `<span class="text-slate-500 font-medium">Clasificación IA no disponible (Fail-Closed)</span>`;
+  targets.forEach(t => {
+    t.innerHTML = '';
+    events.forEach((ev, idx) => {
+      const isExpired = (ev.photo_expired || (ev.expires_at && new Date(ev.expires_at) < new Date()));
+      const card = document.createElement('div');
+      card.className = 'tl-item';
+      
+      const absAreaText = (ev.absolute_area_cm2 !== null && ev.absolute_area_cm2 !== undefined)
+        ? `${ev.absolute_area_cm2.toFixed(2)} cm²`
+        : 'Área absoluta no disponible (falta escala física calibrada)';
 
-    const areaRelHtml = (a.relative_area_percent !== null && a.relative_area_percent !== undefined)
-      ? `${a.relative_area_percent.toFixed(1)}%`
-      : 'No calculada';
+      const clasifText = ev.classification_label
+        ? `${ev.classification_label}`
+        : 'Clasificación IA no disponible (Fail-Closed)';
 
-    const areaAbsHtml = (a.absolute_area_cm2 !== null && a.absolute_area_cm2 !== undefined)
-      ? `${a.absolute_area_cm2.toFixed(2)} cm²`
-      : 'Sin escala física calibrada — Área absoluta no disponible (falta escala física calibrada)';
-
-    const ttlAviso = (a.photo_expired || (a.expires_at && new Date(a.expires_at) < new Date()))
-      ? '<span class="text-[10px] text-amber-600 block">⚠️ Imagen expirada según política del piloto (21 días de retención)</span>'
-      : '';
-
-    item.innerHTML = `
-      <span class="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-purple-700 border-2 border-white dark:border-slate-900 shadow-xs"></span>
-      <div class="med-card p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xs space-y-3">
-        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
-          <div class="flex items-center gap-2">
-            <span class="text-xs font-black text-slate-900 dark:text-white">${a.display_date || `Foto ${idx + 1}`}</span>
-            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${a.quality_gate_score >= 48 ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-rose-50 text-rose-800 border border-rose-200'}">QG: ${a.quality_gate_score}/100</span>
+      card.innerHTML = `
+        <div class="tl-dot"></div>
+        <div class="tl-date">${ev.display_date || `Control ${idx + 1}`} · QG: ${ev.quality_gate_score}/100</div>
+        ${isExpired ? `
+          <div class="tl-expired">
+            <span class="tl-expired-ico">⏳</span>
+            <div class="tl-expired-txt">Fotografía eliminada por política de retención (21 días). Registro clínico y mediciones preservados.</div>
           </div>
-          <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-purple-50 text-purple-900 border border-purple-200">AI: ${a.ai_status || 'PARTIAL'}</span>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-          <div class="space-y-1">
-            <span class="text-[10px] uppercase font-bold text-slate-400 block">Clasificación:</span>
-            ${clasifHtml}
+        ` : `
+          <div class="tl-datos">
+            <div class="tl-dato"><strong>Área relativa:</strong> ${ev.relative_area_percent !== null ? ev.relative_area_percent.toFixed(1) + '%' : 'N/A'}</div>
+            <div class="tl-dato"><strong>Píxeles:</strong> ${ev.pixel_area || 0} px</div>
+            <div class="tl-dato"><strong>Clasificación:</strong> ${clasifText}</div>
           </div>
-          <div class="space-y-1">
-            <span class="text-[10px] uppercase font-bold text-slate-400 block">Segmentación U-Net:</span>
-            <span class="font-bold text-slate-800 dark:text-slate-200">Área relativa: ${areaRelHtml}</span>
-          </div>
-        </div>
-
-        <div class="p-2 bg-slate-50 dark:bg-slate-800 rounded-xl text-[11px] text-slate-600 dark:text-slate-400">
-          📐 <strong>Escala Métrica:</strong> ${areaAbsHtml}
-        </div>
-
-        <div class="flex justify-between items-center pt-1 border-t border-slate-100 dark:border-slate-800">
-          <span class="text-[10px] text-slate-400">UUID: ${a.analysis_uuid.slice(0, 8)}...</span>
-          <button type="button" onclick="abrirDetalleEventoPiloto('${a.analysis_uuid}')" class="btn-sec !py-1 !px-2.5 text-[11px] font-bold">
-            Ver Detalle & Feedback
-          </button>
-        </div>
-      </div>
-    `;
-    list.appendChild(item);
+          <div style="font-size:10px;color:var(--txt3);margin-top:4px">📐 ${absAreaText}</div>
+        `}
+      `;
+      t.appendChild(card);
+    });
   });
 }
 
@@ -9736,6 +10017,7 @@ function abrirDetalleEventoPiloto(analysisUuid) {
   if (modal) {
     modal.classList.remove('hidden');
     modal.classList.add('flex');
+    modal.style.display = 'flex';
   }
 }
 
@@ -9744,6 +10026,7 @@ function cerrarModalDetalleEventoPiloto() {
   if (modal) {
     modal.classList.add('hidden');
     modal.classList.remove('flex');
+    modal.style.display = 'none';
   }
 }
 
@@ -9760,43 +10043,75 @@ function abrirComparadorPilotoModal() {
     alert('Se requieren al menos 2 fotografías de seguimiento en la misma herida para comparar evolución longitudinal.');
     return;
   }
-  // Sin tarjeta métrica calibrada, la plataforma no calcula porcentajes de reducción de área físicos falsos.
 
-  const selA = document.getElementById('select-comp-foto-a');
-  const selB = document.getElementById('select-comp-foto-b');
+  goTo('s-comparador');
+}
 
-  if (selA && selB) {
-    selA.innerHTML = '';
-    selB.innerHTML = '';
+function renderizarComparadorV4() {
+  if (!state.pilotData.activeTimeline || !state.pilotData.activeWoundUuid) return;
+  const woundGroup = (state.pilotData.activeTimeline && Array.isArray(state.pilotData.activeTimeline.wounds))
+    ? state.pilotData.activeTimeline.wounds.find(w => w.wound_uuid === state.pilotData.activeWoundUuid)
+    : null;
+  const events = woundGroup ? woundGroup.events : [];
 
-    events.forEach((ev, i) => {
-      const optA = document.createElement('option');
-      optA.value = ev.analysis_uuid;
-      optA.textContent = `${ev.display_date || `Foto ${i + 1}`} (${ev.analysis_uuid.slice(0, 8)})`;
-      if (i === 0) optA.selected = true;
-      selA.appendChild(optA);
+  if (events.length >= 2) {
+    state.pilotData.baselineAnalysisUuid = events[0].analysis_uuid;
+    state.pilotData.followupAnalysisUuid = events[events.length - 1].analysis_uuid;
 
-      const optB = document.createElement('option');
-      optB.value = ev.analysis_uuid;
-      optB.textContent = `${ev.display_date || `Foto ${i + 1}`} (${ev.analysis_uuid.slice(0, 8)})`;
-      if (i === events.length - 1) optB.selected = true;
-      selB.appendChild(optB);
+    const lblA = document.getElementById('comp-foto-a-lbl');
+    const lblB = document.getElementById('comp-foto-b-lbl');
+
+    if (lblA) lblA.textContent = events[0].display_date || 'Control 1';
+    if (lblB) lblB.textContent = events[events.length - 1].display_date || `Control ${events.length}`;
+  }
+}
+
+function evolSel(btn) {
+  const parent = btn.parentElement;
+  if (parent) {
+    parent.querySelectorAll('.btn-tag').forEach(b => {
+      b.classList.remove('on');
+      b.setAttribute('aria-pressed', 'false');
     });
   }
+  btn.classList.add('on');
+  btn.setAttribute('aria-pressed', 'true');
+  state.pilotData.evolucionClinicaSeleccionada = btn.dataset.val || btn.textContent.trim().toUpperCase();
+}
 
-  actualizarVistaComparadorPiloto();
-  const modal = document.getElementById('modal-comparador-piloto');
-  if (modal) {
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
+function repSel(btn) {
+  const parent = btn.parentElement;
+  if (parent) {
+    parent.querySelectorAll('.btn-tag').forEach(b => {
+      b.classList.remove('on');
+      b.setAttribute('aria-pressed', 'false');
+    });
   }
+  btn.classList.add('on');
+  btn.setAttribute('aria-pressed', 'true');
+  state.pilotData.acuerdoIaSeleccionado = btn.dataset.val || btn.textContent.trim().toUpperCase();
+}
+
+function setEvolucionClinicaVal(val) {
+  state.pilotData.evolucionClinicaSeleccionada = val;
+}
+
+function setAcuerdoIaVal(val) {
+  state.pilotData.acuerdoIaSeleccionado = val;
 }
 
 function cerrarComparadorPilotoModal() {
   const modal = document.getElementById('modal-comparador-piloto');
   if (modal) {
-    modal.classList.add('hidden');
-    modal.classList.remove('flex');
+    if (modal.classList) {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+    if (modal.style) modal.style.display = 'none';
+  }
+  const sComp = document.getElementById('s-comparador');
+  if (sComp && sComp.classList && sComp.classList.contains('on')) {
+    goTo('s-herida');
   }
 }
 
@@ -9807,41 +10122,15 @@ function actualizarVistaComparadorPiloto() {
   state.pilotData.followupAnalysisUuid = selB ? selB.value : null;
 }
 
-function setEvolucionClinicaVal(val) {
-  state.pilotData.evolucionClinicaSeleccionada = val;
-  ['mejor', 'similar', 'peor'].forEach(k => {
-    const btn = document.getElementById(`btn-evol-${k}`);
-    if (btn) {
-      if (k === val.toLowerCase()) {
-        btn.className = 'flex-1 py-2 rounded-xl font-black text-xs border-2 border-purple-800 bg-purple-100 text-purple-950 shadow-sm';
-      } else {
-        btn.className = 'flex-1 py-2 rounded-xl font-black text-xs border border-slate-300 bg-white text-slate-800';
-      }
-    }
-  });
-}
-
-function setAcuerdoIaVal(val) {
-  state.pilotData.acuerdoIaSeleccionado = val;
-  ['si', 'parcial', 'no'].forEach(k => {
-    const btn = document.getElementById(`btn-agree-${k}`);
-    if (btn) {
-      if (k === val.toLowerCase()) {
-        btn.className = 'flex-1 py-1.5 rounded-xl font-bold text-xs border-2 border-blue-800 bg-blue-100 text-blue-950 shadow-sm';
-      } else {
-        btn.className = 'flex-1 py-1.5 rounded-xl font-bold text-xs border border-slate-300 bg-white text-slate-800';
-      }
-    }
-  });
-}
-
 async function guardarEvaluacionEvolucionPiloto() {
   if (!state.pilotData.baselineAnalysisUuid || !state.pilotData.followupAnalysisUuid) {
     alert('Seleccione dos análisis válidos para registrar la evaluación.');
     return;
   }
 
-  const comm = document.getElementById('input-evol-comentario')?.value.trim() || '';
+  const commEl = document.getElementById('comp-comentario') || document.getElementById('input-evol-comentario');
+  const comm = commEl ? commEl.value.trim() : '';
+
   if (comm) {
     const lower = comm.toLowerCase();
     const blocked = ['dni', 'paciente:', 'nombre:', 'tel:', 'dr.', 'dra.'];
@@ -9880,25 +10169,632 @@ async function guardarEvaluacionEvolucionPiloto() {
   }
 }
 
-// ── ANÁLISIS AISLADO RÁPIDO (TTL 72 HORAS) ───────────────────────────
+// ── CONTROL REMOTO DÍA +4 (TOKEN DE SEGUIMIENTO) ─────────────────────
+
+function abrirModalSeguimientoPiloto() {
+  const modal = document.getElementById('modal-seguimiento') || document.getElementById('modal-solicitar-control-piloto');
+  if (!modal) return;
+
+  const currentCase = state.pilotData.cases.find(c => c.pilot_case_uuid === state.pilotData.activeCaseUuid);
+  const currentWound = currentCase && currentCase.wounds ? currentCase.wounds.find(w => w.wound_uuid === state.pilotData.activeWoundUuid) : null;
+
+  const caseVal = document.getElementById('modal-case-val');
+  if (caseVal && currentCase && currentWound) {
+    caseVal.textContent = `${currentCase.case_alias} · ${currentWound.wound_label}`;
+  }
+
+  const linkArea = document.getElementById('link-area');
+  const btnGen = document.getElementById('btn-generar');
+
+  if (linkArea) linkArea.style.display = 'none';
+  if (btnGen) {
+    btnGen.disabled = false;
+    btnGen.textContent = 'Generar enlace seguro';
+  }
+
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
+  modal.style.display = 'flex';
+}
+
+function cerrarModalSeguimientoPiloto() {
+  const modal = document.getElementById('modal-seguimiento') || document.getElementById('modal-solicitar-control-piloto');
+  if (modal) {
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    modal.style.display = 'none';
+  }
+}
+
+function abrirModalSolicitarControlPiloto() {
+  return generarLinkSeguimientoPiloto();
+}
+
+function cerrarModalSolicitarControlPiloto() {
+  cerrarModalSeguimientoPiloto();
+}
+
+function toggleChkPac(item) {
+  if (item && item.classList) {
+    const isChecked = item.classList.toggle('checked');
+    if (typeof item.setAttribute === 'function') {
+      item.setAttribute('aria-checked', isChecked ? 'true' : 'false');
+    }
+    const chk = (typeof item.querySelector === 'function') ? item.querySelector('.chk, .check-box') : null;
+    if (chk && chk.classList) {
+      if (isChecked) chk.classList.add('on');
+      else chk.classList.remove('on');
+    }
+  }
+
+  const items = (typeof document !== 'undefined' && typeof document.querySelectorAll === 'function') ? document.querySelectorAll('#s-rem-privacy .check-item, #s-rem-privacy .chk-item') : [];
+  const allChecked = items.length > 0 && Array.from(items).every(i => i.classList && i.classList.contains('checked'));
+  const btnOk = document.getElementById('btn-pac-privacy-ok');
+  if (btnOk) {
+    btnOk.disabled = !allChecked;
+  }
+}
+
+async function generarLinkSeguimientoPiloto() {
+  if (!state.pilotData.activeCaseUuid || !state.pilotData.activeWoundUuid) {
+    alert('Seleccione un caso y una herida activa para generar el enlace de control.');
+    return;
+  }
+
+  try {
+    const res = await pilotApi(`/cases/${state.pilotData.activeCaseUuid}/wounds/${state.pilotData.activeWoundUuid}/tokens`, {
+      method: 'POST',
+      body: { due_days: 4, expire_days: 7 }
+    });
+
+    if (!res.ok) throw new Error('Error generando token de seguimiento');
+    const data = await res.json();
+
+    const fullUrl = new URL(data.url, window.location.origin).href;
+
+    const inputLink = document.getElementById('input-link-control-generado');
+    const linkText = document.getElementById('link-url-text');
+    const linkArea = document.getElementById('link-area');
+    const btnGen = document.getElementById('btn-generar');
+
+    if (inputLink) inputLink.value = fullUrl;
+    if (linkText) linkText.textContent = fullUrl;
+    if (linkArea) linkArea.style.display = 'block';
+
+    if (btnGen) {
+      btnGen.disabled = true;
+      btnGen.textContent = 'Enlace generado';
+    }
+
+    const dueVal = document.getElementById('modal-due-val');
+    const expVal = document.getElementById('modal-expire-val');
+    if (dueVal && data.due_date) dueVal.textContent = data.due_date;
+    if (expVal && data.expires_date) expVal.textContent = data.expires_date;
+
+    const modal = document.getElementById('modal-seguimiento') || document.getElementById('modal-solicitar-control-piloto');
+    if (modal) {
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      modal.style.display = 'flex';
+    }
+
+  } catch (err) {
+    alert(`⚠️ Error: ${err.message}`);
+  }
+}
+
+function copiarLinkSeguimientoPiloto() {
+  const linkText = document.getElementById('link-url-text');
+  const inputLink = document.getElementById('input-link-control-generado');
+  const textToCopy = (inputLink && inputLink.value) ? inputLink.value : (linkText ? linkText.textContent : '');
+
+  if (!textToCopy) return;
+
+  navigator.clipboard.writeText(textToCopy).then(() => {
+    alert('✓ Enlace copiado al portapapeles. Compártelo con tu paciente.');
+  }).catch(() => {
+    alert('Enlace: ' + textToCopy);
+  });
+}
+
+function copiarLinkControlGenerado() {
+  copiarLinkSeguimientoPiloto();
+}
+
+function probarVistaPacienteDesdeModal() {
+  const inputLink = document.getElementById('input-link-control-generado');
+  const linkText = document.getElementById('link-url-text');
+  const rawUrl = (inputLink && inputLink.value) ? inputLink.value : (linkText ? linkText.textContent : '');
+
+  if (rawUrl) {
+    const urlObj = new URL(rawUrl, window.location.origin);
+    const token = urlObj.pathname.split('/').pop();
+    state.remoteTokenActivo = token;
+  }
+  cerrarModalSeguimientoPiloto();
+  switchPortal('paciente-remoto');
+}
+
+// ── CALCULADORAS CLÍNICAS v4 (SAN ELIÁN / SVS WIFI / CICATRIZACIÓN) ──
+
+const sanElianScores = {};
+const wifiScores = {};
+
+function segSel(btn, factor) {
+  const parent = btn.parentElement;
+  if (parent) {
+    parent.querySelectorAll('.seg-btn').forEach(b => {
+      b.classList.remove('on');
+      b.setAttribute('aria-pressed', 'false');
+    });
+  }
+  btn.classList.add('on');
+  btn.setAttribute('aria-pressed', 'true');
+
+  const val = parseInt(btn.dataset.val || btn.textContent.trim(), 10) || 1;
+  sanElianScores[factor] = val;
+
+  calcularSanElianV4();
+}
+
+function calcularSanElianV4() {
+  let total = 0;
+  for (let k in sanElianScores) {
+    total += sanElianScores[k];
+  }
+
+  const scoreEl = document.getElementById('san-elian-total-score');
+  const gradoEl = document.getElementById('san-elian-grado-lbl');
+
+  if (scoreEl) scoreEl.textContent = `${total} / 30`;
+
+  let grado = 'Grado I — Leve (Pronóstico favorable)';
+  if (total >= 21) grado = 'Grado III — Severo (Alto riesgo de amputación mayor)';
+  else if (total >= 11) grado = 'Grado II — Moderado (Riesgo intermedio)';
+
+  if (gradoEl) gradoEl.textContent = grado;
+}
+
+function segWifi(btn, factor) {
+  const parent = btn.parentElement;
+  if (parent) {
+    parent.querySelectorAll('.seg-btn').forEach(b => {
+      b.classList.remove('on');
+      b.setAttribute('aria-pressed', 'false');
+    });
+  }
+  btn.classList.add('on');
+  btn.setAttribute('aria-pressed', 'true');
+
+  const val = parseInt(btn.dataset.val || btn.textContent.trim(), 10) || 0;
+  wifiScores[factor] = val;
+
+  calcularWifiV4();
+}
+
+function calcularWifiV4() {
+  const w = wifiScores['w'] !== undefined ? wifiScores['w'] : 0;
+  const i = wifiScores['i'] !== undefined ? wifiScores['i'] : 0;
+  const f = wifiScores['fi'] !== undefined ? wifiScores['fi'] : 0;
+
+  const resEl = document.getElementById('wifi-estadio-val');
+  if (!resEl) return;
+
+  const maxGrade = Math.max(w, i, f);
+  let estadio = 'Estadio Clínico 1 — Riesgo muy bajo';
+  if (maxGrade === 3 || (w >= 2 && i >= 2)) estadio = 'Estadio Clínico 4 — Riesgo alto / Muy alto';
+  else if (maxGrade === 2) estadio = 'Estadio Clínico 3 — Riesgo moderado';
+  else if (maxGrade === 1) estadio = 'Estadio Clínico 2 — Riesgo bajo';
+
+  resEl.textContent = `W${w} I${i} fI${f} · ${estadio}`;
+}
+
+function calcularCicatrizacionV4() {
+  const inp0 = document.getElementById('cic-a0') || document.getElementById('area0');
+  const inp4 = document.getElementById('cic-a4') || document.getElementById('area4');
+
+  const a0 = parseFloat(inp0?.value) || 0;
+  const a4 = parseFloat(inp4?.value) || 0;
+
+  const resBox = document.getElementById('cic-res-box') || document.getElementById('cic-resultado-card');
+  const resPct = document.getElementById('cic-res-pct') || document.getElementById('cic-pct-val');
+  const resMeta = document.getElementById('cic-res-meta') || document.getElementById('cic-eval-val');
+  const resDesc = document.getElementById('cic-res-desc');
+
+  if (a0 <= 0) {
+    if (resPct) resPct.textContent = '--%';
+    if (resMeta) resMeta.textContent = 'Ingrese ambas áreas calibradas en cm² para evaluar la trayectoria.';
+    return;
+  }
+
+  const red = ((a0 - a4) / a0) * 100;
+  if (resBox) resBox.style.display = 'block';
+  if (resPct) resPct.textContent = `${red.toFixed(1)}%`;
+
+  if (red >= 50) {
+    if (resMeta) {
+      resMeta.textContent = '🟢 En Meta (≥ 50% de reducción)';
+      resMeta.style.color = 'var(--verde)';
+    }
+    if (resDesc) {
+      resDesc.textContent = 'Trayectoria cicatrizal favorable. Alta probabilidad de cierre completo en 12 semanas con el tratamiento actual.';
+    }
+  } else {
+    if (resMeta) {
+      resMeta.textContent = '🔴 Herida Estancada (< 50% de reducción)';
+      resMeta.style.color = 'var(--rojo)';
+    }
+    if (resDesc) {
+      resDesc.textContent = 'Reducción insuficiente a 4 semanas. Se recomienda reevaluar descarga, perfusión arterial, biofilm o apósitos avanzados.';
+    }
+  }
+}
+
+// ── PORTAL PACIENTE PÚBLICO (/paciente) ──────────────────────────────
+
+function togglePacPubPreview() {
+  const prev = document.getElementById('s-pub-preview');
+  if (prev) {
+    prev.classList.toggle('hidden');
+  }
+}
+
+// ── PORTAL PACIENTE REMOTO (/r/{token}) ──────────────────────────────
+
+let histPacRem = ['s-rem-verificando'];
+
+function goToPacRem(screenId) {
+  const target = document.getElementById(screenId);
+  if (!target) return;
+
+  const current = histPacRem[histPacRem.length - 1];
+  if (current !== screenId) {
+    histPacRem.push(screenId);
+  }
+
+  const container = document.getElementById('portal-paciente-remoto-view');
+  if (container && typeof container.querySelectorAll === 'function') {
+    container.querySelectorAll('.screen').forEach(s => s.classList && s.classList.remove && s.classList.remove('on'));
+  }
+  if (target && target.classList) target.classList.add('on');
+
+  updateTbPacRem(screenId);
+  if (typeof window !== 'undefined' && typeof window.scrollTo === 'function') {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+}
+
+function goBackPacRem() {
+  if (histPacRem.length > 1) {
+    histPacRem.pop();
+    const prev = histPacRem[histPacRem.length - 1];
+    
+    const container = document.getElementById('portal-paciente-remoto-view');
+    if (container && typeof container.querySelectorAll === 'function') {
+      container.querySelectorAll('.screen').forEach(s => s.classList && s.classList.remove && s.classList.remove('on'));
+    }
+    const prevEl = document.getElementById(prev);
+    if (prevEl && prevEl.classList) prevEl.classList.add('on');
+
+    updateTbPacRem(prev);
+    if (typeof window !== 'undefined' && typeof window.scrollTo === 'function') {
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+  }
+}
+
+function updateTbPacRem(screenId) {
+  const backBtn = document.getElementById('pac-rem-back-btn');
+  const stepLbl = document.getElementById('pac-rem-step-lbl');
+  const progFill = document.getElementById('prog-fill');
+
+  if (screenId === 's-rem-verificando') {
+    if (backBtn && backBtn.style) backBtn.style.visibility = 'hidden';
+    if (stepLbl && stepLbl.style) stepLbl.style.display = 'none';
+    if (progFill && progFill.style) progFill.style.width = '0%';
+  } else if (screenId === 's-rem-privacy') {
+    if (backBtn && backBtn.style) backBtn.style.visibility = 'visible';
+    if (stepLbl && stepLbl.style) {
+      stepLbl.style.display = 'block';
+      stepLbl.textContent = 'Paso 1 de 3';
+    }
+    if (progFill && progFill.style) progFill.style.width = '33%';
+  } else if (screenId === 's-rem-foto' || screenId === 's-rem-quality') {
+    if (backBtn && backBtn.style) backBtn.style.visibility = 'visible';
+    if (stepLbl && stepLbl.style) {
+      stepLbl.style.display = 'block';
+      stepLbl.textContent = 'Paso 2 de 3';
+    }
+    if (progFill && progFill.style) progFill.style.width = '66%';
+  } else if (screenId === 's-rem-enviando') {
+    if (backBtn && backBtn.style) backBtn.style.visibility = 'hidden';
+    if (stepLbl && stepLbl.style) {
+      stepLbl.style.display = 'block';
+      stepLbl.textContent = 'Paso 3 de 3';
+    }
+    if (progFill && progFill.style) progFill.style.width = '100%';
+  }
+}
+
+async function iniciarFlujoPacienteRemoto() {
+  state.pilotData.tempFotoPacienteRemotoBase64 = null;
+
+  goToPacRem('s-rem-verificando');
+
+  const verifCargando = document.getElementById('verif-cargando');
+  const verifOk = document.getElementById('verif-ok');
+  const verifNoDisp = document.getElementById('verif-nodisponible');
+  const verifErr = document.getElementById('verif-error');
+
+  const pacLoading = document.getElementById('pac-remoto-loading');
+  const pacInvalido = document.getElementById('pac-remoto-invalido');
+  const pacValido = document.getElementById('pac-remoto-valido');
+
+  if (verifCargando && verifCargando.style) verifCargando.style.display = 'block';
+  if (verifOk && verifOk.style) verifOk.style.display = 'none';
+  if (verifNoDisp && verifNoDisp.style) verifNoDisp.style.display = 'none';
+  if (verifErr && verifErr.style) verifErr.style.display = 'none';
+
+  if (pacLoading && pacLoading.classList) pacLoading.classList.remove('hidden');
+  if (pacInvalido && pacInvalido.classList) pacInvalido.classList.add('hidden');
+  if (pacValido && pacValido.classList) pacValido.classList.add('hidden');
+
+  let token = state.remoteTokenActivo;
+  if (!token) {
+    const path = (typeof window !== 'undefined' && window.location && window.location.pathname) || '';
+    const hash = (typeof window !== 'undefined' && window.location && window.location.hash) || '';
+    const search = (typeof window !== 'undefined' && window.location && window.location.search) || '';
+    if (path.includes('/r/')) token = path.split('/r/')[1].split('/')[0].trim();
+    else if (hash.includes('/r/')) token = hash.split('/r/')[1].split('/')[0].trim();
+    else if (search.includes('r=')) token = new URLSearchParams(search).get('r');
+  }
+
+  if (!token) {
+    if (verifCargando && verifCargando.style) verifCargando.style.display = 'none';
+    if (verifNoDisp && verifNoDisp.style) verifNoDisp.style.display = 'block';
+    if (pacLoading && pacLoading.classList) pacLoading.classList.add('hidden');
+    if (pacInvalido && pacInvalido.classList) pacInvalido.classList.remove('hidden');
+    return;
+  }
+
+  try {
+    const res = await pilotApi(`/r/${token}`, { skipAuth: true });
+    if (!res.ok) throw new Error('Token no disponible');
+
+    const data = await res.json();
+    state.remoteTokenActivo = token;
+
+    if (verifCargando && verifCargando.style) verifCargando.style.display = 'none';
+    if (verifOk && verifOk.style) verifOk.style.display = 'block';
+
+    if (pacLoading && pacLoading.classList) pacLoading.classList.add('hidden');
+    if (pacValido && pacValido.classList) pacValido.classList.remove('hidden');
+
+    const verifFecha = document.getElementById('verif-fecha');
+    const badgeFecha = document.getElementById('pac-remoto-badge-fecha');
+
+    if (verifFecha && data.due_date) verifFecha.textContent = `Fecha límite: ${data.due_date}`;
+    if (badgeFecha && data.due_date) badgeFecha.textContent = `Fecha límite de envío: ${data.due_date}`;
+
+  } catch (err) {
+    if (verifCargando && verifCargando.style) verifCargando.style.display = 'none';
+    if (err.message && err.message.includes('servidor')) {
+      if (verifErr && verifErr.style) verifErr.style.display = 'block';
+    } else {
+      if (verifNoDisp && verifNoDisp.style) verifNoDisp.style.display = 'block';
+    }
+    if (pacLoading && pacLoading.classList) pacLoading.classList.add('hidden');
+    if (pacInvalido && pacInvalido.classList) pacInvalido.classList.remove('hidden');
+  }
+}
+
+function toggleChkPac(item) {
+  if (item && item.classList) {
+    item.classList.toggle('checked');
+    const chk = (typeof item.querySelector === 'function') ? item.querySelector('.chk, .check-box') : null;
+    if (chk && chk.classList) chk.classList.toggle('on');
+  }
+
+  const items = (typeof document !== 'undefined' && typeof document.querySelectorAll === 'function') ? document.querySelectorAll('#s-rem-privacy .check-item, #s-rem-privacy .chk-item') : [];
+  const allChecked = items.length > 0 && Array.from(items).every(i => i.classList && i.classList.contains('checked'));
+  const btnOk = document.getElementById('btn-pac-privacy-ok');
+  if (btnOk) {
+    btnOk.disabled = !allChecked;
+  }
+}
+
+function confirmarPrivacidadPacienteRemoto() {
+  goToPacRem('s-rem-foto');
+}
+
+function onFotoPacienteRemoto(input) {
+  const file = input && input.files && input.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const img = new Image();
+    img.onload = () => {
+      const maxDim = 1200;
+      let w = img.width;
+      let h = img.height;
+      if (w > maxDim || h > maxDim) {
+        if (w > h) {
+          h = Math.round((h * maxDim) / w);
+          w = maxDim;
+        } else {
+          w = Math.round((w * maxDim) / h);
+          h = maxDim;
+        }
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+      const b64 = dataUrl.split(',')[1];
+
+      state.pilotData.tempFotoPacienteRemotoBase64 = b64;
+      state.pilotData.tempFotoPacienteRemotoDataUrl = dataUrl;
+
+      const prev = document.getElementById('rem-preview') || document.getElementById('img-prev-pac-remoto');
+      const box = document.getElementById('rem-cam-box');
+      const btnOk = document.getElementById('btn-pac-foto-ok');
+
+      if (prev && prev.style) {
+        prev.src = dataUrl;
+        prev.style.display = 'block';
+      }
+      if (box && box.style) box.style.display = 'none';
+      if (btnOk && btnOk.style) btnOk.style.display = 'block';
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function handleFotoPacienteRemoto(e) {
+  onFotoPacienteRemoto(e ? e.target : null);
+}
+
+function iniciarQualityGatePacienteRemoto() {
+  goToPacRem('s-rem-quality');
+
+  const qgLoading = document.getElementById('pac-qg-loading');
+  const qgOk = document.getElementById('pac-qg-ok');
+  const qgFail = document.getElementById('pac-qg-fail');
+  const qgPrev = document.getElementById('pac-qg-preview-img');
+  const qgScore = document.getElementById('pac-qg-score-badge');
+
+  if (qgLoading && qgLoading.style) qgLoading.style.display = 'block';
+  if (qgOk && qgOk.style) qgOk.style.display = 'none';
+  if (qgFail && qgFail.style) qgFail.style.display = 'none';
+
+  if (!state.pilotData.tempFotoPacienteRemotoDataUrl) {
+    if (qgLoading && qgLoading.style) qgLoading.style.display = 'none';
+    if (qgFail && qgFail.style) qgFail.style.display = 'block';
+    return;
+  }
+
+  const tempImg = new Image();
+  tempImg.onload = () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = tempImg.width;
+    canvas.height = tempImg.height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(tempImg, 0, 0);
+
+    const qResult = calcularPhotoQualityGate(ctx, canvas.width, canvas.height);
+    const score = qResult ? qResult.overallScore : 85;
+    const isOk = (score >= 48 && qResult.estado !== 'insuficiente');
+
+    state.pilotData.pacienteQualityScore = score;
+
+    setTimeout(() => {
+      if (qgLoading && qgLoading.style) qgLoading.style.display = 'none';
+      if (isOk) {
+        if (qgOk && qgOk.style) qgOk.style.display = 'block';
+        if (qgPrev) qgPrev.src = state.pilotData.tempFotoPacienteRemotoDataUrl;
+        if (qgScore) qgScore.textContent = `${score}/100`;
+      } else {
+        if (qgFail && qgFail.style) qgFail.style.display = 'block';
+      }
+    }, 400);
+  };
+  tempImg.src = state.pilotData.tempFotoPacienteRemotoDataUrl;
+}
+
+async function enviarFotoPacienteRemoto() {
+  if (!state.pilotData.tempFotoPacienteRemotoBase64 || !state.remoteTokenActivo) {
+    alert('Seleccione o tome una fotografía primero.');
+    return;
+  }
+
+  if (state.pilotData.pacienteQualityScore == null) {
+    alert('No se pudo evaluar la calidad de la imagen. Por favor intente la captura nuevamente.');
+    return;
+  }
+
+  const token = state.remoteTokenActivo;
+  goToPacRem('s-rem-enviando');
+
+  const envCargando = document.getElementById('env-cargando');
+  const envOk = document.getElementById('env-ok');
+  const envErr = document.getElementById('env-error');
+
+  if (envCargando && envCargando.style) envCargando.style.display = 'block';
+  if (envOk && envOk.style) envOk.style.display = 'none';
+  if (envErr && envErr.style) envErr.style.display = 'none';
+
+  const payload = {
+    imagen_base64: state.pilotData.tempFotoPacienteRemotoBase64,
+    privacy_gate_confirmed: true,
+    quality_score: state.pilotData.pacienteQualityScore
+  };
+
+  try {
+    const res = await pilotApi(`/r/${token}/upload`, {
+      method: 'POST',
+      body: payload,
+      skipAuth: true
+    });
+
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.detail || 'Error al enviar fotografía remota.');
+    }
+
+    const data = await res.json();
+    if (data.retry_allowed) {
+      alert(`⚠️ ${data.mensaje}`);
+      goToPacRem('s-rem-foto');
+      return;
+    }
+
+    // Éxito: Limpiar memoria y bloquear replay
+    state.pilotData.tempFotoPacienteRemotoBase64 = null;
+    state.pilotData.tempFotoPacienteRemotoDataUrl = null;
+    state.remoteTokenActivo = null;
+
+    if (envCargando && envCargando.style) envCargando.style.display = 'none';
+    if (envOk && envOk.style) envOk.style.display = 'block';
+
+  } catch (err) {
+    if (envCargando && envCargando.style) envCargando.style.display = 'none';
+    if (envErr && envErr.style) envErr.style.display = 'block';
+  }
+}
+
+// ── ANÁLISIS AISLADO RÁPIDO & AUXILIARES ──────────────────────────────
 
 function handleFotoPilotoAislada(e) {
-  const file = e.target.files[0];
+  const file = e && e.target && e.target.files && e.target.files[0];
   if (!file) return;
 
   const reader = new FileReader();
   reader.onload = (event) => {
     compressImage(event.target.result, (compressedDataUrl, b64) => {
       state.pilotData.tempFotoAisladaBase64 = b64;
-      document.getElementById('img-preview-piloto-aislada').src = compressedDataUrl;
-      document.getElementById('dropzone-empty-piloto-aislada').classList.add('hidden');
-      document.getElementById('dropzone-preview-piloto-aislada').classList.remove('hidden');
+      const prev = document.getElementById('img-preview-piloto-aislada');
+      if (prev) prev.src = compressedDataUrl;
+      document.getElementById('dropzone-empty-piloto-aislada')?.classList.add('hidden');
+      document.getElementById('dropzone-preview-piloto-aislada')?.classList.remove('hidden');
     });
   };
   reader.readAsDataURL(file);
 }
 
+var FEATURE_PILOT_ISOLATED_ANALYSIS = false;
+
 async function ejecutarAnalisisPilotoAislado() {
+  if (!FEATURE_PILOT_ISOLATED_ANALYSIS) {
+    alert('La función de análisis aislado no está disponible en esta versión del piloto.');
+    return;
+  }
+
   if (!state.pilotData.tempFotoAisladaBase64) {
     alert('Seleccione una fotografía primero.');
     return;
@@ -9927,7 +10823,6 @@ async function ejecutarAnalisisPilotoAislado() {
     if (!res.ok) throw new Error('Error ejecutando análisis aislado');
     const data = await res.json();
 
-    // Limpiar memoria
     state.pilotData.tempFotoAisladaBase64 = null;
 
     if (resCont) {
@@ -9955,235 +10850,20 @@ async function ejecutarAnalisisPilotoAislado() {
   }
 }
 
-// ── CONTROL REMOTO DÍA +4 (TOKEN DE USO ÚNICO) ───────────────────────
-
-async function abrirModalSolicitarControlPiloto() {
-  if (!state.pilotData.activeCaseUuid || !state.pilotData.activeWoundUuid) {
-    alert('Seleccione un caso y una herida activa para generar el enlace de control.');
-    return;
-  }
-
-  try {
-    const res = await pilotApi(`/cases/${state.pilotData.activeCaseUuid}/wounds/${state.pilotData.activeWoundUuid}/tokens`, {
-      method: 'POST',
-      body: { due_days: 4, expire_days: 7 }
-    });
-
-    if (!res.ok) throw new Error('Error generando token de seguimiento');
-    const data = await res.json();
-
-    const fullUrl = new URL(data.url, window.location.origin).href;
-    const inputLink = document.getElementById('input-link-control-generado');
-    if (inputLink) inputLink.value = fullUrl;
-
-    const modal = document.getElementById('modal-solicitar-control-piloto');
-    if (modal) {
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
-    }
-  } catch (err) {
-    alert(`⚠️ Error: ${err.message}`);
-  }
+function abrirModalAgregarFotoHerida() {
+  goTo('s-privacy-gate');
 }
 
-function cerrarModalSolicitarControlPiloto() {
-  const modal = document.getElementById('modal-solicitar-control-piloto');
-  if (modal) {
-    modal.classList.add('hidden');
-    modal.classList.remove('flex');
-  }
+function cerrarModalAgregarFotoHerida() {
+  goTo('s-herida');
 }
 
-function copiarLinkControlGenerado() {
-  const inputLink = document.getElementById('input-link-control-generado');
-  if (!inputLink) return;
-  inputLink.select();
-  navigator.clipboard.writeText(inputLink.value).then(() => {
-    alert('✓ Enlace copiado al portapapeles. Compártelo con tu paciente.');
-  }).catch(() => {
-    alert('Enlace seleccionado: ' + inputLink.value);
-  });
+function handleFotoHeridaPilotoSeleccionada(e) {
+  onFotoCamProf(e ? e.target : null);
 }
 
-function probarVistaPacienteDesdeModal() {
-  const inputLink = document.getElementById('input-link-control-generado');
-  if (inputLink && inputLink.value) {
-    const urlObj = new URL(inputLink.value);
-    const token = urlObj.pathname.split('/').pop();
-    state.remoteTokenActivo = token;
-  }
-  cerrarModalSolicitarControlPiloto();
-  switchPortal('paciente-remoto');
+async function ejecutarAnalisisHeridaPiloto() {
+  return ejecutarAnalisisPilotoConShadowMode();
 }
 
-// ── VISTA DEL PACIENTE REMOTO (/r/{token}) ───────────────────────────
-
-async function iniciarFlujoPacienteRemoto() {
-  state.pilotData.tempFotoPacienteRemotoBase64 = null;
-
-  const loadingEl = document.getElementById('pac-remoto-loading');
-  const invalidoEl = document.getElementById('pac-remoto-invalido');
-  const validoEl = document.getElementById('pac-remoto-valido');
-
-  const paso1 = document.getElementById('pac-remoto-paso-privacidad');
-  const paso2 = document.getElementById('pac-remoto-paso-captura');
-  const paso3 = document.getElementById('pac-remoto-paso-exito');
-  const alertaQg = document.getElementById('alerta-qg-pac-remoto');
-
-  if (loadingEl) loadingEl.classList.remove('hidden');
-  if (invalidoEl) invalidoEl.classList.add('hidden');
-  if (validoEl) validoEl.classList.add('hidden');
-
-  // Obtener token desde state o URL
-  let token = state.remoteTokenActivo;
-  if (!token) {
-    const path = window.location.pathname;
-    const hash = window.location.hash;
-    const search = window.location.search;
-    if (path.includes('/r/')) token = path.split('/r/')[1].split('/')[0].trim();
-    else if (hash.includes('/r/')) token = hash.split('/r/')[1].split('/')[0].trim();
-    else if (search.includes('r=')) token = new URLSearchParams(search).get('r');
-  }
-
-  if (!token) {
-    if (loadingEl) loadingEl.classList.add('hidden');
-    if (invalidoEl) invalidoEl.classList.remove('hidden');
-    return;
-  }
-
-  try {
-    const res = await pilotApi(`/r/${token}`, { skipAuth: true });
-    if (!res.ok) throw new Error('Token no válido o expirado');
-    const data = await res.json();
-
-    state.remoteTokenActivo = token;
-
-    if (loadingEl) loadingEl.classList.add('hidden');
-    if (validoEl) validoEl.classList.remove('hidden');
-
-    const badgeFecha = document.getElementById('pac-remoto-badge-fecha');
-    if (badgeFecha && data.due_date) {
-      badgeFecha.textContent = `Fecha límite de envío: ${data.due_date}`;
-    }
-
-    if (paso1) paso1.classList.remove('hidden');
-    if (paso2) paso2.classList.add('hidden');
-    if (paso3) paso3.classList.add('hidden');
-    if (alertaQg) alertaQg.classList.add('hidden');
-
-    ['chk-remoto-p1', 'chk-remoto-p2', 'chk-remoto-p3', 'chk-remoto-p4'].forEach(id => {
-      const chk = document.getElementById(id);
-      if (chk) chk.checked = false;
-    });
-
-    const dropEmpty = document.getElementById('dropzone-empty-pac-remoto');
-    const dropPrev = document.getElementById('dropzone-prev-pac-remoto');
-    if (dropEmpty) dropEmpty.classList.remove('hidden');
-    if (dropPrev) dropPrev.classList.add('hidden');
-
-  } catch (err) {
-    if (loadingEl) loadingEl.classList.add('hidden');
-    if (invalidoEl) invalidoEl.classList.remove('hidden');
-  }
-}
-
-function confirmarPrivacidadPacienteRemoto() {
-  const c1 = document.getElementById('chk-remoto-p1')?.checked;
-  const c2 = document.getElementById('chk-remoto-p2')?.checked;
-  const c3 = document.getElementById('chk-remoto-p3')?.checked;
-  const c4 = document.getElementById('chk-remoto-p4')?.checked;
-
-  if (!c1 || !c2 || !c3 || !c4) {
-    alert('Por favor confirme las 4 pautas de privacidad antes de continuar.');
-    return;
-  }
-
-  document.getElementById('pac-remoto-paso-privacidad').classList.add('hidden');
-  document.getElementById('pac-remoto-paso-captura').classList.remove('hidden');
-}
-
-function handleFotoPacienteRemoto(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = (event) => {
-    compressImage(event.target.result, (compressedDataUrl, b64) => {
-      state.pilotData.tempFotoPacienteRemotoBase64 = b64;
-      document.getElementById('img-prev-pac-remoto').src = compressedDataUrl;
-      document.getElementById('dropzone-empty-pac-remoto').classList.add('hidden');
-      document.getElementById('dropzone-prev-pac-remoto').classList.remove('hidden');
-      document.getElementById('alerta-qg-pac-remoto').classList.add('hidden');
-    });
-  };
-  reader.readAsDataURL(file);
-}
-
-async function enviarFotoPacienteRemoto() {
-  if (!state.pilotData.tempFotoPacienteRemotoBase64 || !state.remoteTokenActivo) {
-    alert('Seleccione o tome una fotografía primero.');
-    return;
-  }
-
-  const token = state.remoteTokenActivo;
-  const alertaQg = document.getElementById('alerta-qg-pac-remoto');
-
-  // Evaluar Quality Gate óptico en vivo
-  const tempImg = new Image();
-  tempImg.onload = async () => {
-    const canvas = document.createElement('canvas');
-    canvas.width = tempImg.width;
-    canvas.height = tempImg.height;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(tempImg, 0, 0);
-
-    const qResult = calcularPhotoQualityGate(ctx, canvas.width, canvas.height);
-    const qualityScore = qResult ? qResult.overallScore : 85;
-
-    if (qualityScore < 48) {
-      if (alertaQg) {
-        alertaQg.textContent = '⚠️ La fotografía no tiene suficiente calidad o iluminación. Por favor vuelva a tomarla sin sombras.';
-        alertaQg.classList.remove('hidden');
-      }
-      return;
-    }
-
-    try {
-      const payload = {
-        imagen_base64: state.pilotData.tempFotoPacienteRemotoBase64,
-        privacy_gate_confirmed: true,
-        quality_score: qualityScore
-      };
-
-      const res = await pilotApi(`/r/${token}/upload`, {
-        method: 'POST',
-        body: payload,
-        skipAuth: true
-      });
-
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.detail || 'Error al enviar fotografía remota.');
-      }
-
-      const data = await res.json();
-      if (data.retry_allowed) {
-        if (alertaQg) {
-          alertaQg.textContent = `⚠️ ${data.mensaje}`;
-          alertaQg.classList.remove('hidden');
-        }
-        return;
-      }
-
-      // Éxito: Limpiar imagen temporal de memoria
-      state.pilotData.tempFotoPacienteRemotoBase64 = null;
-      document.getElementById('pac-remoto-paso-captura').classList.add('hidden');
-      document.getElementById('pac-remoto-paso-exito').classList.remove('hidden');
-
-    } catch (err) {
-      alert(`⚠️ Error enviando foto: ${err.message}`);
-    }
-  };
-  tempImg.src = 'data:image/jpeg;base64,' + state.pilotData.tempFotoPacienteRemotoBase64;
-}
 

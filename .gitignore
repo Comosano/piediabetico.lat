@@ -27,3 +27,5 @@ Thumbs.db
 
 # Scripts Temporales
 scratch_*.ps1
+
+.temp_chrome_profile*/

@@ -1,14 +1,14 @@
-const CACHE_NAME = 'piediabetico-v41-cache';
-const OFFLINE_URL = './offline.html';
+const CACHE_NAME = 'piediabetico-v42-cache';
+const OFFLINE_URL = '/offline.html';
 
 const ASSETS_TO_CACHE = [
-  './',
-  './index.html',
-  './offline.html',
-  './styles.css?v=41',
-  './app.js?v=41',
-  './manifest.json',
-  './icon.svg'
+  '/',
+  '/index.html',
+  '/offline.html',
+  '/styles.css?v=41',
+  '/app.js?v=41',
+  '/manifest.json',
+  '/icon.svg'
 ];
 
 self.addEventListener('install', (event) => {
